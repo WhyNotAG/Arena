@@ -3,7 +3,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:arena/Registration.dart';
 void main() => runApp(ArenaApp());
 
-
 class ArenaApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -106,6 +105,8 @@ class Logo extends StatelessWidget {
 //
 //
 class InfoFields extends StatelessWidget {
+  final _formKey = GlobalKey<FormState>();
+  final _formKey2 = GlobalKey<FormState>();
   @override
   Widget build(BuildContext context) {
     return new Column(
@@ -113,9 +114,25 @@ class InfoFields extends StatelessWidget {
         Container(
             height: 56,
             margin: EdgeInsets.only(left:16.0, right: 16.0),
-            child: new TextField(
+            child: Container( height: 56,child: Form(key: _formKey,child: new TextFormField(
+                validator: (value){
+                  if (value.isEmpty) return 'Пожалуйста введите свой Email';
+                  String p = "[a-zA-Z0-9+.\_\%-+]{1,256}@[a-zA-Z0-9][a-zA-Z0-9-]{0,64}(.[a-zA-Z0-9][a-zA-Z0-9-]{0,25})+";
+                  RegExp regExp = new RegExp(p);
+                  if (regExp.hasMatch(value)) return null;
+                  return 'Это не E-mail';
+                },
               cursorColor: Colors.black38,
               decoration: new InputDecoration(
+                errorStyle: TextStyle(fontSize: 0.0, ),
+                errorBorder: (
+                    OutlineInputBorder(
+                      borderSide: new BorderSide(color: Colors.red, width: 2.0),
+                    )
+                ),
+                focusedErrorBorder: OutlineInputBorder(
+                  borderSide: new BorderSide(color: Colors.red, width: 2.0),
+                ),
                 enabledBorder: OutlineInputBorder(
                   borderSide: BorderSide(
                     color: Colors.black38,
@@ -130,11 +147,12 @@ class InfoFields extends StatelessWidget {
                 filled: true,
                 fillColor: Colors.white,
                 hintText: "Эл.почта/Моб.Телефон",
-              ),)
+              ),
+            )))
         ),
-        Password(),
+        Password(_formKey2),
         Container(child: LostPass(), margin: EdgeInsets.only(right: 0.0),),
-        EnterButton()
+        EnterButton(_formKey,_formKey2)
       ],
     );
   }
@@ -145,11 +163,16 @@ class InfoFields extends StatelessWidget {
 //
 //Password widget
 class Password extends StatefulWidget {
+  final _formKey2;
+
+  Password(this._formKey2);
+
   @override
-  _PasswordState createState() => _PasswordState();
+  _PasswordState createState() => _PasswordState(_formKey2);
 }
 
 class _PasswordState extends State<Password> {
+  final _formKey2;
   var _controller = TextEditingController();
   bool _obscureText = true;
   IconData _icon = Icons.visibility_off;
@@ -161,12 +184,23 @@ class _PasswordState extends State<Password> {
     });
   }
 
+
+  _PasswordState(this._formKey2);
+
   @override
   Widget build(BuildContext context) {
     return Container(
         height: 56,
         margin: EdgeInsets.only(left:16.0, right: 16.0),
-        child: new TextField(
+        child: Form(key: _formKey2,
+            child: new TextFormField(
+            validator: (value){
+              if (value.isEmpty) return 'Пожалуйста введите свой Email';
+              String p = "[a-zA-Z0-9+.\_\%-+]{1,256}@[a-zA-Z0-9][a-zA-Z0-9-]{0,64}(.[a-zA-Z0-9][a-zA-Z0-9-]{0,25})+";
+              RegExp regExp = new RegExp(p);
+              if (regExp.hasMatch(value)) return null;
+              return 'Это не E-mail';
+            },
           obscureText: _obscureText,
           controller: _controller,
           cursorColor: Colors.black38,
@@ -175,12 +209,15 @@ class _PasswordState extends State<Password> {
               borderSide: BorderSide(
                 color: Colors.black38,
               ),
-
             ),
+            errorStyle: TextStyle(fontSize: 0.0, ),
             focusedBorder: OutlineInputBorder(
               borderSide: new BorderSide(color: Color.fromARGB(255, 47, 128, 237), width: 2.0),
             ),
             errorBorder: OutlineInputBorder(
+              borderSide: new BorderSide(color: Colors.red, width: 2.0),
+            ) ,
+            focusedErrorBorder: OutlineInputBorder(
               borderSide: new BorderSide(color: Colors.red, width: 2.0),
             ) ,
             contentPadding: new EdgeInsets.fromLTRB(
@@ -199,8 +236,7 @@ class _PasswordState extends State<Password> {
               color: Colors.grey,
             ),
             hintText: "Пароль",
-          ),)
-
+          ),))
     );
   }
 }
@@ -230,17 +266,25 @@ class LostPass extends StatelessWidget {
 
 //Enter button
 class EnterButton extends StatelessWidget {
+  final _formKey;
+  final _formKey2;
+
+  EnterButton(this._formKey, this._formKey2);
+
   @override
   Widget build(BuildContext context) {
     return new Container(
       width: double.infinity,
       height: 56,
-      child: FlatButton(onPressed: null, child: new Text("Войти",
+      child: FlatButton(child: new Text("Войти",
           style: TextStyle(
               color: Colors.white,
               fontSize: 14.0,
               fontFamily: "Montserrat-Bold")
       ),
+        onPressed: (){
+          if(_formKey.currentState.validate()) Scaffold.of(context).showSnackBar(SnackBar(content: Text('Форма успешно заполнена'), backgroundColor: Colors.green,));
+        },
       ),
       decoration: new BoxDecoration(
           borderRadius: new BorderRadius.circular(30.0),
@@ -249,6 +293,9 @@ class EnterButton extends StatelessWidget {
       margin: EdgeInsets.only(left: 16.0, right: 16.0, top: 21.0),
     );
   }
+
+
+
 }
 
 class WithoutRegButton extends StatelessWidget {
@@ -259,7 +306,7 @@ class WithoutRegButton extends StatelessWidget {
         margin: EdgeInsets.only(top: 130.0, left: 59, right: 13.0),
         child: Row(
           children: <Widget>[
-            new FlatButton(onPressed: null, child: new Text(
+            new FlatButton(onPressed: null,child: new Text(
                 "Продолжить без регистрации",
                 style: TextStyle(
                     decoration: TextDecoration.underline, fontSize: 14.0,
