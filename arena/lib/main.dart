@@ -36,7 +36,7 @@ class BaseLayout extends StatelessWidget {
 class Info extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SingleChildScrollView( child: Container(
         padding: EdgeInsets.only(bottom: 0.0, top: 0.0),
         child: new Center(
             child: new Column(children: <Widget>[
@@ -59,6 +59,7 @@ class Info extends StatelessWidget {
               WithoutRegButton()
             ],)
         )
+      )
     );
   }
 }
@@ -130,7 +131,6 @@ class InfoFields extends StatelessWidget {
                   cursorColor: Colors.black38,
                   decoration: new InputDecoration(
                     labelText: 'Эл.почта/Моб.Телефон',
-                    alignLabelWithHint: true,
                     labelStyle: TextStyle(
                         color: myFocusNode.hasFocus ? Colors.blue : Colors.black,
                         background: null,
@@ -168,7 +168,7 @@ class InfoFields extends StatelessWidget {
             )
           )
         ),
-        Password(_formKey2),
+        Password(),
         Container(child: LostPass(), margin: EdgeInsets.only(right: 0.0),),
         EnterButton(_formKey,_formKey2)
       ],
@@ -181,16 +181,12 @@ class InfoFields extends StatelessWidget {
 //
 //Password widget
 class Password extends StatefulWidget {
-  final _formKey2;
-
-  Password(this._formKey2);
 
   @override
-  _PasswordState createState() => _PasswordState(_formKey2);
+  _PasswordState createState() => _PasswordState();
 }
 
 class _PasswordState extends State<Password> {
-  final _formKey2;
   var _controller = TextEditingController();
   bool _obscureText = true;
   IconData _icon = Icons.visibility_off;
@@ -202,20 +198,19 @@ class _PasswordState extends State<Password> {
     });
   }
 
-
-  _PasswordState(this._formKey2);
-
   @override
   Widget build(BuildContext context) {
     return Container(
         height: 56,
         margin: EdgeInsets.only(left:16.0, right: 16.0),
-        child: Form(key: _formKey2,
+        child: Form(
             child: new TextFormField(
             obscureText: _obscureText,
             controller: _controller,
-            cursorColor: Colors.black38,
+            cursorColor: Colors.black,
             decoration: new InputDecoration(
+              labelText: "Пароль",
+              labelStyle: TextStyle(color: Colors.black),
               enabledBorder: OutlineInputBorder(
                 borderSide: BorderSide(
                   color: Colors.black38,
@@ -243,9 +238,8 @@ class _PasswordState extends State<Password> {
                   });
                 },
                 icon: Icon(_icon),
-                color: Colors.grey,
+                color: Colors.black,
               ),
-              hintText: "Пароль",
             ),
             )
         )
@@ -336,6 +330,3 @@ class WithoutRegButton extends StatelessWidget {
     );
   }
 }
-
-
-

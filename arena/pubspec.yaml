@@ -53,6 +53,9 @@ flutter:
     - family: Montserrat-Regular
       fonts:
         - asset: assets/fonts/Montserrat-Regular.ttf
+    - family: CustomIcons
+      fonts:
+        - asset: assets/fonts/arrowBack.ttf
 
 
   # To add assets to your application, add an assets section, like this:
