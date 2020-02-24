@@ -8,9 +8,14 @@ import 'package:image_cropper/image_cropper.dart';
 class RegistrationScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Scaffold (body:
-    new Container(child: new Center(
-      child: new Column(
+    return Scaffold (
+        appBar: new AppBar(
+            title: new Text('Flutter.su'),
+            backgroundColor: Colors.white,
+            iconTheme: IconThemeData(color: Colors.blue),
+        ),
+        body: new Container(child: new Center(
+        child: new Column(
         children: <Widget>[
           Photo(),
         ],
@@ -43,7 +48,7 @@ class _PhotoState extends State<Photo> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(top: 100),
+      margin: const EdgeInsets.only(top: 30),
       child: FlatButton(child:
         Container(
           decoration: BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(20.0)),color: Colors.grey,),

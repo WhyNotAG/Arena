@@ -107,6 +107,7 @@ class Logo extends StatelessWidget {
 class InfoFields extends StatelessWidget {
   final _formKey = GlobalKey<FormState>();
   final _formKey2 = GlobalKey<FormState>();
+  FocusNode myFocusNode = new FocusNode();
   @override
   Widget build(BuildContext context) {
     return new Column(
@@ -114,41 +115,58 @@ class InfoFields extends StatelessWidget {
         Container(
             height: 56,
             margin: EdgeInsets.only(left:16.0, right: 16.0),
-            child: Container( height: 56,child: Form(key: _formKey,child: new TextFormField(
-                validator: (value){
-                  if (value.isEmpty) return 'Пожалуйста введите свой Email';
-                  String p = "[a-zA-Z0-9+.\_\%-+]{1,256}@[a-zA-Z0-9][a-zA-Z0-9-]{0,64}(.[a-zA-Z0-9][a-zA-Z0-9-]{0,25})+";
-                  RegExp regExp = new RegExp(p);
-                  if (regExp.hasMatch(value)) return null;
-                  return 'Это не E-mail';
-                },
-              cursorColor: Colors.black38,
-              decoration: new InputDecoration(
-                errorStyle: TextStyle(fontSize: 0.0, ),
-                errorBorder: (
-                    OutlineInputBorder(
+            child: Container( height: 56,
+                child: Form(key: _formKey,
+                  child: new TextFormField(
+                    focusNode: myFocusNode,
+                    validator: (value){
+                      if (value.isEmpty) return 'Пожалуйста введите свой Email';
+                      String p = "[a-zA-Z0-9+.\_\%-+]{1,256}@[a-zA-Z0-9][a-zA-Z0-9-]{0,64}(.[a-zA-Z0-9][a-zA-Z0-9-]{0,25})+";
+                      RegExp regExp = new RegExp(p);
+                      if (regExp.hasMatch(value)) return null;
+                      return 'Это не E-mail';
+                    },
+
+                  cursorColor: Colors.black38,
+                  decoration: new InputDecoration(
+                    labelText: 'Эл.почта/Моб.Телефон',
+                    alignLabelWithHint: true,
+                    labelStyle: TextStyle(
+                        color: myFocusNode.hasFocus ? Colors.blue : Colors.black,
+                        background: null,
+                        backgroundColor: null,
+                        decorationColor: null
+                    ),
+
+                    errorStyle: TextStyle(fontSize: 0.0, ),
+                    errorBorder: (
+                        OutlineInputBorder(
+                          borderSide: new BorderSide(color: Colors.red, width: 2.0),
+                        )
+                    ),
+
+                    focusedErrorBorder: OutlineInputBorder(
                       borderSide: new BorderSide(color: Colors.red, width: 2.0),
-                    )
-                ),
-                focusedErrorBorder: OutlineInputBorder(
-                  borderSide: new BorderSide(color: Colors.red, width: 2.0),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(
-                    color: Colors.black38,
+                    ),
+
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Colors.black38,
+                      ),
+                    ),
+
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: new BorderSide(color: Color.fromARGB(255, 47, 128, 237), width: 2.0),
+                    ),
+
+                    contentPadding: new EdgeInsets.fromLTRB(
+                        10.0, 10.0, 10.0, 10.0),
+                    filled: true,
+                    fillColor: Colors.white,
                   ),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: new BorderSide(color: Color.fromARGB(255, 47, 128, 237), width: 2.0),
-                ),
-                contentPadding: new EdgeInsets.fromLTRB(
-                    10.0, 10.0, 10.0, 10.0),
-                //fillColor: Colors.green
-                filled: true,
-                fillColor: Colors.white,
-                hintText: "Эл.почта/Моб.Телефон",
-              ),
-            )))
+              )
+            )
+          )
         ),
         Password(_formKey2),
         Container(child: LostPass(), margin: EdgeInsets.only(right: 0.0),),
@@ -194,50 +212,44 @@ class _PasswordState extends State<Password> {
         margin: EdgeInsets.only(left:16.0, right: 16.0),
         child: Form(key: _formKey2,
             child: new TextFormField(
-            validator: (value){
-              if (value.isEmpty) return 'Пожалуйста введите свой Email';
-              String p = "[a-zA-Z0-9+.\_\%-+]{1,256}@[a-zA-Z0-9][a-zA-Z0-9-]{0,64}(.[a-zA-Z0-9][a-zA-Z0-9-]{0,25})+";
-              RegExp regExp = new RegExp(p);
-              if (regExp.hasMatch(value)) return null;
-              return 'Это не E-mail';
-            },
-          obscureText: _obscureText,
-          controller: _controller,
-          cursorColor: Colors.black38,
-          decoration: new InputDecoration(
-            enabledBorder: OutlineInputBorder(
-              borderSide: BorderSide(
-                color: Colors.black38,
+            obscureText: _obscureText,
+            controller: _controller,
+            cursorColor: Colors.black38,
+            decoration: new InputDecoration(
+              enabledBorder: OutlineInputBorder(
+                borderSide: BorderSide(
+                  color: Colors.black38,
+                ),
               ),
+              errorStyle: TextStyle(fontSize: 0.0, ),
+              focusedBorder: OutlineInputBorder(
+                borderSide: new BorderSide(color: Color.fromARGB(255, 47, 128, 237), width: 2.0),
+              ),
+              errorBorder: OutlineInputBorder(
+                borderSide: new BorderSide(color: Colors.red, width: 2.0),
+              ) ,
+              focusedErrorBorder: OutlineInputBorder(
+                borderSide: new BorderSide(color: Colors.red, width: 2.0),
+              ) ,
+              contentPadding: new EdgeInsets.fromLTRB(
+                  10.0, 10.0, 10.0, 10.0),
+              filled: true,
+              fillColor: Colors.white,
+              suffixIcon: IconButton(
+                onPressed: () {
+                  setState(() {
+                    _obscureText = !_obscureText;
+                    setIcon(_obscureText);
+                  });
+                },
+                icon: Icon(_icon),
+                color: Colors.grey,
+              ),
+              hintText: "Пароль",
             ),
-            errorStyle: TextStyle(fontSize: 0.0, ),
-            focusedBorder: OutlineInputBorder(
-              borderSide: new BorderSide(color: Color.fromARGB(255, 47, 128, 237), width: 2.0),
-            ),
-            errorBorder: OutlineInputBorder(
-              borderSide: new BorderSide(color: Colors.red, width: 2.0),
-            ) ,
-            focusedErrorBorder: OutlineInputBorder(
-              borderSide: new BorderSide(color: Colors.red, width: 2.0),
-            ) ,
-            contentPadding: new EdgeInsets.fromLTRB(
-                10.0, 10.0, 10.0, 10.0),
-            //fillColor: Colors.green
-            filled: true,
-            fillColor: Colors.white,
-            suffixIcon: IconButton(
-              onPressed: () {
-                setState(() {
-                  _obscureText = !_obscureText;
-                  setIcon(_obscureText);
-                });
-              },
-              icon: Icon(_icon),
-              color: Colors.grey,
-            ),
-            hintText: "Пароль",
-          ),))
-    );
+            )
+        )
+      );
   }
 }
 
