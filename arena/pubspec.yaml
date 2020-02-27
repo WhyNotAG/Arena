@@ -25,6 +25,10 @@ dependencies:
   cupertino_icons: ^0.1.2
   image_picker: ^0.6.3+4
   image_cropper: 1.2.1
+  http: ^0.12.0+4
+  shared_preferences: ^0.5.6+2
+  smooth_star_rating: ^1.0.4+2
+  statusbar: ^1.1.0
 
 dev_dependencies:
   flutter_test:
@@ -45,6 +49,7 @@ flutter:
   assets:
     - assets/images/login.jpeg
     - assets/images/LOGO.png
+    - assets/images/testPhoto.png
 
   fonts:
     - family: Montserrat-Bold

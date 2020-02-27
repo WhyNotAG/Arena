@@ -1,22 +1,53 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:arena/Registration.dart';
+import 'package:http/http.dart' as http;
+import 'package:flutter/services.dart';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 void main() => runApp(ArenaApp());
+String name;
+String password;
 
+addStringToSF(String name, String value) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  prefs.setString(name, value);
+}
+
+class Data {
+  var _myController = TextEditingController();
+  var _passController = TextEditingController();
+
+}
 class ArenaApp extends StatelessWidget {
+
   @override
   Widget build(BuildContext context) {
-    return new MaterialApp(
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+    return GestureDetector(
+        onTap: () {
+          FocusScopeNode currentFocus = FocusScope.of(context);
+
+          if (!currentFocus.hasPrimaryFocus) {
+            currentFocus.unfocus();
+          }
+        },
+        child: new MaterialApp(
         debugShowCheckedModeBanner: false,
         home: BaseLayout()
-    );
+    ));
   }
 }
 
 class BaseLayout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    Data data = new Data();
     return  Scaffold(
+        resizeToAvoidBottomInset: false,
         body: new Stack(children: <Widget>[
           new Container(
             decoration: BoxDecoration(
@@ -25,7 +56,7 @@ class BaseLayout extends StatelessWidget {
                     fit: BoxFit.cover)
             ),
           ),
-          new Info()
+          Container(child: new Info(data),)
         ],)
 
     );
@@ -34,6 +65,10 @@ class BaseLayout extends StatelessWidget {
 
 
 class Info extends StatelessWidget {
+  Data data;
+
+  Info(this.data);
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView( child: Container(
@@ -54,7 +89,7 @@ class Info extends StatelessWidget {
                   child: new Logo()
               ),
               new Container(
-                child: new InfoFields(),
+                child: new InfoFields(data),
               ),
               WithoutRegButton()
             ],)
@@ -73,7 +108,7 @@ class RegButton extends StatelessWidget {
         MaterialPageRoute(builder: (context) => RegistrationScreen()),
       );
     }, child: new Text(
-        "Зарегестрируйтесь",
+        "Зарегистрируйтесь",
         style: TextStyle(
             decoration: TextDecoration.underline, fontSize: 14.0,
             fontFamily: "Montserrat-Regular",
@@ -109,6 +144,10 @@ class InfoFields extends StatelessWidget {
   final _formKey = GlobalKey<FormState>();
   final _formKey2 = GlobalKey<FormState>();
   FocusNode myFocusNode = new FocusNode();
+  Data data;
+
+  InfoFields(this.data);
+
   @override
   Widget build(BuildContext context) {
     return new Column(
@@ -116,26 +155,30 @@ class InfoFields extends StatelessWidget {
         Container(
             height: 56,
             margin: EdgeInsets.only(left:16.0, right: 16.0),
-            child: Container( height: 56,
+            child: Container(
+                height: 56,
                 child: Form(key: _formKey,
                   child: new TextFormField(
+                    controller: data._myController,
                     focusNode: myFocusNode,
                     validator: (value){
                       if (value.isEmpty) return 'Пожалуйста введите свой Email';
                       String p = "[a-zA-Z0-9+.\_\%-+]{1,256}@[a-zA-Z0-9][a-zA-Z0-9-]{0,64}(.[a-zA-Z0-9][a-zA-Z0-9-]{0,25})+";
                       RegExp regExp = new RegExp(p);
+
+                      String p2 = "^((8|\\+7)[\\- ]?)?(\\(?\\d{3}\\)?[\\- ]?)?[\\d\\- ]{7,10}\$";
+                      RegExp regExp2 = new RegExp(p2);
                       if (regExp.hasMatch(value)) return null;
+                      if (regExp2.hasMatch(value)) return null;
                       return 'Это не E-mail';
                     },
 
                   cursorColor: Colors.black38,
                   decoration: new InputDecoration(
-                    labelText: 'Эл.почта/Моб.Телефон',
-                    labelStyle: TextStyle(
-                        color: myFocusNode.hasFocus ? Colors.blue : Colors.black,
-                        background: null,
-                        backgroundColor: null,
-                        decorationColor: null
+                    hintText: "Email/Phone",
+                    border: OutlineInputBorder(),
+                    hintStyle: TextStyle(
+                        color: myFocusNode.hasFocus ? Colors.green : Colors.black,
                     ),
 
                     errorStyle: TextStyle(fontSize: 0.0, ),
@@ -156,8 +199,9 @@ class InfoFields extends StatelessWidget {
                     ),
 
                     focusedBorder: OutlineInputBorder(
-                      borderSide: new BorderSide(color: Color.fromARGB(255, 47, 128, 237), width: 2.0),
+                      borderSide: new BorderSide(color: Color.fromARGB(255, 47, 128, 237), width: 2.0,),
                     ),
+
 
                     contentPadding: new EdgeInsets.fromLTRB(
                         10.0, 10.0, 10.0, 10.0),
@@ -168,9 +212,9 @@ class InfoFields extends StatelessWidget {
             )
           )
         ),
-        Password(),
-        Container(child: LostPass(), margin: EdgeInsets.only(right: 0.0),),
-        EnterButton(_formKey,_formKey2)
+        Password(data:data),
+        Container(child: LostPass(),alignment: Alignment.centerRight,),
+        EnterButton(_formKey,_formKey2, data)
       ],
     );
   }
@@ -181,15 +225,23 @@ class InfoFields extends StatelessWidget {
 //
 //Password widget
 class Password extends StatefulWidget {
+  Data data;
+
+  Password({Key key, @required this.data}) : super(key: key);
+
 
   @override
-  _PasswordState createState() => _PasswordState();
+  _PasswordState createState() => _PasswordState(data);
 }
 
 class _PasswordState extends State<Password> {
+  Data data;
   var _controller = TextEditingController();
   bool _obscureText = true;
   IconData _icon = Icons.visibility_off;
+
+
+  _PasswordState(this.data);
 
   void setIcon(bool obscure) {
     setState(() {
@@ -198,19 +250,28 @@ class _PasswordState extends State<Password> {
     });
   }
 
+
+  @override
+  void dispose() {
+    // Clean up the controller when the widget is disposed.
+    super.dispose();
+    data._passController = _controller;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
         height: 56,
         margin: EdgeInsets.only(left:16.0, right: 16.0),
-        child: Form(
+        child: Container(
+          child: Form(
             child: new TextFormField(
             obscureText: _obscureText,
-            controller: _controller,
+            controller: widget.data._passController,
             cursorColor: Colors.black,
             decoration: new InputDecoration(
-              labelText: "Пароль",
-              labelStyle: TextStyle(color: Colors.black),
+              hintText: "Пароль",
+              hintStyle: TextStyle(color: Colors.black),
               enabledBorder: OutlineInputBorder(
                 borderSide: BorderSide(
                   color: Colors.black38,
@@ -242,6 +303,7 @@ class _PasswordState extends State<Password> {
               ),
             ),
             )
+        ),
         )
       );
   }
@@ -252,16 +314,16 @@ class _PasswordState extends State<Password> {
 class LostPass extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return new Align(
+    return new Container(
       child: FlatButton(onPressed: null, child: new Text(
           "забыли пароль?",
           style: TextStyle(
               color: Colors.white,
-              decoration: TextDecoration.underline, fontSize: 14.0,
+              decoration: TextDecoration.underline, fontSize: 12.0,
               fontFamily: "Montserrat-Regular",
               fontWeight: FontWeight.bold)
       ),
-        padding: EdgeInsets.only(left: 256, right: 4.0),
+
         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),
 
@@ -275,8 +337,29 @@ class EnterButton extends StatelessWidget {
   final _formKey;
   final _formKey2;
 
-  EnterButton(this._formKey, this._formKey2);
+  httpGet(String email, String password) async {
+    try {
 
+      Map jsonFile = {
+        "email": email,
+        "password": password,
+        "number": null
+      };
+      print(jsonEncode(jsonFile));
+      var responce =
+      await http.post("http://217.12.209.180:8080/api/v1/auth/sign-in",
+          body:json.encode(jsonFile),
+          headers: {"content-Type":"application/json"});
+      print(responce.statusCode);
+      print(responce.body);
+      var decode = jsonDecode(responce.body);
+      addStringToSF("accessToken", decode["accessToken"]);
+      addStringToSF("refreshToken", decode["refreshToken"]);
+    } catch(error) {print(error);}
+  }
+
+  EnterButton(this._formKey, this._formKey2, this.data);
+  Data data;
   @override
   Widget build(BuildContext context) {
     return new Container(
@@ -289,6 +372,11 @@ class EnterButton extends StatelessWidget {
               fontFamily: "Montserrat-Bold")
       ),
         onPressed: (){
+          print(data._myController.text);
+          print(data._passController.text);
+          addStringToSF("email/number", data._myController.text);
+          addStringToSF("password", data._passController.text);
+          httpGet(data._myController.text, data._passController.text);
           if(_formKey.currentState.validate()) Scaffold.of(context).showSnackBar(SnackBar(content: Text('Форма успешно заполнена'), backgroundColor: Colors.green,));
         },
       ),
@@ -309,7 +397,7 @@ class WithoutRegButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return new Container(
         width: double.infinity,
-        margin: EdgeInsets.only(top: 130.0, left: 59, right: 13.0),
+        margin: EdgeInsets.only(top: 100.0, left: 59, right: 13.0),
         child: Row(
           children: <Widget>[
             new FlatButton(onPressed: null,child: new Text(

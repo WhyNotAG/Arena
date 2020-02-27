@@ -1,16 +1,30 @@
 import 'dart:io';
 import 'dart:async';
+import 'package:arena/Menu.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
+import 'package:flutter/services.dart';
 
 class RegistrationScreen extends StatelessWidget {
   final _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold (
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+      statusBarBrightness: Brightness.light,
+    ));
+    return GestureDetector(
+        onTap: () {
+          FocusScopeNode currentFocus = FocusScope.of(context);
+
+          if (!currentFocus.hasPrimaryFocus) {
+            currentFocus.unfocus();
+          }
+        },
+        child:Scaffold (
         appBar: new AppBar(
+            brightness: Brightness.light,
             title: new Text('Регистрация', style:
               TextStyle(color: Colors.black87, fontFamily: "Montserrat-Regular", fontWeight: FontWeight.bold, fontSize: 18),
             ),
@@ -21,7 +35,7 @@ class RegistrationScreen extends StatelessWidget {
             onPressed: () => Navigator.of(context).pop(),
           ),
         ),
-        body: new Container(child: new Center(
+        body: SingleChildScrollView(child: new Container(child: new Center(
         child: new Column(
         children: <Widget>[
           Photo(),
@@ -35,12 +49,11 @@ class RegistrationScreen extends StatelessWidget {
             margin: EdgeInsets.only(top: 36),
             child: RegistrationButton(_formKey),
           ),
-          Container(child: WithoutRegButton2(),)
         ],
       ),
     )
-    )
-    );
+    ))
+    ),);
   }
 }
 
@@ -124,8 +137,6 @@ class InfoFields extends StatelessWidget {
 
 class EmailField extends StatelessWidget {
   final _formKey;
-  FocusNode myFocusNode = new FocusNode();
-
 
   EmailField(this._formKey);
 
@@ -134,22 +145,26 @@ class EmailField extends StatelessWidget {
     return Container(
       margin: EdgeInsets.only(top: 8.0, left: 16.0, right: 16.0),
       child: Form(key: _formKey, child:new TextFormField(
-        focusNode: myFocusNode,
         validator: (value){
           if (value.isEmpty) return 'Пожалуйста введите свой Email';
           String p = "[a-zA-Z0-9+.\_\%-+]{1,256}@[a-zA-Z0-9][a-zA-Z0-9-]{0,64}(.[a-zA-Z0-9][a-zA-Z0-9-]{0,25})+";
           RegExp regExp = new RegExp(p);
+
+          String p2 = "^((8|\\+7)[\\- ]?)?(\\(?\\d{3}\\)?[\\- ]?)?[\\d\\- ]{7,10}\$";
+          RegExp regExp2 = new RegExp(p2);
+          if (regExp2.hasMatch(value)) return null;
+          
           if (regExp.hasMatch(value)) return null;
           return 'Это не E-mail';
         },
-
+        //autofocus: true,
         cursorColor: Colors.black38,
         decoration: new InputDecoration(
-          labelText: 'ЭЛ.ПОЧТА/МОБ.ТЕЛЕФОН',
-          labelStyle: TextStyle(
+          hintText: 'ЭЛ.ПОЧТА/МОБ.ТЕЛЕФОН',
+          hintStyle: TextStyle(
               fontFamily: 'Montserrat-Bold',
               fontSize: 12,
-              color: myFocusNode.hasFocus ? Colors.blue : Colors.black38,
+              color: Colors.black38,
               background: null,
               backgroundColor: null,
               decorationColor: null
@@ -188,20 +203,20 @@ class EmailField extends StatelessWidget {
 }
 
 class NameField extends StatelessWidget {
-  FocusNode myFocusNode = new FocusNode();
   @override
   Widget build(BuildContext context) {
     return Container(
       margin: EdgeInsets.only(top: 57.0, left: 16.0, right: 16.0),
       child: new TextFormField(
-        focusNode: myFocusNode,
+        //focusNode: myFocusNode,
+        //autofocus: true,
         cursorColor: Colors.black38,
         decoration: new InputDecoration(
-          labelText: 'ИМЯ',
-          labelStyle: TextStyle(
+          hintText: 'ИМЯ',
+          hintStyle: TextStyle(
               fontSize: 12,
               fontFamily: 'Montserrat-Bold',
-              color: myFocusNode.hasFocus ? Colors.blue :Colors.black38,
+              color: Colors.black38,
               background: null,
               backgroundColor: null,
               decorationColor: null
@@ -266,9 +281,10 @@ class _PasswordState extends State<Password> {
               obscureText: _obscureText,
               controller: _controller,
               cursorColor: Colors.black,
+              //autofocus: true,
               decoration: new InputDecoration(
-                labelText: "ПАРОЛЬ",
-                labelStyle: TextStyle(color: Colors.black38, fontFamily: 'Montserrat-Bold', fontSize: 12,),
+                hintText: "ПАРОЛЬ",
+                hintStyle: TextStyle(color: Colors.black38, fontFamily: 'Montserrat-Bold', fontSize: 12,),
                 enabledBorder: OutlineInputBorder(
                   borderSide: BorderSide(
                     color: Colors.black38,
@@ -315,7 +331,7 @@ class RegistrationButton extends StatelessWidget {
     return new Container(
       width: double.infinity,
       height: 56,
-      child: FlatButton(child: new Text("Зарегестрироваться",
+      child: FlatButton(child: new Text("Зарегистрироваться",
           style: TextStyle(
               color: Colors.white,
               fontSize: 14.0,
@@ -323,6 +339,10 @@ class RegistrationButton extends StatelessWidget {
       ),
         onPressed: () {
           if(_formKey.currentState.validate()) Scaffold.of(context).showSnackBar(SnackBar(content: Text('Форма успешно заполнена'), backgroundColor: Colors.green,));
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => MenuScreen()),
+          );
         },
       ),
       decoration: new BoxDecoration(
@@ -330,33 +350,6 @@ class RegistrationButton extends StatelessWidget {
           color: Color.fromARGB(255, 47, 128, 237)
       ),
       margin: EdgeInsets.only(left: 16.0, right: 16.0, top: 21.0),
-    );
-  }
-}
-
-class WithoutRegButton2 extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return new Container(
-        width: double.infinity,
-        margin: EdgeInsets.only(top: 130.0, left: 59, right: 13.0),
-        child: Row(
-          children: <Widget>[
-            new FlatButton(onPressed: null,child: new Text(
-                "Продолжить без регистрации",
-                style: TextStyle(
-                    decoration: TextDecoration.underline, fontSize: 14.0,
-                    fontFamily: "Montserrat-Regular",
-                    color: Color.fromARGB(255 , 141, 141, 141))
-            ),
-                color: Color.fromARGB(255 , 141, 141, 141),
-                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                textColor: Color.fromARGB(255 , 141, 141, 141)),
-            Container(
-                margin: EdgeInsets.only(left: 0.0, right: 0.0),
-                child: IconButton(icon: Icon(Icons.arrow_forward, color: Color.fromARGB(255 , 141, 141, 141),), onPressed: null, color: Colors.white,)
-            )
-          ],)
     );
   }
 }
