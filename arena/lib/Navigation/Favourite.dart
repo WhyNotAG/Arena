@@ -4,35 +4,36 @@ import 'package:flutter/services.dart';
 import 'package:smooth_star_rating/smooth_star_rating.dart';
 import 'package:arena/Icons/custom_icons_icons.dart';
 import 'package:page_indicator/page_indicator.dart';
-class Places extends StatefulWidget {
+
+class Favourites extends StatefulWidget {
   @override
-  _PlacesState createState() => _PlacesState();
+  _FavouritesState createState() => _FavouritesState();
 }
 
-class _PlacesState extends State<Places> {
+class _FavouritesState extends State<Favourites> {
   @override
   Widget build(BuildContext context) {
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
       statusBarBrightness: Brightness.light,
     ));
     return WillPopScope(
-        onWillPop: () async => true,
+        onWillPop: () async => false,
         child: Scaffold(
-          appBar: PreferredSize(preferredSize: Size.fromHeight(168.0), child: TabBar(),),
-        body: Container(
-            color: Colors.white,
-          child: SingleChildScrollView(child:Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              PlaceWidget("Теннисный корт «Клуб тенниса»", 3.0, 52, "", "8:00-22:00",
-                  "ул. Комсомольская, д. 2, корп. 1", "2 крытых корта премиум класса с профессиональным " +
-                      "покрытием хард, комфортным освещением, оборудованные системой вентиляции и кондиционирования"),
-              PlaceWidget("Теннисный корт «Клуб тенниса»", 3.0, 52, "", "8:00-22:00",
-                  "ул. Комсомольская, д. 2, корп. 1", "2 крытых корта премиум класса с профессиональным " +
-                      "покрытием хард, комфортным освещением, оборудованные системой вентиляции и кондиционирования")
-            ],
-          ),)
-        )));
+            appBar: PreferredSize(preferredSize: Size.fromHeight(168.0), child: TabBar(),),
+            body: Container(
+                color: Colors.white,
+                child: SingleChildScrollView(child:Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: <Widget>[
+                    PlaceWidget("Теннисный корт «Клуб тенниса»", 3.0, 52, "", "8:00-22:00",
+                        "ул. Комсомольская, д. 2, корп. 1", "2 крытых корта премиум класса с профессиональным " +
+                            "покрытием хард, комфортным освещением, оборудованные системой вентиляции и кондиционирования"),
+                    PlaceWidget("Теннисный корт «Клуб тенниса»", 3.0, 52, "", "8:00-22:00",
+                        "ул. Комсомольская, д. 2, корп. 1", "2 крытых корта премиум класса с профессиональным " +
+                            "покрытием хард, комфортным освещением, оборудованные системой вентиляции и кондиционирования")
+                  ],
+                ),)
+            )));
   }
 }
 
@@ -46,65 +47,27 @@ class TabBar extends StatelessWidget {
       height: 168,
       decoration: BoxDecoration(
 
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey,
-            blurRadius: 10.0, // has the effect of softening the shadow
-            spreadRadius: 0.0, // has the effect of extending the shadow
-            offset: Offset(
-              10.0, // horizontal, move right 10
-              0.0, // vertical, move down 10
-            ),
-          )
-        ]
-      ),
-      child: Column(
-        children: <Widget>[
-          Row(
-            children: <Widget>[
-              TabBarButton(),
-              TabBarField(),
-            ],
-          ),
-          Container(
-            height: 40,
-            margin: EdgeInsets.only(top: 16),
-            padding: EdgeInsets.only(left: 0, right: 0, top: 0),
-            child: ListView(
-            scrollDirection: Axis.horizontal,
-            children: <Widget>[
-              TabBarFilter("Все виды"),
-              TabBarFilter("Теннис"),
-              TabBarFilter("Футбол"),
-              TabBarFilter("Баскетбол"),
-            ],
-          ))
-        ],),
-    );
-  }
-}
-
-class TabBarButton extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(30),
           boxShadow: [
-            BoxShadow(color: Colors.grey,
-              blurRadius: 2.0, // has the effect of softening the shadow
+            BoxShadow(
+              color: Colors.grey,
+              blurRadius: 10.0, // has the effect of softening the shadow
               spreadRadius: 0.0, // has the effect of extending the shadow
               offset: Offset(
-                0.0, // horizontal, move right 10
+                10.0, // horizontal, move right 10
                 0.0, // vertical, move down 10
-              ),)
+              ),
+            )
           ]
       ),
-      child: IconButton(icon: Icon(CustomIcons.filter, color: Color.fromARGB(255, 47, 128, 237),), onPressed: (){},),
-      margin: EdgeInsets.only(left: 17, top: 53),
-    );
+      child: Column(
+          children: <Widget>[
+            TabBarField(),
+            Container(child:
+            Text("Избранное", style: TextStyle(fontSize: 28, fontFamily: "Montserrat-Bold",),textAlign: TextAlign.left,),
+            margin: EdgeInsets.only(top:13.0, left: 20.0), width: double.infinity,)
+    ],
+    ));
   }
 }
 
@@ -113,7 +76,7 @@ class TabBarField extends StatelessWidget {
   Widget build(BuildContext context) {
     return Flexible(child: Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+          color: Colors.white,
           borderRadius: BorderRadius.circular(30),
           boxShadow: [
             BoxShadow(color: Colors.grey,
@@ -145,37 +108,7 @@ class TabBarField extends StatelessWidget {
             suffixIcon: IconButton(icon: Icon(CustomIcons.search, color: Color.fromARGB(255, 47, 128, 237), size: 20,), onPressed: (){},)
         ),
       ),
-      )
-    );
-  }
-}
-
-
-class TabBarFilter extends StatelessWidget {
-  String text;
-
-  TabBarFilter(this.text);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(30),
-          boxShadow: [
-            BoxShadow(color: Colors.grey,
-              blurRadius: 2.0, // has the effect of softening the shadow
-              spreadRadius: 0.0, // has the effect of extending the shadow
-              offset: Offset(
-                0.0, // horizontal, move right 10
-                0.0, // vertical, move down 10
-              ),)
-          ]
-      ),
-      width: 120,
-      height: 32,
-      margin: EdgeInsets.only(left: 8, right: 8, top: 1, bottom: 1),
-      child: FlatButton(child: Text(text, style: TextStyle(color: Colors.black54),), onPressed:(){}),
+    )
     );
   }
 }
@@ -197,44 +130,44 @@ class PlaceWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.only(top: 16, left: 16, right: 16),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(3),
-        border: Border.all(
-          color: Color.fromARGB(255, 47, 128, 237),
-          width: 1.5
-        ),
-      ),
-      child: Container(
-        margin: EdgeInsets.only(top: 24),
-        child: Column(
-        children: <Widget>[
-          new Container(
-            child: Text(name,
-              style: TextStyle(fontFamily: "Montserrat-Regular", fontSize: 16, fontWeight: FontWeight.bold),
-            textAlign: TextAlign.start,
-            ),
-            width: double.infinity,
-            margin: EdgeInsets.only(left: 24.0, right: 16.0),
+        margin: EdgeInsets.only(top: 16, left: 16, right: 16),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(3),
+          border: Border.all(
+              color: Color.fromARGB(255, 47, 128, 237),
+              width: 1.5
           ),
-          Container(
-              child: new Row(children: <Widget>[
-                Flexible(child:InfoPlace(rating, countOfRate)),
-                FavouritesButton(),
-              ],
-              ),),
-          WorkTimeWidget("Время работы: ", timeOfWork),
-          WorkTimeWidget("Адрес:", address),
-          PlaceButtons(),
-          Container(
-            margin: EdgeInsets.only(left: 25, right: 24, top: 26),
-            child: Text(info, style: TextStyle(fontSize: 14, fontFamily: "Montserrat-Regular"),),
-          ),
-          PhotoPage(),
-          ],
         ),
+        child: Container(
+          margin: EdgeInsets.only(top: 24),
+          child: Column(
+            children: <Widget>[
+              new Container(
+                child: Text(name,
+                  style: TextStyle(fontFamily: "Montserrat-Regular", fontSize: 16, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.start,
+                ),
+                width: double.infinity,
+                margin: EdgeInsets.only(left: 24.0, right: 16.0),
+              ),
+              Container(
+                child: new Row(children: <Widget>[
+                  Flexible(child:InfoPlace(rating, countOfRate)),
+                  FavouritesButton(),
+                ],
+                ),),
+              WorkTimeWidget("Время работы: ", timeOfWork),
+              WorkTimeWidget("Адрес:", address),
+              PlaceButtons(),
+              Container(
+                margin: EdgeInsets.only(left: 25, right: 24, top: 26),
+                child: Text(info, style: TextStyle(fontSize: 14, fontFamily: "Montserrat-Regular"),),
+              ),
+              PhotoPage(),
+            ],
+          ),
         )
-      );
+    );
   }
 }
 
@@ -248,8 +181,8 @@ class InfoPlace extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
         child: new Row(children: <Widget>[
-        Expanded(child:Container(
-          margin: EdgeInsets.only(left: 22.0, top: 0),
+          Expanded(child:Container(
+            margin: EdgeInsets.only(left: 22.0, top: 0),
             child: SmoothStarRating(
                 allowHalfRating: false,
                 starCount: 5,
@@ -265,21 +198,21 @@ class InfoPlace extends StatelessWidget {
           ),),
           Container(
             child: Text(rating.toString(),
-            style: TextStyle(fontFamily: "Montserrat-Bold",
-            fontSize: 16,),
-            textAlign: TextAlign.start,),
+              style: TextStyle(fontFamily: "Montserrat-Bold",
+                fontSize: 16,),
+              textAlign: TextAlign.start,),
             margin: EdgeInsets.only(left: 12, top: 0),
-            ),
+          ),
           Container(
             child: Text("${countOfRate.toString()} оценки",
-            style: TextStyle(fontFamily: "Montserrat-Regular",
-            fontSize: 13,),
-            textAlign: TextAlign.start,),
+              style: TextStyle(fontFamily: "Montserrat-Regular",
+                fontSize: 13,),
+              textAlign: TextAlign.start,),
             margin: EdgeInsets.only(left: 13, top: 0),
-            )
-          ]
+          )
+        ]
         )
-      );
+    );
   }
 }
 
@@ -299,11 +232,11 @@ class WorkTimeWidget extends StatelessWidget {
             style: TextStyle(fontFamily: "Montserrat-Regulad", color: Colors.black54, fontSize: 14),
           ),
           Expanded(child: Container(
-          margin: EdgeInsets.only(left: 8.0),
-          child: Text(param,
-          style: TextStyle(fontFamily: "Montserrat-Bold", color: Colors.black54, fontSize: 14),
+            margin: EdgeInsets.only(left: 8.0),
+            child: Text(param,
+              style: TextStyle(fontFamily: "Montserrat-Bold", color: Colors.black54, fontSize: 14),
             ),))]
-          ));
+        ));
   }
 }
 
@@ -314,8 +247,8 @@ class FavouritesButton extends StatefulWidget {
 }
 
 class _FavouritesButtonState extends State<FavouritesButton> {
-  bool _favourite = false;
-  IconData _icon = CustomIcons.star;
+  bool _favourite = true;
+  IconData _icon = CustomIcons.fill_star;
 
   void setIcon(bool obscure) {
     setState(() {

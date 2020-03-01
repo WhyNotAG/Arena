@@ -29,6 +29,8 @@ dependencies:
   shared_preferences: ^0.5.6+2
   smooth_star_rating: ^1.0.4+2
   statusbar: ^1.1.0
+  page_indicator: ^0.3.0
+  google_maps_flutter: ^0.5.24+1
 
 dev_dependencies:
   flutter_test:
@@ -49,6 +51,7 @@ flutter:
   assets:
     - assets/images/login.jpeg
     - assets/images/LOGO.png
+    - assets/images/LOGO.svg
     - assets/images/testPhoto.png
 
   fonts:
@@ -60,8 +63,7 @@ flutter:
         - asset: assets/fonts/Montserrat-Regular.ttf
     - family: CustomIcons
       fonts:
-        - asset: assets/fonts/arrowBack.ttf
-
+        - asset: assets/fonts/CustomIcons.ttf
 
   # To add assets to your application, add an assets section, like this:
   # assets:

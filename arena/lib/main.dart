@@ -1,3 +1,4 @@
+import 'package:arena/Menu.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:arena/Registration.dart';
@@ -66,7 +67,6 @@ class BaseLayout extends StatelessWidget {
 
 class Info extends StatelessWidget {
   Data data;
-
   Info(this.data);
 
   @override
@@ -376,8 +376,8 @@ class EnterButton extends StatelessWidget {
           print(data._passController.text);
           addStringToSF("email/number", data._myController.text);
           addStringToSF("password", data._passController.text);
-          httpGet(data._myController.text, data._passController.text);
-          if(_formKey.currentState.validate()) Scaffold.of(context).showSnackBar(SnackBar(content: Text('Форма успешно заполнена'), backgroundColor: Colors.green,));
+          //httpGet(data._myController.text, data._passController.text);
+          //if(_formKey.currentState.validate()) Scaffold.of(context).showSnackBar(SnackBar(content: Text('Форма успешно заполнена'), backgroundColor: Colors.green,));
         },
       ),
       decoration: new BoxDecoration(
@@ -400,19 +400,23 @@ class WithoutRegButton extends StatelessWidget {
         margin: EdgeInsets.only(top: 100.0, left: 59, right: 13.0),
         child: Row(
           children: <Widget>[
-            new FlatButton(onPressed: null,child: new Text(
+            new FlatButton(onPressed: (){Navigator.push(
+              context, MaterialPageRoute(builder: (context) => MenuScreen()),);},child: new Text(
                 "Продолжить без регистрации",
                 style: TextStyle(
                     decoration: TextDecoration.underline, fontSize: 14.0,
                     fontFamily: "Montserrat-Regular",
                     color: Colors.white)
             ),
-                color: Colors.white,
+                color: Colors.white.withAlpha(0),
                 materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 textColor: Colors.white),
             Container(
                 margin: EdgeInsets.only(left: 0.0, right: 0.0),
-                child: IconButton(icon: Icon(Icons.arrow_forward, color: Colors.white,), onPressed: null, color: Colors.white,)
+                child: IconButton(icon: Icon(Icons.arrow_forward, color: Colors.white,),
+                  onPressed: (){Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => MenuScreen()),);}, color: Colors.white,)
             )
           ],)
     );

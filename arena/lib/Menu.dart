@@ -1,6 +1,9 @@
+import 'package:arena/Navigation/Favourite.dart';
 import 'package:arena/Navigation/Places.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:arena/Icons/custom_icons_icons.dart';
+import 'package:arena/Navigation/Map.dart';
 
 class MenuScreen extends StatefulWidget {
   @override
@@ -11,9 +14,9 @@ class _MenuScreenState extends State<MenuScreen> {
   int _currentIndex = 0;
 
   final List<Widget> _children = [
-    PlaceholderWidget(Colors.white),
+    MapSample(),
     Places(),
-    PlaceholderWidget(Colors.green),
+    Favourites(),
     PlaceholderWidget(Colors.indigoAccent)
   ];
 
@@ -30,35 +33,37 @@ class _MenuScreenState extends State<MenuScreen> {
       bottomNavigationBar: BottomNavigationBar(
         onTap: onTabTapped, // new
         currentIndex: _currentIndex,
+        showSelectedLabels: true,
         showUnselectedLabels: true,
         type: BottomNavigationBarType.fixed,
         selectedItemColor: Color.fromARGB(255, 47, 128, 237),
         selectedLabelStyle: TextStyle(color: Colors.black),
-        unselectedItemColor: Colors.black,
+        unselectedItemColor: Colors.grey,
         unselectedFontSize: 12,
+        unselectedLabelStyle: TextStyle(color: Colors.grey),
         items: [
           BottomNavigationBarItem(
-              icon: new Icon(Icons.map,),
+              icon: new Icon(CustomIcons.map_1,),
               title: new Text("Карта",
-                style: TextStyle(color: Colors.black),)
+                style: TextStyle(color: Colors.black54, fontFamily: "Montserrat-Regular", fontWeight: FontWeight.bold, fontSize: 12), textAlign: TextAlign.center,)
           ),
 
           BottomNavigationBarItem(
-              icon: new Icon(Icons.spa,),
-              title: new Text("Площадки",
-                style: TextStyle(color: Colors.black),)
+              icon: new Icon(CustomIcons.field,),
+              title: new Text(" Площадки",
+                style: TextStyle(color: Colors.black54, fontFamily: "Montserrat-Regular", fontWeight: FontWeight.bold, fontSize: 12),textAlign: TextAlign.center)
           ),
 
           BottomNavigationBarItem(
-              icon: new Icon(Icons.star_border,),
+              icon: new Icon(CustomIcons.star,),
               title: new Text("Избранное",
-                style: TextStyle(color: Colors.black),)
+                style: TextStyle(color: Colors.black54, fontFamily: "Montserrat-Regular", fontWeight: FontWeight.bold, fontSize: 12),textAlign: TextAlign.center)
           ),
 
           BottomNavigationBarItem(
-              icon: new Icon(Icons.person,),
+              icon: new Icon(CustomIcons.person,),
               title: new Text("Профиль",
-                style: TextStyle(color: Colors.black),)
+                style: TextStyle(color: Colors.black54, fontFamily: "Montserrat-Regular", fontWeight: FontWeight.bold, fontSize: 12),textAlign: TextAlign.center)
           )
         ],
       ),

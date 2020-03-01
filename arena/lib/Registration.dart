@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:flutter/services.dart';
 
+
 class RegistrationScreen extends StatelessWidget {
   final _formKey = GlobalKey<FormState>();
 
@@ -82,18 +83,20 @@ class _PhotoState extends State<Photo> {
       margin: const EdgeInsets.only(top: 48),
       child: FlatButton(child:
         Container(
-          decoration: BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(20.0)),color: Colors.grey,),
+          //decoration: BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(20.0)),color: Colors.grey,),
           height: 167,
           width: 167,
-          child: _image == null ? new Align(child: new Text("Добавить фото",style: TextStyle(
+          child: _image == null ? Container(
+              decoration: BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(20.0)),color: Colors.grey,),
+              child:new Align(child: new Text("Добавить фото",style: TextStyle(
               fontSize: 14.0,
               color: Colors.white,
               fontFamily: "Montserrat-Bold",
               fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
-          ), alignment: Alignment.center,) :
+          ), alignment: Alignment.center,)) :
           Container(
-            child: Container(padding: EdgeInsets.all(7.0),decoration: BoxDecoration(color: Colors.grey.withAlpha(10),), child: Container(
+            child: Container(
               padding: EdgeInsets.only(left:15.0, right:15.0),
               decoration: BoxDecoration(color:Color.fromARGB(120 , 141, 141, 141),
                 image: DecorationImage(image: FileImage(_image),
@@ -103,14 +106,6 @@ class _PhotoState extends State<Photo> {
                     topRight: const Radius.circular(100.0),
                     bottomLeft: const Radius.circular(100.0),
                     bottomRight:const Radius.circular(100.0)),),
-            ),),
-            decoration: BoxDecoration(
-                color: Colors.grey,
-                borderRadius: BorderRadius.all(Radius.circular(20.0)),
-                image: DecorationImage(
-                    image: FileImage(_image),
-                    colorFilter: new ColorFilter.mode(Colors.black.withOpacity(0.5), BlendMode.dstATop),
-                    fit: BoxFit.contain)
             ),
             //padding: const EdgeInsets.all(20.0),
             ),
