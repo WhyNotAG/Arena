@@ -6,6 +6,8 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/services.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:arena/CustomSharedPreferences.dart';
+
 void main() => runApp(ArenaApp());
 String name;
 String password;
@@ -14,6 +16,7 @@ addStringToSF(String name, String value) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   prefs.setString(name, value);
 }
+
 
 class Data {
   var _myController = TextEditingController();
@@ -354,8 +357,15 @@ class EnterButton extends StatelessWidget {
       print(responce.body);
       var decode = jsonDecode(responce.body);
       addStringToSF("accessToken", decode["accessToken"]);
+      addStringToSF("name", name);
+      addStringToSF("phone", null);
+      addStringToSF("password", password);
       addStringToSF("refreshToken", decode["refreshToken"]);
     } catch(error) {print(error);}
+  }
+
+  test() async {
+    print (await getStringValuesSF("password"));
   }
 
   EnterButton(this._formKey, this._formKey2, this.data);
@@ -374,10 +384,10 @@ class EnterButton extends StatelessWidget {
         onPressed: (){
           print(data._myController.text);
           print(data._passController.text);
-          addStringToSF("email/number", data._myController.text);
-          addStringToSF("password", data._passController.text);
+          //addStringToSF("password", data._passController.text);
+          test();
           //httpGet(data._myController.text, data._passController.text);
-          //if(_formKey.currentState.validate()) Scaffold.of(context).showSnackBar(SnackBar(content: Text('Форма успешно заполнена'), backgroundColor: Colors.green,));
+          if(_formKey.currentState.validate()) Scaffold.of(context).showSnackBar(SnackBar(content: Text('Форма успешно заполнена'), backgroundColor: Colors.green,));
         },
       ),
       decoration: new BoxDecoration(

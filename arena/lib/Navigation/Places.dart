@@ -4,6 +4,34 @@ import 'package:flutter/services.dart';
 import 'package:smooth_star_rating/smooth_star_rating.dart';
 import 'package:arena/Icons/custom_icons_icons.dart';
 import 'package:page_indicator/page_indicator.dart';
+import 'package:arena/Filter.dart';
+
+//public <Widget>[] httpGet(String email, String password) async {
+//  try {
+//
+//    Map jsonFile = {
+//      "email": email,
+//      "password": password,
+//      "number": null
+//    };
+//    print(jsonEncode(jsonFile));
+//    var responce =
+//    await http.post("http://217.12.209.180:8080/api/v1/auth/sign-in",
+//        body:json.encode(jsonFile),
+//        headers: {"content-Type":"application/json"});
+//    print(responce.statusCode);
+//    print(responce.body);
+//    var decode = jsonDecode(responce.body);
+//    addStringToSF("accessToken", decode["accessToken"]);
+//    addStringToSF("name", name);
+//    addStringToSF("phone", null);
+//    addStringToSF("password", password);
+//    addStringToSF("refreshToken", decode["refreshToken"]);
+//  } catch(error) {print(error);}
+//
+//  return null;
+//}
+
 class Places extends StatefulWidget {
   @override
   _PlacesState createState() => _PlacesState();
@@ -102,7 +130,8 @@ class TabBarButton extends StatelessWidget {
               ),)
           ]
       ),
-      child: IconButton(icon: Icon(CustomIcons.filter, color: Color.fromARGB(255, 47, 128, 237),), onPressed: (){},),
+      child: IconButton(icon: Icon(CustomIcons.filter, color: Color.fromARGB(255, 47, 128, 237),), onPressed: (){Navigator.push(
+      context, MaterialPageRoute(builder: (context) => Filter()),);}),
       margin: EdgeInsets.only(left: 17, top: 53),
     );
   }
