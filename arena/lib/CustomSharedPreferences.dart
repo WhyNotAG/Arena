@@ -29,3 +29,8 @@ addStringToSF(String name, String value) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   prefs.setString(name, value);
 }
+
+addIntToSF(String name, int value) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  prefs.setInt(name, value);
+}

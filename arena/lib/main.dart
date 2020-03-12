@@ -8,6 +8,14 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:arena/CustomSharedPreferences.dart';
 
+
+class Data {
+  var _myController = TextEditingController();
+  var _passController = TextEditingController();
+  bool isPhone = false;
+  var code;
+}
+
 void main() => runApp(ArenaApp());
 String name;
 String password;
@@ -18,15 +26,12 @@ addStringToSF(String name, String value) async {
 }
 
 
-class Data {
-  var _myController = TextEditingController();
-  var _passController = TextEditingController();
 
-}
 class ArenaApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Data data = Data();
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
@@ -41,15 +46,18 @@ class ArenaApp extends StatelessWidget {
         },
         child: new MaterialApp(
         debugShowCheckedModeBanner: false,
-        home: BaseLayout()
+        home: BaseLayout(data)
     ));
   }
 }
 
 class BaseLayout extends StatelessWidget {
+  Data data;
+
+  BaseLayout(this.data);
+
   @override
   Widget build(BuildContext context) {
-    Data data = new Data();
     return  Scaffold(
         resizeToAvoidBottomInset: false,
         body: new Stack(children: <Widget>[
@@ -86,7 +94,7 @@ class Info extends StatelessWidget {
               ),
               new Container(
                 child: new RegButton(),
-                margin: EdgeInsets.only(bottom: 64.0),
+                margin: EdgeInsets.only(bottom: 50.0),
               ),
               new Container(
                   child: new Logo()
@@ -130,7 +138,7 @@ class Logo extends StatelessWidget {
     return Container(
       alignment: Alignment.center,
       padding: EdgeInsets.only(left: 104.0, right: 104.0,),
-      margin: EdgeInsets.only(bottom: 56.0),
+      margin: EdgeInsets.only(bottom: 40.0),
       width: 167,
       height: 154,
       decoration: BoxDecoration(
@@ -172,7 +180,7 @@ class InfoFields extends StatelessWidget {
                       String p2 = "^((8|\\+7)[\\- ]?)?(\\(?\\d{3}\\)?[\\- ]?)?[\\d\\- ]{7,10}\$";
                       RegExp regExp2 = new RegExp(p2);
                       if (regExp.hasMatch(value)) return null;
-                      if (regExp2.hasMatch(value)) return null;
+                      if (regExp2.hasMatch(value)) { data.isPhone = true; return null;}
                       return 'Это не E-mail';
                     },
 
@@ -217,7 +225,7 @@ class InfoFields extends StatelessWidget {
         ),
         Password(data:data),
         Container(child: LostPass(),alignment: Alignment.centerRight,),
-        EnterButton(_formKey,_formKey2, data)
+        EnterButton(_formKey,_formKey2, data, data.isPhone)
       ],
     );
   }
@@ -339,15 +347,17 @@ class LostPass extends StatelessWidget {
 class EnterButton extends StatelessWidget {
   final _formKey;
   final _formKey2;
-
-  httpGet(String email, String password) async {
+  Data data;
+  bool isPhone;
+  EnterButton(this._formKey, this._formKey2, this.data, this.isPhone);
+  Future<int> httpGet(String email, String password, String phone) async {
     try {
-
       Map jsonFile = {
-        "email": email,
-        "password": password,
-        "number": null
-      };
+          "email": email,
+          "password": password,
+          "number": phone,
+        };
+
       print(jsonEncode(jsonFile));
       var responce =
       await http.post("http://217.12.209.180:8080/api/v1/auth/sign-in",
@@ -358,9 +368,11 @@ class EnterButton extends StatelessWidget {
       var decode = jsonDecode(responce.body);
       addStringToSF("accessToken", decode["accessToken"]);
       addStringToSF("name", name);
+      addIntToSF("enterCode", responce.statusCode);
       addStringToSF("phone", null);
       addStringToSF("password", password);
       addStringToSF("refreshToken", decode["refreshToken"]);
+      return responce.statusCode;
     } catch(error) {print(error);}
   }
 
@@ -368,8 +380,11 @@ class EnterButton extends StatelessWidget {
     print (await getStringValuesSF("password"));
   }
 
-  EnterButton(this._formKey, this._formKey2, this.data);
-  Data data;
+  Future<int> status() async {
+    var a = await getIntValuesSF("enterCode");
+    return a;
+  }
+
   @override
   Widget build(BuildContext context) {
     return new Container(
@@ -381,13 +396,22 @@ class EnterButton extends StatelessWidget {
               fontSize: 14.0,
               fontFamily: "Montserrat-Bold")
       ),
-        onPressed: (){
+        onPressed: () async{
           print(data._myController.text);
           print(data._passController.text);
-          //addStringToSF("password", data._passController.text);
-          test();
-          //httpGet(data._myController.text, data._passController.text);
-          if(_formKey.currentState.validate()) Scaffold.of(context).showSnackBar(SnackBar(content: Text('Форма успешно заполнена'), backgroundColor: Colors.green,));
+          addStringToSF("password", data._passController.text);
+
+          int a = 0;
+
+          if(!isPhone) {
+            a = await httpGet(data._myController.text, data._passController.text, null);
+          } else { a = await httpGet(null, data._passController.text, data._myController.text);}
+
+          if(a == 200) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => MenuScreen()),);
+          } else {Scaffold.of(context).showSnackBar(SnackBar(content:Text("Ошибка логин/пароль"), backgroundColor: Colors.red,));}
         },
       ),
       decoration: new BoxDecoration(
