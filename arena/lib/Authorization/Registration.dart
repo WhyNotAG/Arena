@@ -87,7 +87,7 @@ class _PhotoState extends State<Photo> {
           height: 167,
           width: 167,
           child: _image == null ? Container(
-              decoration: BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(20.0)),color: Colors.grey,),
+              decoration: BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(100.0)),color: Colors.grey,),
               child:new Align(child: new Text("Добавить фото",style: TextStyle(
               fontSize: 14.0,
               color: Colors.white,

@@ -1,5 +1,5 @@
 import 'package:arena/Navigation/Favourite.dart';
-import 'package:arena/Navigation/Places.dart';
+import 'package:arena/Navigation/Place/Places.dart';
 import 'package:arena/Navigation/User.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -13,6 +13,7 @@ class MenuScreen extends StatefulWidget {
 
 class _MenuScreenState extends State<MenuScreen> {
   int _currentIndex = 0;
+
 
   final List<Widget> _children = [
     MapSample(),
@@ -52,35 +53,22 @@ class _MenuScreenState extends State<MenuScreen> {
           BottomNavigationBarItem(
               icon: new Icon(CustomIcons.field,),
               title: new Text(" Площадки",
-                style: TextStyle(color: Colors.black54, fontFamily: "Montserrat-Regular", fontWeight: FontWeight.bold, fontSize: 12),textAlign: TextAlign.center)
+                  style: TextStyle(color: Colors.black54, fontFamily: "Montserrat-Regular", fontWeight: FontWeight.bold, fontSize: 12),textAlign: TextAlign.center)
           ),
 
           BottomNavigationBarItem(
               icon: new Icon(CustomIcons.star,),
               title: new Text("Избранное",
-                style: TextStyle(color: Colors.black54, fontFamily: "Montserrat-Regular", fontWeight: FontWeight.bold, fontSize: 12),textAlign: TextAlign.center)
+                  style: TextStyle(color: Colors.black54, fontFamily: "Montserrat-Regular", fontWeight: FontWeight.bold, fontSize: 12),textAlign: TextAlign.center)
           ),
 
           BottomNavigationBarItem(
               icon: new Icon(CustomIcons.person,),
               title: new Text("Профиль",
-                style: TextStyle(color: Colors.black54, fontFamily: "Montserrat-Regular", fontWeight: FontWeight.bold, fontSize: 12),textAlign: TextAlign.center)
+                  style: TextStyle(color: Colors.black54, fontFamily: "Montserrat-Regular", fontWeight: FontWeight.bold, fontSize: 12),textAlign: TextAlign.center)
           )
         ],
       ),
-    );
-  }
-}
-
-class PlaceholderWidget extends StatelessWidget {
-  final Color color;
-
-  PlaceholderWidget(this.color);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: color,
     );
   }
 }

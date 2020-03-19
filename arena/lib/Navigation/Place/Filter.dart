@@ -1,4 +1,4 @@
-import 'package:arena/CircleThumbShape.dart';
+import 'package:arena/Other/CircleThumbShape.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_range_slider/flutter_range_slider.dart' as frs;

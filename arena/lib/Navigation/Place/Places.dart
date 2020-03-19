@@ -1,7 +1,9 @@
 import 'dart:convert';
 
-import 'package:arena/Filter.dart';
+import 'package:arena/Navigation/Place/Filter.dart';
 import 'package:arena/Icons/custom_icons_icons.dart';
+import 'package:arena/Other/CustomSharedPreferences.dart';
+import 'package:arena/Other/Request.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -19,8 +21,70 @@ List<PlaceWidget> parsePlace(String responseBody) {
 Future<List<PlaceWidget>> fetchPlace() async {
   List<Place> places = new List<Place>();
   List<PlaceWidget> placeWidgets = new List<PlaceWidget>();
-  final response = await http.get('http://217.12.209.180:8080/api/v1/place/',
+  var response = await http.get('http://217.12.209.180:8080/api/v1/place/',
       headers: {"Content-type": "application/json"});
+
+  var token = await getStringValuesSF("accessToken");
+  if (token != null) {
+    response = await http.get('http://217.12.209.180:8080/api/v1/place/',
+        headers: {"Content-type": "application/json", "Authorization": "Bearer ${token}"});
+    if(response.statusCode != 200) {
+      token = await refresh();
+      response = await http.get('http://217.12.209.180:8080/api/v1/place/',
+          headers: {
+            "Content-type": "application/json",
+            "Authorization": "Bearer ${token}"
+          });
+    }
+  } else{}
+
+  List<dynamic> responseJson = json.decode(utf8.decode(response.bodyBytes));
+
+
+  if (response.statusCode == 200) {
+    List list = json.decode(response.body) as List;
+    int length = list.length;
+
+    for (int i = 0; i < length; i++) {
+      places.add(Place.fromJson(responseJson[i]));
+      if (places[i].isFavourite == null) { places[i].isFavourite = false;}
+      placeWidgets.add(PlaceWidget(
+          places[i].id,
+          places[i].isFavourite,
+          places[i].name,
+          places[i].rating,
+          places[i].countOfRate,
+          "places[i].photo",
+          places[i].workDayEndAt,
+          places[i].address,
+          places[i].info));
+    }
+
+    return placeWidgets;
+  } else {
+    throw Exception('Failed to load album');
+  }
+}
+
+
+Future<List<PlaceWidget>> fetchPlaceBySport(String sport) async {
+  List<Place> places = new List<Place>();
+  List<PlaceWidget> placeWidgets = new List<PlaceWidget>();
+  var response = await http.get('http://217.12.209.180:8080/api/v1/place/?sports=${sport}',
+      headers: {"Content-type": "application/json"});
+
+  var token = await getStringValuesSF("accessToken");
+  if (token != null) {
+    response = await http.get('http://217.12.209.180:8080/api/v1/place/?sports=${sport}',
+        headers: {"Content-type": "application/json", "Authorization": "Bearer ${token}"});
+  } else{}
+
+  if (response.statusCode == 403){
+    token = await refresh();
+    response = await http.get('http://217.12.209.180:8080/api/v1/place/?sports=${sport}',
+        headers: {"Content-type": "application/json", "Authorization": "Bearer ${token}"});
+  }
+
   List<dynamic> responseJson = json.decode(utf8.decode(response.bodyBytes));
 
   if (response.statusCode == 200) {
@@ -29,8 +93,10 @@ Future<List<PlaceWidget>> fetchPlace() async {
 
     for (int i = 0; i < length; i++) {
       places.add(Place.fromJson(responseJson[i]));
-      print(places);
+      if (places[i].isFavourite == null) { places[i].isFavourite = false;}
       placeWidgets.add(PlaceWidget(
+          places[i].id,
+          places[i].isFavourite,
           places[i].name,
           places[i].rating,
           places[i].countOfRate,
@@ -88,8 +154,11 @@ class Places extends StatefulWidget {
 }
 
 class _PlacesState extends State<Places> {
+  Future<List<PlaceWidget>> placeWidgetFuture;
   List<PlaceWidget> placeWidgets = List();
   List<PlaceWidget> filteredList = List();
+  int status;
+  String sport;
 
   @override
   Widget build(BuildContext context) {
@@ -188,23 +257,171 @@ class _PlacesState extends State<Places> {
                         child: ListView(
                           scrollDirection: Axis.horizontal,
                           children: <Widget>[
-                            TabBarFilter("Все виды"),
-                            TabBarFilter("Теннис"),
-                            TabBarFilter("Футбол"),
-                            TabBarFilter("Баскетбол"),
+                            Container(
+                              decoration: BoxDecoration(
+                                  color: status == 0 ? Color.fromARGB(255, 47, 128, 237) : Colors.white,
+                                  borderRadius: BorderRadius.circular(30),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.grey,
+                                      blurRadius: 2.0, // has the effect of softening the shadow
+                                      spreadRadius: 0.0, // has the effect of extending the shadow
+                                      offset: Offset(
+                                        0.0, // horizontal, move right 10
+                                        0.0, // vertical, move down 10
+                                      ),
+                                    )
+                                  ]),
+                              width: 120,
+                              height: 32,
+                              margin: EdgeInsets.only(left: 8, right: 8, top: 1, bottom: 1),
+                              child: FlatButton(
+                                  child: Text(
+                                    "Все виды",
+                                    style: TextStyle(color: status == 0 ? Colors.white : Colors.black54),
+                                  ),
+                                  onPressed: () {
+                                    placeWidgetFuture = null;
+                                    setState(() {
+                                      filteredList = List<PlaceWidget>();
+                                      status = 0;
+                                      sport = "";
+                                      initState();
+                                    });
+                                  }),
+                            ),
+                            Container(
+                              decoration: BoxDecoration(
+                                  color: status == 1 ? Color.fromARGB(255, 47, 128, 237) : Colors.white,
+                                  borderRadius: BorderRadius.circular(30),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.grey,
+                                      blurRadius: 2.0, // has the effect of softening the shadow
+                                      spreadRadius: 0.0, // has the effect of extending the shadow
+                                      offset: Offset(
+                                        0.0, // horizontal, move right 10
+                                        0.0, // vertical, move down 10
+                                      ),
+                                    )
+                                  ]),
+                              width: 120,
+                              height: 32,
+                              margin: EdgeInsets.only(left: 8, right: 8, top: 1, bottom: 1),
+                              child: FlatButton(
+                                  child: Text(
+                                    "Теннис",
+                                    style: TextStyle(color: status == 1 ? Colors.white : Colors.black54),
+                                  ),
+                                  onPressed: () {
+                                    placeWidgetFuture = null;
+                                    setState(() {
+                                      filteredList = List<PlaceWidget>();
+                                      status = 1;
+                                      sport = "Теннис";
+                                      findSport();
+                                    });
+                                  }),
+                            ),
+                            Container(
+                              decoration: BoxDecoration(
+                                  color: status == 2 ? Color.fromARGB(255, 47, 128, 237) : Colors.white,
+                                  borderRadius: BorderRadius.circular(30),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.grey,
+                                      blurRadius: 2.0, // has the effect of softening the shadow
+                                      spreadRadius: 0.0, // has the effect of extending the shadow
+                                      offset: Offset(
+                                        0.0, // horizontal, move right 10
+                                        0.0, // vertical, move down 10
+                                      ),
+                                    )
+                                  ]),
+                              width: 120,
+                              height: 32,
+                              margin: EdgeInsets.only(left: 8, right: 8, top: 1, bottom: 1),
+                              child: FlatButton(
+                                  child: Text(
+                                    "Футбол",
+                                    style: TextStyle(color: status == 2 ? Colors.white : Colors.black54),
+                                  ),
+                                  onPressed: () {
+                                    placeWidgetFuture = null;
+                                    setState(() {
+                                      filteredList = List<PlaceWidget>();
+                                      status = 2;
+                                      sport = "Футбол";
+                                      findSport();
+                                    });
+                                  }),
+                            ),
+                            Container(
+                              decoration: BoxDecoration(
+                                  color: status == 3 ? Color.fromARGB(255, 47, 128, 237) : Colors.white,
+                                  borderRadius: BorderRadius.circular(30),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.grey,
+                                      blurRadius: 2.0, // has the effect of softening the shadow
+                                      spreadRadius: 0.0, // has the effect of extending the shadow
+                                      offset: Offset(
+                                        0.0, // horizontal, move right 10
+                                        0.0, // vertical, move down 10
+                                      ),
+                                    )
+                                  ]),
+                              width: 120,
+                              height: 32,
+                              margin: EdgeInsets.only(left: 8, right: 8, top: 1, bottom: 1),
+                              child: FlatButton(
+                                  child: Text(
+                                    "Баскетбол",
+                                    style: TextStyle(color: status == 3 ? Colors.white : Colors.black54),
+                                  ),
+                                  onPressed: () {
+                                    placeWidgetFuture = null;
+                                    setState(() {
+                                      filteredList = List<PlaceWidget>();
+                                      status = 3;
+                                      sport = "Баскетбол";
+                                      findSport();
+                                    });
+                                  }),
+                            )
                           ],
                         ))
                   ],
                 ),
               ),
             ),
-            body: Container(
-                color: Colors.white,
-                child: SingleChildScrollView(
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: filteredList),
-                ))));
+            body: FutureBuilder<List<PlaceWidget>>(
+              future: placeWidgetFuture,
+              builder: (context, snapshot){
+                if(snapshot.hasData){
+                  return Container(
+                      margin: EdgeInsets.only(bottom: 0.0),
+                      color: Colors.white,
+                      child: SingleChildScrollView(
+                        child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: filteredList),
+                      ));
+                } else { return Center(child: Container(child: SizedBox(
+                  child: CircularProgressIndicator(), width: 30, height: 30),));}
+              },
+            )));
+  }
+
+
+  findSport(){
+    fetchPlaceBySport(sport).then((placesFromServer) {
+      setState(() {
+        placeWidgets = placesFromServer;
+        filteredList = placeWidgets;
+        placeWidgetFuture = fetchPlaceBySport(sport);
+      });
+    });
   }
 
   @override
@@ -213,6 +430,7 @@ class _PlacesState extends State<Places> {
       setState(() {
         placeWidgets = placesFromServer;
         filteredList = placeWidgets;
+        placeWidgetFuture = fetchPlace();
       });
     });
   }
@@ -288,6 +506,8 @@ class TabBarFilter extends StatelessWidget {
 }
 
 class PlaceWidget extends StatelessWidget {
+  int id;
+  bool isFavourite;
   String name;
   double rating;
   int countOfRate;
@@ -296,14 +516,27 @@ class PlaceWidget extends StatelessWidget {
   String address;
   String info;
 
-  PlaceWidget(this.name, this.rating, this.countOfRate, this.photo,
-      this.timeOfWork, this.address, this.info);
+
+  PlaceWidget(this.id, this.isFavourite, this.name, this.rating,
+      this.countOfRate, this.photo, this.timeOfWork, this.address, this.info);
 
   @override
   Widget build(BuildContext context) {
     return Container(
         margin: EdgeInsets.only(top: 16, left: 16, right: 16),
         decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey,
+              blurRadius: 3.0, // has the effect of softening the shadow
+              spreadRadius: 1.0, // has the effect of extending the shadow
+              offset: Offset(
+                0.0, // horizontal, move right 10
+                0.0, // vertical, move down 10
+              ),
+            )
+          ],
           borderRadius: BorderRadius.circular(3),
           border:
               Border.all(color: Color.fromARGB(255, 47, 128, 237), width: 1.5),
@@ -328,7 +561,7 @@ class PlaceWidget extends StatelessWidget {
                 child: new Row(
                   children: <Widget>[
                     Flexible(child: InfoPlace(rating, countOfRate)),
-                    FavouritesButton(),
+                    FavouritesButton(isFavourite: isFavourite, id: id,),
                   ],
                 ),
               ),
@@ -438,15 +671,56 @@ class WorkTimeWidget extends StatelessWidget {
 }
 
 class FavouritesButton extends StatefulWidget {
+  bool isFavourite;
+  int id;
+  FavouritesButton({Key key, @required this.isFavourite, Key key2, @required this.id}) : super(key: key);
+
   @override
-  _FavouritesButtonState createState() => _FavouritesButtonState();
+  _FavouritesButtonState createState() => _FavouritesButtonState(isFavourite, id);
 }
 
 class _FavouritesButtonState extends State<FavouritesButton> {
-  bool _favourite = false;
-  IconData _icon = CustomIcons.star;
+  bool _favourite;
+  int id;
+  IconData _icon;
 
-  void setIcon(bool obscure) {
+
+  _FavouritesButtonState(this._favourite, this.id);
+
+
+  @override
+  void initState() {
+    _icon = _favourite ? CustomIcons.fill_star : CustomIcons.star;
+    super.initState();
+  }
+
+  Future<int> setFavourite(bool obscure) async{
+    var token = await getStringValuesSF("accessToken");
+    Map jsonFile = {
+    };
+    if(obscure) {
+      var response = await http.post('http://217.12.209.180:8080/api/v1/favorite/mark/${id}',
+          body: json.encode(jsonFile),
+          headers: {"Content-type": "application/json", "Authorization": "Bearer ${token}"});
+      return response.statusCode;
+    } else {
+      var response = await http.post('http://217.12.209.180:8080/api/v1/favorite/unmark/${id}',
+          body: json.encode(jsonFile),
+          headers: {"Content-type": "application/json", "Authorization": "Bearer ${token}"});
+      return response.statusCode;
+    }
+
+  }
+
+  void setIcon (bool obscure) async {
+
+    var status = await setFavourite(obscure);
+
+    if (status == 403) {
+        refresh();
+        status = await setFavourite(obscure);
+    }
+
     setState(() {
       if (obscure) {
         _icon = CustomIcons.fill_star;
@@ -497,6 +771,9 @@ class PlaceButtons extends StatelessWidget {
                 left: 25,
               ),
               child: FlatButton(
+                onPressed: (){
+                  Navigator.popAndPushNamed(context, "/second");
+                },
                 child: Row(
                   children: <Widget>[
                     Expanded(

@@ -1,12 +1,12 @@
 import 'package:arena/Menu.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:arena/Registration.dart';
+import 'package:arena/Authorization/Registration.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/services.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:arena/CustomSharedPreferences.dart';
+import 'package:arena/Other/CustomSharedPreferences.dart';
 
 
 class Data {
@@ -45,6 +45,13 @@ class ArenaApp extends StatelessWidget {
           }
         },
         child: new MaterialApp(
+            initialRoute: '/',
+            routes: {
+              // When navigating to the "/" route, build the FirstScreen widget.
+              '/first': (context) => ArenaApp(),
+              // When navigating to the "/second" route, build the SecondScreen widget.
+              '/second': (context) => MenuScreen(),
+            },
         debugShowCheckedModeBanner: false,
         home: BaseLayout(data)
     ));
@@ -327,7 +334,7 @@ class LostPass extends StatelessWidget {
   Widget build(BuildContext context) {
     return new Container(
       child: FlatButton(onPressed: null, child: new Text(
-          "забыли пароль?",
+          "Забыли пароль?",
           style: TextStyle(
               color: Colors.white,
               decoration: TextDecoration.underline, fontSize: 12.0,
@@ -367,11 +374,12 @@ class EnterButton extends StatelessWidget {
       print(responce.body);
       var decode = jsonDecode(responce.body);
       addStringToSF("accessToken", decode["accessToken"]);
+      addStringToSF("refreshToken", decode["refreshToken"]);
       addStringToSF("name", name);
       addIntToSF("enterCode", responce.statusCode);
       addStringToSF("phone", null);
       addStringToSF("password", password);
-      addStringToSF("refreshToken", decode["refreshToken"]);
+
       return responce.statusCode;
     } catch(error) {print(error);}
   }
