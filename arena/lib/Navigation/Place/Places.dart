@@ -12,6 +12,8 @@ import 'package:http/http.dart' as http;
 import 'package:page_indicator/page_indicator.dart';
 import 'package:smooth_star_rating/smooth_star_rating.dart';
 
+import 'Place.dart';
+
 List<PlaceWidget> parsePlace(String responseBody) {
   final parsed = json.decode(responseBody).cast<Map<String, dynamic>>();
 
@@ -522,7 +524,7 @@ class PlaceWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return FlatButton(child: Container(
         margin: EdgeInsets.only(top: 16, left: 16, right: 16),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -581,7 +583,14 @@ class PlaceWidget extends StatelessWidget {
               PhotoPage(),
             ],
           ),
-        ));
+        )),
+      onPressed: (){
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => PlaceInfoWidget()),
+        );
+      },
+    );
   }
 }
 

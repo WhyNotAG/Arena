@@ -1,4 +1,5 @@
 import 'package:arena/Menu.dart';
+import 'package:arena/Navigation/Place/Place.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:arena/Authorization/Registration.dart';
@@ -45,6 +46,10 @@ class ArenaApp extends StatelessWidget {
           }
         },
         child: new MaterialApp(
+            theme: ThemeData(
+                appBarTheme: AppBarTheme(
+                  color: Colors.white,
+                )),
             initialRoute: '/',
             routes: {
               // When navigating to the "/" route, build the FirstScreen widget.
@@ -405,6 +410,10 @@ class EnterButton extends StatelessWidget {
               fontFamily: "Montserrat-Bold")
       ),
         onPressed: () async{
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => PlaceInfoWidget()),);
+
           print(data._myController.text);
           print(data._passController.text);
           addStringToSF("password", data._passController.text);
@@ -414,7 +423,7 @@ class EnterButton extends StatelessWidget {
           if(!isPhone) {
             a = await httpGet(data._myController.text, data._passController.text, null);
           } else { a = await httpGet(null, data._passController.text, data._myController.text);}
-
+          print(a);
           if(a == 200) {
             Navigator.push(
               context,
