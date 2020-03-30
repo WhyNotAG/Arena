@@ -54,8 +54,8 @@ class PlaceInfoWidget extends StatelessWidget {
                                   margin: EdgeInsets.only(top: 160),
                                   height: 100,
                                   color: Colors.black.withAlpha(50),
-                                  padding: EdgeInsets.only(top: 10),
-                                  child: Text("\nteasfsfst sdasfa", textAlign: TextAlign.center, maxLines: 2, style: TextStyle(fontSize: 16,color: Colors.white),)
+                                  padding: EdgeInsets.only(top: 15),
+                                  child: Text("teasfsfst sdasfa", textAlign: TextAlign.center, maxLines: 2, style: TextStyle(fontSize: 16,color: Colors.white),)
                               ),
                               Container(
                                 width: double.infinity,

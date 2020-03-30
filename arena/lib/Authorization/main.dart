@@ -47,6 +47,8 @@ class ArenaApp extends StatelessWidget {
         },
         child: new MaterialApp(
             theme: ThemeData(
+                canvasColor: Colors.transparent,
+                primaryColor: Colors.white,
                 appBarTheme: AppBarTheme(
                   color: Colors.white,
                 )),
@@ -410,10 +412,6 @@ class EnterButton extends StatelessWidget {
               fontFamily: "Montserrat-Bold")
       ),
         onPressed: () async{
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => PlaceInfoWidget()),);
-
           print(data._myController.text);
           print(data._passController.text);
           addStringToSF("password", data._passController.text);

@@ -22,3 +22,32 @@ Future refresh() async {
   await addStringToSF("refreshToken", decode["refreshToken"]);
   return await decode["accessToken"];
 }
+
+Future postWithToken(String url) async {
+  var token = await getStringValuesSF("accessToken");
+  var response = await http.post(url,
+      headers: {"Content-type": "application/json", "Authorization": "Bearer ${token}"});
+
+  if (response.statusCode == 403) {
+    token = refresh();
+    response = await http.post(url,
+        headers: {"Content-type": "application/json", "Authorization": "Bearer ${token}"});
+  }
+
+  return response.body;
+}
+
+
+Future getWithToken(String url) async {
+  var token = await getStringValuesSF("accessToken");
+  var response = await http.get(url,
+      headers: {"Content-type": "application/json", "Authorization": "Bearer ${token}"});
+
+  if (response.statusCode == 403) {
+    token = refresh();
+    response = await http.get(url,
+        headers: {"Content-type": "application/json", "Authorization": "Bearer ${token}"});
+  }
+
+  return response;
+}

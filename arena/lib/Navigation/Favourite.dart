@@ -24,19 +24,12 @@ Future<List<PlaceWidget>> fetchPlace() async {
   var response;
   var token = await getStringValuesSF("accessToken");
   if (token != null) {
+    response = await getWithToken("http://217.12.209.180:8080/api/v1/place/favorite/");
+  } else{
     response = await http.get('http://217.12.209.180:8080/api/v1/place/favorite/',
-        headers: {"Content-type": "application/json", "Authorization": "Bearer ${token}"});
-    if(response.statusCode == 403) {
-      token = await refresh();
-      print(token);
-      response =
-      await http.get('http://217.12.209.180:8080/api/v1/place/favorite/',
-          headers: {
-            "Content-type": "application/json",
-            "Authorization": "Bearer ${token.toString()}"
-          });
-    }
-  } else{}
+        headers: {"Content-type": "application/json"});
+  }
+
 
 
   List<dynamic> responseJson = json.decode(utf8.decode(response.bodyBytes));
@@ -48,14 +41,18 @@ Future<List<PlaceWidget>> fetchPlace() async {
     for (int i = 0; i < length; i++) {
       places.add(Place.fromJson(responseJson[i]));
       if (places[i].isFavourite == null) { places[i].isFavourite = false;}
+      var count = places[i].countOfRate;
+      if(count == null) {
+        count = 0;
+      }
       placeWidgets.add(PlaceWidget(
           places[i].id,
           places[i].isFavourite,
           places[i].name,
           places[i].rating,
-          places[i].countOfRate,
+          count,
           "places[i].photo",
-          places[i].workDayEndAt,
+          (places[i].workDayStartAt.toString().replaceRange(5, 8, "-")+places[i].workDayEndAt.toString().replaceRange(5, 8, "")),
           places[i].address,
           places[i].info));
     }
@@ -77,6 +74,7 @@ class Place {
   String info; //
   bool isFavourite;
   String workDayEndAt;
+  String workDayStartAt;
 
   Place(
       {this.id,
@@ -87,7 +85,8 @@ class Place {
         this.address,
         this.info,
         this.isFavourite,
-        this.workDayEndAt});
+        this.workDayEndAt,
+        this.workDayStartAt});
 
   factory Place.fromJson(Map<String, dynamic> json) {
     return Place(
@@ -98,7 +97,8 @@ class Place {
         address: json["address"] as String,
         info: json["description"] as String,
         isFavourite: json["isFavorite"] as bool,
-        workDayEndAt: json["workDayEndAt"] as String);
+        workDayEndAt: json["workDayEndAt"] as String,
+        workDayStartAt: json["workDayStartAt"] as String);
   }
 }
 
@@ -121,6 +121,7 @@ class _FavouritesState extends State<Favourites> {
     return WillPopScope(
         onWillPop: () async => false,
         child: Scaffold(
+            backgroundColor: Colors.white,
             appBar: PreferredSize(
               preferredSize: Size.fromHeight(168.0),
               child: Container(
@@ -264,6 +265,18 @@ class PlaceWidget extends StatelessWidget {
     return Container(
         margin: EdgeInsets.only(top: 16, left: 16, right: 16),
         decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey,
+              blurRadius: 3.0, // has the effect of softening the shadow
+              spreadRadius: 1.0, // has the effect of extending the shadow
+              offset: Offset(
+                0.0, // horizontal, move right 10
+                0.0, // vertical, move down 10
+              ),
+            )
+          ],
           borderRadius: BorderRadius.circular(3),
           border:
               Border.all(color: Color.fromARGB(255, 47, 128, 237), width: 1.5),
@@ -288,7 +301,7 @@ class PlaceWidget extends StatelessWidget {
                 child: new Row(
                   children: <Widget>[
                     Flexible(child: InfoPlace(rating, countOfRate)),
-                    FavouritesButton(),
+                    FavouritesButton(id: id, isFavourite: isFavourite,),
                   ],
                 ),
               ),
@@ -398,15 +411,39 @@ class WorkTimeWidget extends StatelessWidget {
 }
 
 class FavouritesButton extends StatefulWidget {
+  bool isFavourite;
+  int id;
+  FavouritesButton({Key key, @required this.isFavourite, Key key2, @required this.id}) : super(key: key);
+
   @override
-  _FavouritesButtonState createState() => _FavouritesButtonState();
+  _FavouritesButtonState createState() => _FavouritesButtonState(isFavourite, id);
 }
 
 class _FavouritesButtonState extends State<FavouritesButton> {
-  bool _favourite = true;
-  IconData _icon = CustomIcons.fill_star;
+  bool _favourite;
+  int id;
+  IconData _icon;
 
-  void setIcon(bool obscure) {
+
+  _FavouritesButtonState(this._favourite, this.id);
+
+  @override
+  void initState() {
+    _icon = _favourite ? CustomIcons.fill_star : CustomIcons.star;
+    super.initState();
+  }
+
+  Future<int> setFavourite(bool obscure) async{
+    if(obscure) {
+      await postWithToken("http://217.12.209.180:8080/api/v1/favorite/mark/${id}");
+    } else {
+      await postWithToken("http://217.12.209.180:8080/api/v1/favorite/unmark/${id}");
+    }
+  }
+
+  void setIcon(bool obscure) async{
+    await setFavourite(obscure);
+
     setState(() {
       if (obscure) {
         _icon = CustomIcons.fill_star;
@@ -457,6 +494,9 @@ class PlaceButtons extends StatelessWidget {
                 left: 25,
               ),
               child: FlatButton(
+                onPressed: (){
+                  Navigator.pushNamed(context, "/second");
+                },
                 child: Row(
                   children: <Widget>[
                     Expanded(

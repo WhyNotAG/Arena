@@ -33,6 +33,7 @@ class _MenuScreenState extends State<MenuScreen> {
     return Scaffold(
       body: _children[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: Colors.white,
         onTap: onTabTapped, // new
         currentIndex: _currentIndex,
         showSelectedLabels: true,

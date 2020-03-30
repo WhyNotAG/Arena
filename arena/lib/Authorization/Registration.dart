@@ -24,6 +24,7 @@ class RegistrationScreen extends StatelessWidget {
           }
         },
         child:Scaffold (
+          backgroundColor: Colors.white,
         appBar: new AppBar(
             brightness: Brightness.light,
             title: new Text('Регистрация', style:
@@ -83,7 +84,6 @@ class _PhotoState extends State<Photo> {
       margin: const EdgeInsets.only(top: 48),
       child: FlatButton(child:
         Container(
-          //decoration: BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(20.0)),color: Colors.grey,),
           height: 167,
           width: 167,
           child: _image == null ? Container(
@@ -96,7 +96,6 @@ class _PhotoState extends State<Photo> {
               textAlign: TextAlign.center,
           ), alignment: Alignment.center,)) :
           Container(
-            child: Container(
               padding: EdgeInsets.only(left:15.0, right:15.0),
               decoration: BoxDecoration(color:Color.fromARGB(120 , 141, 141, 141),
                 image: DecorationImage(image: FileImage(_image),
@@ -106,8 +105,6 @@ class _PhotoState extends State<Photo> {
                     topRight: const Radius.circular(100.0),
                     bottomLeft: const Radius.circular(100.0),
                     bottomRight:const Radius.circular(100.0)),),
-            ),
-            //padding: const EdgeInsets.all(20.0),
             ),
         ),
         onPressed:  (){

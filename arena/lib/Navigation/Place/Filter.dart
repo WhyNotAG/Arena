@@ -8,6 +8,7 @@ class Filter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        backgroundColor: Colors.white,
       appBar: PreferredSize(preferredSize: Size.fromHeight(112.0), child: TabBar(),),
       body:Container(color: Colors.white,child: SingleChildScrollView(child:Column(children: <Widget>[
         FilterWidget(name:"Вид спорта", value:["Все виды","sdd"].toList()),

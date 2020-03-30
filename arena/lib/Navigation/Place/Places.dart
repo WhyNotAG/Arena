@@ -23,22 +23,15 @@ List<PlaceWidget> parsePlace(String responseBody) {
 Future<List<PlaceWidget>> fetchPlace() async {
   List<Place> places = new List<Place>();
   List<PlaceWidget> placeWidgets = new List<PlaceWidget>();
-  var response = await http.get('http://217.12.209.180:8080/api/v1/place/',
-      headers: {"Content-type": "application/json"});
+  var response;
 
   var token = await getStringValuesSF("accessToken");
   if (token != null) {
-    response = await http.get('http://217.12.209.180:8080/api/v1/place/',
-        headers: {"Content-type": "application/json", "Authorization": "Bearer ${token}"});
-    if(response.statusCode != 200) {
-      token = await refresh();
-      response = await http.get('http://217.12.209.180:8080/api/v1/place/',
-          headers: {
-            "Content-type": "application/json",
-            "Authorization": "Bearer ${token}"
-          });
-    }
-  } else{}
+    response = await getWithToken("http://217.12.209.180:8080/api/v1/place/");
+  } else{
+   response = await http.get('http://217.12.209.180:8080/api/v1/place/',
+       headers: {"Content-type": "application/json"});
+  }
 
   List<dynamic> responseJson = json.decode(utf8.decode(response.bodyBytes));
 
@@ -50,14 +43,18 @@ Future<List<PlaceWidget>> fetchPlace() async {
     for (int i = 0; i < length; i++) {
       places.add(Place.fromJson(responseJson[i]));
       if (places[i].isFavourite == null) { places[i].isFavourite = false;}
+      var count = places[i].countOfRate;
+      if(count == null) {
+        count = 0;
+      }
       placeWidgets.add(PlaceWidget(
           places[i].id,
           places[i].isFavourite,
           places[i].name,
           places[i].rating,
-          places[i].countOfRate,
+          count,
           "places[i].photo",
-          places[i].workDayEndAt,
+          (places[i].workDayStartAt.toString().replaceRange(5, 8, "-")+places[i].workDayEndAt.toString().replaceRange(5, 8, "")),
           places[i].address,
           places[i].info));
     }
@@ -77,14 +74,7 @@ Future<List<PlaceWidget>> fetchPlaceBySport(String sport) async {
 
   var token = await getStringValuesSF("accessToken");
   if (token != null) {
-    response = await http.get('http://217.12.209.180:8080/api/v1/place/?sports=${sport}',
-        headers: {"Content-type": "application/json", "Authorization": "Bearer ${token}"});
-  } else{}
-
-  if (response.statusCode == 403){
-    token = await refresh();
-    response = await http.get('http://217.12.209.180:8080/api/v1/place/?sports=${sport}',
-        headers: {"Content-type": "application/json", "Authorization": "Bearer ${token}"});
+    response = await getWithToken("http://217.12.209.180:8080/api/v1/place/?sports=${sport}");
   }
 
   List<dynamic> responseJson = json.decode(utf8.decode(response.bodyBytes));
@@ -96,14 +86,18 @@ Future<List<PlaceWidget>> fetchPlaceBySport(String sport) async {
     for (int i = 0; i < length; i++) {
       places.add(Place.fromJson(responseJson[i]));
       if (places[i].isFavourite == null) { places[i].isFavourite = false;}
+      var count = places[i].countOfRate;
+      if(count == null) {
+        count = 0;
+      }
       placeWidgets.add(PlaceWidget(
           places[i].id,
           places[i].isFavourite,
           places[i].name,
           places[i].rating,
-          places[i].countOfRate,
+          count,
           "places[i].photo",
-          places[i].workDayEndAt,
+          (places[i].workDayStartAt.toString().replaceRange(5, 8, "-")+places[i].workDayEndAt.toString().replaceRange(5, 8, "")),
           places[i].address,
           places[i].info));
     }
@@ -125,6 +119,7 @@ class Place {
   String info; //
   bool isFavourite;
   String workDayEndAt;
+  String workDayStartAt;
 
   Place(
       {this.id,
@@ -135,7 +130,8 @@ class Place {
       this.address,
       this.info,
       this.isFavourite,
-      this.workDayEndAt});
+      this.workDayEndAt,
+      this.workDayStartAt});
 
   factory Place.fromJson(Map<String, dynamic> json) {
     return Place(
@@ -146,7 +142,8 @@ class Place {
         address: json["address"] as String,
         info: json["description"] as String,
         isFavourite: json["isFavorite"] as bool,
-        workDayEndAt: json["workDayEndAt"] as String);
+        workDayEndAt: json["workDayEndAt"] as String,
+        workDayStartAt: json["workDayStartAt"] as String);
   }
 }
 
@@ -168,8 +165,9 @@ class _PlacesState extends State<Places> {
       statusBarBrightness: Brightness.light,
     ));
     return WillPopScope(
-        onWillPop: () async => true,
+        onWillPop: () async => false,
         child: Scaffold(
+          backgroundColor: Colors.white,
             appBar: PreferredSize(
               preferredSize: Size.fromHeight(168.0),
               child: Container(
@@ -524,7 +522,7 @@ class PlaceWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FlatButton(child: Container(
+    return Container(
         margin: EdgeInsets.only(top: 16, left: 16, right: 16),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -583,13 +581,7 @@ class PlaceWidget extends StatelessWidget {
               PhotoPage(),
             ],
           ),
-        )),
-      onPressed: (){
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => PlaceInfoWidget()),
-        );
-      },
+        ),
     );
   }
 }
@@ -704,32 +696,16 @@ class _FavouritesButtonState extends State<FavouritesButton> {
   }
 
   Future<int> setFavourite(bool obscure) async{
-    var token = await getStringValuesSF("accessToken");
-    Map jsonFile = {
-    };
     if(obscure) {
-      var response = await http.post('http://217.12.209.180:8080/api/v1/favorite/mark/${id}',
-          body: json.encode(jsonFile),
-          headers: {"Content-type": "application/json", "Authorization": "Bearer ${token}"});
-      return response.statusCode;
+      await postWithToken("http://217.12.209.180:8080/api/v1/favorite/mark/${id}");
     } else {
-      var response = await http.post('http://217.12.209.180:8080/api/v1/favorite/unmark/${id}',
-          body: json.encode(jsonFile),
-          headers: {"Content-type": "application/json", "Authorization": "Bearer ${token}"});
-      return response.statusCode;
+      await postWithToken("http://217.12.209.180:8080/api/v1/favorite/unmark/${id}");
     }
-
   }
 
   void setIcon (bool obscure) async {
 
-    var status = await setFavourite(obscure);
-
-    if (status == 403) {
-        refresh();
-        status = await setFavourite(obscure);
-    }
-
+    await setFavourite(obscure);
     setState(() {
       if (obscure) {
         _icon = CustomIcons.fill_star;
@@ -781,7 +757,7 @@ class PlaceButtons extends StatelessWidget {
               ),
               child: FlatButton(
                 onPressed: (){
-                  Navigator.popAndPushNamed(context, "/second");
+                  Navigator.pushNamed(context, "/second");
                 },
                 child: Row(
                   children: <Widget>[
