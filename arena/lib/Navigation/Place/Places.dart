@@ -522,7 +522,8 @@ class PlaceWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return InkWell(
+      child: Container(
         margin: EdgeInsets.only(top: 16, left: 16, right: 16),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -539,7 +540,7 @@ class PlaceWidget extends StatelessWidget {
           ],
           borderRadius: BorderRadius.circular(3),
           border:
-              Border.all(color: Color.fromARGB(255, 47, 128, 237), width: 1.5),
+          Border.all(color: Color.fromARGB(255, 47, 128, 237), width: 1.5),
         ),
         child: Container(
           margin: EdgeInsets.only(top: 24),
@@ -575,13 +576,18 @@ class PlaceWidget extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   maxLines: 5,
                   style:
-                      TextStyle(fontSize: 14, fontFamily: "Montserrat-Regular",),
+                  TextStyle(fontSize: 14, fontFamily: "Montserrat-Regular",),
                 ),
               ),
               PhotoPage(),
             ],
           ),
         ),
+      ),
+      onTap: () { Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => PlaceInfoWidget(id)),
+      );},
     );
   }
 }

@@ -30,6 +30,7 @@ dependencies:
   shared_preferences: ^0.5.6+2
   smooth_star_rating: ^1.0.4+2
   statusbar: ^1.1.0
+  transparent_image: ^1.0.0
   page_indicator: ^0.3.0
   google_maps_flutter: ^0.5.25+2
   flutter_range_slider: ^1.4.0
