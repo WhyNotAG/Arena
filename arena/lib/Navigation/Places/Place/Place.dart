@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:arena/Icons/custom_icons_icons.dart';
+import 'package:arena/Navigation/Places/Place/Comment.dart';
 import 'package:arena/Navigation/Places/Place/PhotoGrid.dart';
 import 'package:arena/Other/CustomSharedPreferences.dart';
 import 'package:arena/Other/Request.dart';
@@ -144,7 +145,7 @@ class Place {
     List<CustomImage> img = listPhoto.map((i) => CustomImage.fromJson(i)).toList();
 
     var phoneList =  json["phoneNumbers"] as List;
-    List<PhoneNumber> numbers = listPhoto.map((i) => PhoneNumber.fromJson(i)).toList();
+    List<PhoneNumber> numbers = phoneList.map((i) => PhoneNumber.fromJson(i)).toList();
 
     return Place(
         id: json["id"] as int,
@@ -359,9 +360,7 @@ class _PlaceInfoWidgetState extends State<PlaceInfoWidget> {
                           child: InfoWidget(snapshot.data),
                         ),
                         PhotoGrid(snapshot.data),
-                        Center(
-                          child: Text("Sample text"),
-                        ),
+                        CommentList(snapshot.data.id)
                       ],
                     )),
               );
@@ -417,11 +416,11 @@ class InfoWidget extends StatelessWidget {
               ),
             ),
             Column(children: <Widget>[
-              Container(child: Text( place.phoneNumbers[0].number != null ? place.phoneNumbers[0].number : "", style: TextStyle(
+              Container(child: Text( place.phoneNumbers.length >= 1 ? place.phoneNumbers[0].number : "", style: TextStyle(
                   fontFamily: "Montserrat-Regular",
                   fontWeight: FontWeight.bold,
                   fontSize: 14,),)),
-              Container(child: Text( place.phoneNumbers[1].number != null ? place.phoneNumbers[1].number : "", style: TextStyle(
+              Container(child: Text( place.phoneNumbers.length > 1 ? place.phoneNumbers[1].number : "", style: TextStyle(
                 fontFamily: "Montserrat-Regular",
                 fontWeight: FontWeight.bold,
                 fontSize: 14,),)),
@@ -432,10 +431,7 @@ class InfoWidget extends StatelessWidget {
               2),
           AdditInfo(place.playgrounds.length.toString(), "Количество площадок",
               CustomIcons.countOfFields, 0),
-          Center(
-            child: Container(
-                margin: EdgeInsets.only(top: 45, left: 22),
-                child: Table(children: addStatus(place),)),)
+
         ],
       ),
     );
