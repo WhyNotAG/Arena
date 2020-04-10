@@ -67,6 +67,12 @@ flutter:
     - assets/images/Point_Volley.svg
     - assets/images/Point_Basket.svg
     - assets/images/Point_Tennis.svg
+    - assets/images/status/Bath.png
+    - assets/images/status/ClosedField.png
+    - assets/images/status/Inventory.png
+    - assets/images/status/Lock.png
+    - assets/images/status/OpenField.png
+    - assets/images/status/Parking.png
 
   fonts:
     - family: Montserrat-Bold

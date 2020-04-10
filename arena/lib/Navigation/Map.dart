@@ -70,6 +70,7 @@ Future<Set<Marker>> fetchPlace(BuildContext context) async {
     List list = json.decode(response.body) as List;
     int length = list.length;
 
+    geo.Position position = await geo.Geolocator().getCurrentPosition(desiredAccuracy: geo.LocationAccuracy.medium);
     for (int i = 0; i < length; i++) {
       places.add(Place.fromJson(responseJson[i]));
       if (places[i].isFavourite == null) {
@@ -84,7 +85,6 @@ Future<Set<Marker>> fetchPlace(BuildContext context) async {
 //        {
 //
 //        }
-      geo.Position position = await geo.Geolocator().getCurrentPosition(desiredAccuracy: geo.LocationAccuracy.high);
       var img;
 
       if (places[i].playgrounds[0].sports["name"] == "Футбол") {
@@ -316,7 +316,6 @@ class MapSampleState extends State<MapSample> {
     fetchPlace(context).then((placesFromServer) {
       setState(() {
         _before_markers = placesFromServer;
-        _before_markers.add(Marker(position:LatLng(55.753878, 37.620851), markerId: MarkerId("test")));
         _markers = _before_markers;
       });
     });
