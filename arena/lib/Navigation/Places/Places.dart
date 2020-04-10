@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:arena/Navigation/Place/Filter.dart';
+import 'package:arena/Navigation/Places/Filter.dart';
 import 'package:arena/Icons/custom_icons_icons.dart';
 import 'package:arena/Other/CustomSharedPreferences.dart';
 import 'package:arena/Other/Request.dart';
@@ -12,7 +12,7 @@ import 'package:http/http.dart' as http;
 import 'package:page_indicator/page_indicator.dart';
 import 'package:smooth_star_rating/smooth_star_rating.dart';
 
-import 'Place.dart';
+import 'Place/Place.dart';
 
 List<PlaceWidget> parsePlace(String responseBody) {
   final parsed = json.decode(responseBody).cast<Map<String, dynamic>>();
@@ -612,7 +612,7 @@ class InfoPlace extends StatelessWidget {
               size: 14.0,
               filledIconData: CustomIcons.fill_star,
               defaultIconData: CustomIcons.star,
-              //halfFilledIconData: CustomIcons.fill_star,
+              halfFilledIconData: CustomIcons.fill_star,
               color: Colors.orangeAccent,
               borderColor: Colors.orangeAccent,
               spacing: 0.0),

@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:arena/Icons/custom_icons_icons.dart';
+import 'package:arena/Navigation/Places/Place/PhotoGrid.dart';
 import 'package:arena/Other/CustomSharedPreferences.dart';
 import 'package:arena/Other/Request.dart';
 import 'package:flutter/cupertino.dart';
@@ -66,6 +67,18 @@ class Playground {
   }
 }
 
+class PhoneNumber {
+  String number;
+
+  PhoneNumber({this.number});
+
+  factory PhoneNumber.fromJson(Map<String, dynamic> json) {
+    return PhoneNumber(
+      number: json["number"] as String);
+  }
+
+}
+
 class CustomImage {
   String fullImage;
   String thumbImage;
@@ -102,6 +115,7 @@ class Place {
   String workDayStartAt;
   List<Playground> playgrounds;
   List<CustomImage> customImages;
+  List<PhoneNumber> phoneNumbers;
 
   Place({this.id,
     this.name,
@@ -119,15 +133,18 @@ class Place {
     this.hasLockers,
     this.hasBaths,
     this.hasInventory,
-    this.hasParking});
+    this.hasParking,
+    this.phoneNumbers});
 
   factory Place.fromJson(Map<String, dynamic> json) {
     var list = json['playgrounds'] as List;
     List<Playground> pl = list.map((i) => Playground.fromJson(i)).toList();
 
     var listPhoto = json['images'] as List;
-    List<CustomImage> img =
-    listPhoto.map((i) => CustomImage.fromJson(i)).toList();
+    List<CustomImage> img = listPhoto.map((i) => CustomImage.fromJson(i)).toList();
+
+    var phoneList =  json["phoneNumbers"] as List;
+    List<PhoneNumber> numbers = listPhoto.map((i) => PhoneNumber.fromJson(i)).toList();
 
     return Place(
         id: json["id"] as int,
@@ -145,7 +162,8 @@ class Place {
         hasInventory: json["hasInventory"] as bool,
         hasLockers: json["hasLockers"] as bool,
         hasParking: json["hasParking"] as bool,
-        area: json["area"] as int);
+        area: json["area"] as int,
+        phoneNumbers: numbers);
   }
 }
 
@@ -205,6 +223,7 @@ class _PlaceInfoWidgetState extends State<PlaceInfoWidget> {
                                   icon: Icon(
                                     CustomIcons.arrowBack,
                                     size: 16,
+                                    color: Colors.white,
                                   ),
                                   onPressed: () {
                                     Navigator.pop(context);
@@ -339,9 +358,7 @@ class _PlaceInfoWidgetState extends State<PlaceInfoWidget> {
                         SingleChildScrollView(
                           child: InfoWidget(snapshot.data),
                         ),
-                        Center(
-                          child: Text("Sample text"),
-                        ),
+                        PhotoGrid(snapshot.data),
                         Center(
                           child: Text("Sample text"),
                         ),
@@ -373,29 +390,43 @@ class InfoWidget extends StatelessWidget {
       margin: EdgeInsets.only(top: 16, left: 16, right: 16),
       child: Column(
         children: <Widget>[
-          Container(
-            margin: EdgeInsets.only(bottom: 13),
-            child: Row(
-              children: <Widget>[
-                Icon(
-                  Icons.access_time,
-                  color: Color.fromARGB(255, 47, 128, 237),
-                ),
-                Container(
-                  margin: EdgeInsets.only(left: 8,),
-                  child: Text(
-                    place.workDayStartAt.toString().replaceRange(5, 8, "-") +
-                        place.workDayEndAt.toString().replaceRange(5, 8, ""),
-                    style: TextStyle(
-                      fontFamily: "Montserrat-Regular",
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+            Container(
+              margin: EdgeInsets.only(bottom: 13),
+              child: Row(
+                children: <Widget>[
+                  Icon(
+                    Icons.access_time,
+                    color: Color.fromARGB(255, 47, 128, 237),
                   ),
-                )
-              ],
+                  Container(
+                    margin: EdgeInsets.only(left: 8,),
+                    child: Text(
+                      place.workDayStartAt.toString().replaceRange(5, 8, "-") +
+                          place.workDayEndAt.toString().replaceRange(5, 8, ""),
+                      style: TextStyle(
+                        fontFamily: "Montserrat-Regular",
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                  )
+                ],
+              ),
             ),
-          ),
+            Column(children: <Widget>[
+              Container(child: Text( place.phoneNumbers[0].number != null ? place.phoneNumbers[0].number : "", style: TextStyle(
+                  fontFamily: "Montserrat-Regular",
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,),)),
+              Container(child: Text( place.phoneNumbers[1].number != null ? place.phoneNumbers[1].number : "", style: TextStyle(
+                fontFamily: "Montserrat-Regular",
+                fontWeight: FontWeight.bold,
+                fontSize: 14,),)),
+            ],)
+          ],),
           AdditInfo(
               place.area.toString() + " м2", "Общая площадь", CustomIcons.s_all,
               2),
@@ -530,12 +561,13 @@ class Status extends StatelessWidget {
               image: AssetImage(img), fit: BoxFit.fill)
           ),
         ),
-        Container(
+        Flexible(child:Container(
           margin: EdgeInsets.only(left: 10),
-          child: Text(text, style: TextStyle(
+          child: Text(text,
+            overflow: TextOverflow.clip,style: TextStyle(
               fontFamily: "Montserrat-Regular",
               fontSize: 14,),
-        ))
+        )))
       ],),
     );
   }

@@ -1,5 +1,5 @@
 import 'package:arena/Menu.dart';
-import 'package:arena/Navigation/Place/Place.dart';
+import 'package:arena/Navigation/Places/Place/Place.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:arena/Authorization/Registration.dart';
