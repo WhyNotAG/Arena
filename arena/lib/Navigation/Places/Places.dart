@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:arena/Navigation/Places/Filter.dart';
 import 'package:arena/Icons/custom_icons_icons.dart';
+import 'package:arena/Navigation/Places/Place/Booking.dart';
 import 'package:arena/Other/CustomSharedPreferences.dart';
 import 'package:arena/Other/Request.dart';
 import 'package:flutter/cupertino.dart';
@@ -568,7 +569,7 @@ class PlaceWidget extends StatelessWidget {
               ),
               WorkTimeWidget("Время работы: ", timeOfWork),
               WorkTimeWidget("Адрес:", address),
-              PlaceButtons(),
+              PlaceButtons(id),
               Container(
                 margin: EdgeInsets.only(left: 25, right: 24, top: 26),
                 child: Text(
@@ -602,8 +603,7 @@ class InfoPlace extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
         child: new Row(children: <Widget>[
-      Expanded(
-        child: Container(
+      Container(
           margin: EdgeInsets.only(left: 22.0, top: 0),
           child: SmoothStarRating(
               allowHalfRating: false,
@@ -616,7 +616,6 @@ class InfoPlace extends StatelessWidget {
               color: Colors.orangeAccent,
               borderColor: Colors.orangeAccent,
               spacing: 0.0),
-        ),
       ),
       Container(
         child: Text(
@@ -629,9 +628,10 @@ class InfoPlace extends StatelessWidget {
         ),
         margin: EdgeInsets.only(left: 12, top: 0),
       ),
-      Container(
+      Expanded(child:   Container(
         child: Text(
           "${countOfRate.toString()} оценки",
+          overflow: TextOverflow.clip,
           style: TextStyle(
             fontFamily: "Montserrat-Regular",
             fontSize: 13,
@@ -639,7 +639,7 @@ class InfoPlace extends StatelessWidget {
           textAlign: TextAlign.start,
         ),
         margin: EdgeInsets.only(left: 13, top: 0),
-      )
+      ),)
     ]));
   }
 }
@@ -724,7 +724,7 @@ class _FavouritesButtonState extends State<FavouritesButton> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.only(left: 80, bottom: 0.0, right: 24),
+      margin: EdgeInsets.only(left: 0, bottom: 0.0, right: 24),
       child: IconButton(
         icon: Icon(
           _icon,
@@ -743,6 +743,10 @@ class _FavouritesButtonState extends State<FavouritesButton> {
 }
 
 class PlaceButtons extends StatelessWidget {
+  int id;
+
+  PlaceButtons(this.id);
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -797,7 +801,7 @@ class PlaceButtons extends StatelessWidget {
                   fontSize: 14),
             ),
           ),
-          PlaceDateButton(),
+          PlaceDateButton(id),
           PlacePhoneButton()
         ],
       ),
@@ -806,6 +810,10 @@ class PlaceButtons extends StatelessWidget {
 }
 
 class PlaceDateButton extends StatelessWidget {
+  int id;
+
+  PlaceDateButton(this.id);
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -831,7 +839,12 @@ class PlaceDateButton extends StatelessWidget {
           color: Colors.white,
           size: 16,
         ),
-        onPressed: () {},
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => Booking(id)),
+          );
+        },
       ),
       margin: EdgeInsets.only(left: 22),
     );

@@ -25,7 +25,7 @@ class Comment {
 
   factory Comment.fromJson(Map<String, dynamic> json) {
     return Comment(
-        author: json["author"] as String,
+        author: json["authorName"] as String,
         date: json["date"] as int,
         feedback: json["feedback"] as String,
         id: json["id"] as int,
@@ -59,15 +59,12 @@ Future<Content> fetchContent(int id) async {
         headers: {"Content-type": "application/json"});
   }
 
-  print(response.statusCode);
-  print(response.body);
 
   Map<String, dynamic> responseJson =
       json.decode(utf8.decode(response.bodyBytes));
 
   if (response.statusCode == 200) {
     content = Content.fromJson(responseJson);
-    print(content);
     return content;
   } else {
     throw Exception('Failed to load album');
@@ -88,7 +85,7 @@ class CommentWidget extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
-              Text(comment.author,
+              Text(comment.author != null ? comment.author : "",
                   style: TextStyle(
                     fontFamily: "Montserrat-Regular",
                     fontWeight: FontWeight.bold,
@@ -136,7 +133,7 @@ class CommentWidget extends StatelessWidget {
                 SmoothStarRating(
                     allowHalfRating: false,
                     starCount: 5,
-                    rating: comment.rating,
+                    rating: comment.rating != null ? comment.rating : 0,
                     size: 14.0,
                     filledIconData: CustomIcons.fill_star,
                     defaultIconData: CustomIcons.star,

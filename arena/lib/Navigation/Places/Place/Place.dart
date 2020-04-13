@@ -432,6 +432,9 @@ class InfoWidget extends StatelessWidget {
           AdditInfo(place.playgrounds.length.toString(), "Количество площадок",
               CustomIcons.countOfFields, 0),
 
+          Container(
+            margin: EdgeInsets.only(left: 22, top: 45),
+            child: Table(children: addStatus(place)),)
         ],
       ),
     );
