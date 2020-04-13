@@ -1,6 +1,8 @@
 import 'package:arena/Icons/custom_icons_icons.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/date_symbol_data_local.dart';
+import 'package:intl/intl.dart';
 import 'package:transparent_image/transparent_image.dart';
 import 'Place.dart';
 import 'dart:math' as math;
@@ -30,6 +32,7 @@ class _BookingState extends State<Booking> {
   void initState() {
     date = DateTime.now();
     place = fetchPlace(id);
+    initializeDateFormatting("ru", null);
   }
 
   @override
@@ -72,7 +75,7 @@ class _BookingState extends State<Booking> {
                                     Navigator.pop(context);
                                   },
                                 ),
-                                expandedHeight: 270.0,
+                                expandedHeight: 285.0,
                                 floating: false,
                                 pinned: true,
                                 flexibleSpace: FlexibleSpaceBar(
@@ -144,7 +147,7 @@ class _BookingState extends State<Booking> {
                                 ),
                                 bottom: PreferredSize(
                                   child: Container(
-                                    height: 150,
+                                    height: 156,
                                     width: double.infinity,
                                     child: Container(
                                       decoration: BoxDecoration(
@@ -172,14 +175,14 @@ class _BookingState extends State<Booking> {
                                               child: Row(
                                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                 children: <Widget>[
-                                                  Text(date.toString(), style: TextStyle(
+                                                  Expanded(child: Text(DateFormat("dd MMMM, EEEE").format(date), overflow: TextOverflow.clip, style: TextStyle(
                                                     fontFamily: "Montserrat-Bold",
                                                     color: Color.fromARGB(255, 79, 79, 79),
                                                     fontSize: 22,
-                                                  ),),
+                                                  ),),),
                                                   Row(
                                                     children: <Widget>[
-                                                      Text("15 авг", style: TextStyle(
+                                                      Text(DateFormat("dd MMM").format(date.add(Duration(days: 1))), style: TextStyle(
                                                         fontFamily: "Montserrat-Regular",
                                                         fontWeight: FontWeight.bold,
                                                         color: Color.fromARGB(255, 47, 128, 237),
@@ -188,7 +191,12 @@ class _BookingState extends State<Booking> {
                                                       Container(
                                                         child: Transform(
                                                           alignment: Alignment.center,
-                                                          child:IconButton(icon: Icon(CustomIcons.arrowBack, size: 11,color: Color.fromARGB(255, 47, 128, 237),),),
+                                                          child:IconButton(icon: Icon(CustomIcons.arrowBack, size: 11,color: Color.fromARGB(255, 47, 128, 237),),
+                                                          onPressed: (){
+                                                            setState(() {
+                                                              date = date.add(Duration(days: 1));
+                                                            });
+                                                          },),
                                                         transform: Matrix4.rotationY(math.pi),),)
                                                     ],
                                                   )
@@ -262,7 +270,7 @@ class _BookingState extends State<Booking> {
                                             )
                                           ],))
                                     ),
-                                  ), preferredSize: Size(double.infinity, 80),
+                                  ), preferredSize: Size(double.infinity, 100),
                                 )),
                           ),
                         ),

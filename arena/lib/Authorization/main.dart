@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:arena/Authorization/Registration.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:arena/Other/CustomSharedPreferences.dart';
@@ -17,7 +18,34 @@ class Data {
   var code;
 }
 
-void main() => runApp(ArenaApp());
+void main() async {
+  Widget _defaultHome = ArenaApp();
+  Intl.defaultLocale = "ru";
+  WidgetsFlutterBinding.ensureInitialized();
+  var token = await getStringValuesSF("accessToken");
+
+  if(token != null) { _defaultHome = MenuScreen(); }
+  
+  runApp(new MaterialApp(
+      theme: ThemeData(
+          canvasColor: Colors.transparent,
+          primaryColor: Colors.white,
+          appBarTheme: AppBarTheme(
+            color: Colors.white,
+          )),
+      initialRoute: '/',
+      routes: {
+        // When navigating to the "/" route, build the FirstScreen widget.
+        '/first': (context) => ArenaApp(),
+        // When navigating to the "/second" route, build the SecondScreen widget.
+        '/second': (context) => MenuScreen(),
+      },
+      debugShowCheckedModeBanner: false,
+      home: _defaultHome));
+
+
+}
+
 String name;
 String password;
 
@@ -29,9 +57,9 @@ addStringToSF(String name, String value) async {
 
 
 class ArenaApp extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) {
+    Intl.defaultLocale = "ru";
     Data data = Data();
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
@@ -45,23 +73,8 @@ class ArenaApp extends StatelessWidget {
             currentFocus.unfocus();
           }
         },
-        child: new MaterialApp(
-            theme: ThemeData(
-                canvasColor: Colors.transparent,
-                primaryColor: Colors.white,
-                appBarTheme: AppBarTheme(
-                  color: Colors.white,
-                )),
-            initialRoute: '/',
-            routes: {
-              // When navigating to the "/" route, build the FirstScreen widget.
-              '/first': (context) => ArenaApp(),
-              // When navigating to the "/second" route, build the SecondScreen widget.
-              '/second': (context) => MenuScreen(),
-            },
-        debugShowCheckedModeBanner: false,
-        home: BaseLayout(data)
-    ));
+        child: BaseLayout(data)
+    );
   }
 }
 
