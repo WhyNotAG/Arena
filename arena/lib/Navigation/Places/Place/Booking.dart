@@ -5,7 +5,8 @@ import 'package:arena/Other/CustomSharedPreferences.dart';
 import 'package:arena/Other/Request.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/date_symbol_data_file.dart';
+import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 import 'package:transparent_image/transparent_image.dart';
 import 'Place.dart';
@@ -131,6 +132,17 @@ class _BookingState extends State<Booking> {
                           sliver: SliverAppBar(
                               actions: <Widget>[
                                 IconButton(
+                                  onPressed: (){
+                                    DatePicker.showDatePicker(context,
+                                      minTime: DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().month),
+                                      onConfirm: (tecDate) {
+                                       setState(() {
+                                         date = tecDate;
+                                       });
+                                      },
+                                        currentTime: DateTime.now(), locale: LocaleType.ru
+                                    );
+                                  },
                                   icon: Icon(
                                     CustomIcons.day,
                                     size: 28,

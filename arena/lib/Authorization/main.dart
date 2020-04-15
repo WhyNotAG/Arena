@@ -40,7 +40,6 @@ void main() async {
         '/first': (context) => ArenaApp(),
         // When navigating to the "/second" route, build the SecondScreen widget.
         '/second': (context) => MenuScreen(),
-        '/third': (context) => Booking(1),
       },
       debugShowCheckedModeBanner: false,
       home: _defaultHome));
