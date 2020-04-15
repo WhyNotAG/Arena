@@ -5,7 +5,7 @@ import 'package:arena/Other/CustomSharedPreferences.dart';
 import 'package:arena/Other/Request.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/date_symbol_data_local.dart';
+import 'package:intl/date_symbol_data_file.dart';
 import 'package:intl/intl.dart';
 import 'package:transparent_image/transparent_image.dart';
 import 'Place.dart';
@@ -39,7 +39,7 @@ class Book {
   }
 }
 
-Future<List<Book>> fetchTime(int id, DateTime time) async {
+Future<List<Book>> fetchTime(int id, DateTime time, bool isHalf) async {
   List times = List();
   var response;
 
@@ -62,7 +62,15 @@ Future<List<Book>> fetchTime(int id, DateTime time) async {
   if (response.statusCode == 200) {
     var list = responseJson["bookings"] as List;
     List<Book> pl = list.map((i) => Book.fromJson(i)).toList();
-    return pl;
+    List<Book> result = List();
+
+    for(Book book in pl) {
+      if (book.isHalfBookingAvailable = isHalf) {
+        result.add(book);
+      }
+    }
+
+    return result;
   } else {
     throw Exception('Failed to load album');
   }
@@ -81,23 +89,21 @@ class _BookingState extends State<Booking> {
 
   _BookingState(this.id);
 
-  bool first;
   Future<Place> place;
   Future<List<Book>> timeWidgets;
   Playground selectedPlayground;
+  bool isHalf = false;
 
   @override
   void initState() {
-    first = true;
     date = DateTime.now();
 
     place = fetchPlace(id).then((value){
 
       selectedPlayground = value.playgrounds[0];
       setState(() {
-        timeWidgets = fetchTime(value.playgrounds[0].id, date);
+        timeWidgets = fetchTime(value.playgrounds[0].id, date, isHalf);
       });
-
       return value;
     });
 
@@ -303,7 +309,7 @@ class _BookingState extends State<Booking> {
                                                                       Duration(
                                                                           days:
                                                                               1));
-                                                                  timeWidgets = fetchTime(selectedPlayground.id, date);
+                                                                  timeWidgets = fetchTime(selectedPlayground.id, date, isHalf);
                                                                 });
                                                               },
                                                             ),
@@ -346,13 +352,20 @@ class _BookingState extends State<Booking> {
                                                         Transform.scale(
                                                           child:
                                                               CupertinoSwitch(
-                                                            value: true,
+                                                            value: isHalf,
+
                                                             activeColor:
                                                                 Color.fromARGB(
                                                                     255,
                                                                     47,
                                                                     128,
                                                                     237),
+                                                                onChanged: (bool value) {
+                                                                 setState(() {
+                                                                   isHalf = !isHalf;
+                                                                   timeWidgets = fetchTime(selectedPlayground.id, date, isHalf);
+                                                                 });
+                                                                },
                                                           ),
                                                           scale: 0.7,
                                                         ),
@@ -392,7 +405,7 @@ class _BookingState extends State<Booking> {
                                                                 setState(() {
                                                                   selectedPlayground =
                                                                       newValue;
-                                                                  timeWidgets = fetchTime(selectedPlayground.id, date);
+                                                                  timeWidgets = fetchTime(selectedPlayground.id, date, isHalf);
                                                                 });
                                                               },
                                                               items: snapshot
@@ -485,7 +498,7 @@ class _BookingState extends State<Booking> {
                             children: <Widget>[
                               Column(
                                 children: snap.data
-                                    .map<Widget>((time) => TimeWidget(time.to,
+                                    .map<Widget>((time) => TimeWidget(time.from.toString().substring(0,5) + " - " + time.to.toString().substring(0,5),
                                         time.price.toString(), !time.isBooked))
                                     .toList(),
                               ),

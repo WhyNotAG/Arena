@@ -5,6 +5,8 @@ import 'package:http/http.dart' as http;
 import 'package:arena/Other/CustomSharedPreferences.dart';
 import 'package:arena/Other/Request.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/date_symbol_data_file.dart';
+import 'package:intl/intl.dart';
 import 'package:smooth_star_rating/smooth_star_rating.dart';
 
 class Comment {
@@ -76,6 +78,7 @@ class CommentWidget extends StatelessWidget {
 
   CommentWidget(this.comment);
 
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -93,8 +96,7 @@ class CommentWidget extends StatelessWidget {
                     fontSize: 14,
                   )),
               Text(
-                DateTime.fromMillisecondsSinceEpoch(comment.date * 1000)
-                    .toString(),
+               DateFormat("dd MMMM y").format(DateTime.fromMillisecondsSinceEpoch(comment.date * 1000)),
                 style: TextStyle(
                   fontFamily: "Montserrat-Regular",
                   fontWeight: FontWeight.bold,
@@ -145,8 +147,10 @@ class CommentWidget extends StatelessWidget {
             ),
           ),
           Container(
+            alignment: Alignment.centerLeft,
             margin: EdgeInsets.only(top: 10),
             child: Text(comment.feedback,
+                textAlign: TextAlign.left,
                 style: TextStyle(
                   fontFamily: "Montserrat-Regular",
                   color: Colors.black87,

@@ -8,6 +8,7 @@ import 'package:arena/Other/Request.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:transparent_image/transparent_image.dart';
 
 String setPlaceIcon(Place place) {
@@ -199,6 +200,7 @@ class _PlaceInfoWidgetState extends State<PlaceInfoWidget> {
   @override
   void initState() {
     place = fetchPlace(id);
+    initializeDateFormatting("ru", null);
   }
 
   @override

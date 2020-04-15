@@ -1,4 +1,5 @@
 import 'package:arena/Menu.dart';
+import 'package:arena/Navigation/Places/Place/Booking.dart';
 import 'package:arena/Navigation/Places/Place/Place.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
@@ -39,6 +40,7 @@ void main() async {
         '/first': (context) => ArenaApp(),
         // When navigating to the "/second" route, build the SecondScreen widget.
         '/second': (context) => MenuScreen(),
+        '/third': (context) => Booking(1),
       },
       debugShowCheckedModeBanner: false,
       home: _defaultHome));
