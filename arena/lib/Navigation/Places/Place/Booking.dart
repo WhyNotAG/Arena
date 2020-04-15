@@ -1,4 +1,8 @@
+import 'dart:convert';
+
 import 'package:arena/Icons/custom_icons_icons.dart';
+import 'package:arena/Other/CustomSharedPreferences.dart';
+import 'package:arena/Other/Request.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -6,16 +10,67 @@ import 'package:intl/intl.dart';
 import 'package:transparent_image/transparent_image.dart';
 import 'Place.dart';
 import 'dart:math' as math;
+import 'package:http/http.dart' as http;
 
+class Book {
+  int id;
+  bool isHalfBookingAvailable;
+  double price;
+  bool isBooked;
+  String to;
+  String from;
 
-List<String> test = ["test", "test2"];
-String str = "test";
+  Book(
+      {this.id,
+      this.isHalfBookingAvailable,
+      this.price,
+      this.isBooked,
+      this.to,
+      this.from});
+
+  factory Book.fromJson(Map<String, dynamic> json) {
+    return Book(
+        id: json["id"] as int,
+        isHalfBookingAvailable: json["isHalfBookingAvailable"] as bool,
+        price: json["price"] as double,
+        isBooked: json["isBooked"] as bool,
+        to: json["to"] as String,
+        from: json["from"] as String);
+  }
+}
+
+Future<List<Book>> fetchTime(int id, DateTime time) async {
+  List times = List();
+  var response;
+
+  var updateTime = DateFormat("y-MM-dd").format(time);
+
+  var token = await getStringValuesSF("accessToken");
+  if (token != null) {
+    response = await getWithToken(
+      "http://217.12.209.180:8080/api/v1/booking/${id}?date=${updateTime}",
+    );
+  } else {
+    response = await http.get(
+        'http://217.12.209.180:8080/api/v1/booking/${id}?date=${updateTime}',
+        headers: {"Content-type": "application/json"});
+  }
+
+  Map<String, dynamic> responseJson =
+      json.decode(utf8.decode(response.bodyBytes));
+
+  if (response.statusCode == 200) {
+    var list = responseJson["bookings"] as List;
+    List<Book> pl = list.map((i) => Book.fromJson(i)).toList();
+    return pl;
+  } else {
+    throw Exception('Failed to load album');
+  }
+}
 
 class Booking extends StatefulWidget {
   int id;
-
   Booking(this.id);
-
   @override
   _BookingState createState() => _BookingState(id);
 }
@@ -23,15 +78,29 @@ class Booking extends StatefulWidget {
 class _BookingState extends State<Booking> {
   int id;
   DateTime date;
+
   _BookingState(this.id);
 
-  Future place;
-
+  bool first;
+  Future<Place> place;
+  Future<List<Book>> timeWidgets;
+  Playground selectedPlayground;
 
   @override
   void initState() {
+    first = true;
     date = DateTime.now();
-    place = fetchPlace(id);
+
+    place = fetchPlace(id).then((value){
+
+      selectedPlayground = value.playgrounds[0];
+      setState(() {
+        timeWidgets = fetchTime(value.playgrounds[0].id, date);
+      });
+
+      return value;
+    });
+
     initializeDateFormatting("ru", null);
   }
 
@@ -44,112 +113,106 @@ class _BookingState extends State<Booking> {
           builder: (context, snapshot) {
             if (snapshot.hasData) {
               return NestedScrollView(
-                    headerSliverBuilder:
-                        (BuildContext context, bool innerBoxIsScrolled) {
-                      return <Widget>[
-                        SliverOverlapAbsorber(
-                          handle:
-                          NestedScrollView.sliverOverlapAbsorberHandleFor(
-                              context),
-                          child: SliverSafeArea(
-                            top: false,
-                            bottom: false,
-                            sliver: SliverAppBar(
-                                actions: <Widget>[
-                                  IconButton(
-                                    icon: Icon(
-                                      CustomIcons.day,
-                                      size: 28,
-                                      color: Colors.white,
-                                    ),
-                                    padding: EdgeInsets.only(right: 21.0),
-                                  )
-                                ],
-                                leading: IconButton(
+                  headerSliverBuilder:
+                      (BuildContext context, bool innerBoxIsScrolled) {
+                    return <Widget>[
+                      SliverOverlapAbsorber(
+                        handle: NestedScrollView.sliverOverlapAbsorberHandleFor(
+                            context),
+                        child: SliverSafeArea(
+                          top: false,
+                          bottom: false,
+                          sliver: SliverAppBar(
+                              actions: <Widget>[
+                                IconButton(
                                   icon: Icon(
-                                    CustomIcons.arrowBack,
-                                    size: 16,
+                                    CustomIcons.day,
+                                    size: 28,
                                     color: Colors.white,
                                   ),
-                                  onPressed: () {
-                                    Navigator.pop(context);
-                                  },
+                                  padding: EdgeInsets.only(right: 21.0),
+                                )
+                              ],
+                              leading: IconButton(
+                                icon: Icon(
+                                  CustomIcons.arrowBack,
+                                  size: 16,
+                                  color: Colors.white,
                                 ),
-                                expandedHeight: 285.0,
-                                floating: false,
-                                pinned: true,
-                                flexibleSpace: FlexibleSpaceBar(
-                                  centerTitle: true,
-                                  background: Container(
-                                      width: double.infinity,
-                                      height: double.infinity,
-                                      child: Center(
-                                          child: Stack(
-                                            children: <Widget>[
-                                              Stack(
-                                                children: <Widget>[
-                                                  Center(
-                                                      child: Container(
-                                                        child: SizedBox(
-                                                            child:
-                                                            CircularProgressIndicator(),
-                                                            width: 30,
-                                                            height: 30),
-                                                      )),
-                                                  new Container(
-                                                      width: double.infinity,
-                                                      height: double.infinity,
-                                                      child:
-                                                      FadeInImage.memoryNetwork(
-                                                          placeholder:
-                                                          kTransparentImage,
-                                                          image: snapshot
-                                                              .data
-                                                              .customImages[0]
-                                                              .fullImage,
-                                                          fit: BoxFit.fill)),
-                                                ],
-                                              ),
-                                              Container(
-                                                  width: double.infinity,
-                                                  margin: EdgeInsets.only(
-                                                      top: 110),
-                                                  height: 100,
-                                                  color: Colors.black.withAlpha(
-                                                      50),
-                                                  padding: EdgeInsets.only(
-                                                      top: 15),
-                                                  child: Text(
-                                                    snapshot.data.name,
-                                                    textAlign: TextAlign.center,
-                                                    maxLines: 2,
-                                                    style: TextStyle(
-                                                        fontSize: 16,
-                                                        color: Colors.white),
-                                                  )),
-                                              Container(
-                                                width: double.infinity,
-                                                alignment: Alignment.center,
-                                                margin: EdgeInsets.only(
-                                                    top: 80),
-                                                height: 48,
-                                                decoration: BoxDecoration(
-                                                  image: DecorationImage(
-                                                    image: AssetImage(
-                                                        setPlaceIcon(
-                                                            snapshot.data)),
-                                                    fit: BoxFit.fitHeight,
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ))),
-                                ),
-                                bottom: PreferredSize(
-                                  child: Container(
-                                    height: 156,
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                },
+                              ),
+                              expandedHeight: 285.0,
+                              floating: false,
+                              pinned: true,
+                              flexibleSpace: FlexibleSpaceBar(
+                                centerTitle: true,
+                                background: Container(
                                     width: double.infinity,
-                                    child: Container(
+                                    height: double.infinity,
+                                    child: Center(
+                                        child: Stack(
+                                      children: <Widget>[
+                                        Stack(
+                                          children: <Widget>[
+                                            Center(
+                                                child: Container(
+                                              child: SizedBox(
+                                                  child:
+                                                      CircularProgressIndicator(),
+                                                  width: 30,
+                                                  height: 30),
+                                            )),
+                                            new Container(
+                                                width: double.infinity,
+                                                height: double.infinity,
+                                                child:
+                                                    FadeInImage.memoryNetwork(
+                                                        placeholder:
+                                                            kTransparentImage,
+                                                        image: snapshot
+                                                            .data
+                                                            .customImages[0]
+                                                            .fullImage,
+                                                        fit: BoxFit.fill)),
+                                          ],
+                                        ),
+                                        Container(
+                                            width: double.infinity,
+                                            margin: EdgeInsets.only(top: 110),
+                                            height: 100,
+                                            color: Colors.black.withAlpha(50),
+                                            padding: EdgeInsets.only(top: 15),
+                                            child: Text(
+                                              snapshot.data.name,
+                                              textAlign: TextAlign.center,
+                                              maxLines: 2,
+                                              style: TextStyle(
+                                                  fontSize: 16,
+                                                  color: Colors.white),
+                                            )),
+                                        Container(
+                                          width: double.infinity,
+                                          alignment: Alignment.center,
+                                          margin: EdgeInsets.only(top: 80),
+                                          height: 48,
+                                          decoration: BoxDecoration(
+                                            image: DecorationImage(
+                                              image: AssetImage(
+                                                  setPlaceIcon(snapshot.data)),
+                                              fit: BoxFit.fitHeight,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ))),
+                              ),
+                              bottom: PreferredSize(
+                                child: Container(
+                                  height: 156,
+                                  width: double.infinity,
+                                  child: Container(
                                       decoration: BoxDecoration(
                                           color: Colors.white,
                                           boxShadow: [
@@ -167,127 +230,412 @@ class _BookingState extends State<Booking> {
                                               ),
                                             )
                                           ]),
-                                      child:Container(
-                                          margin: EdgeInsets.only(left: 16, right: 16),
-                                          child: Column(children: <Widget>[
-                                            Container(
-                                              margin: EdgeInsets.only(top: 16),
-                                              child: Row(
-                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                children: <Widget>[
-                                                  Expanded(child: Text(DateFormat("dd MMMM, EEEE").format(date), overflow: TextOverflow.clip, style: TextStyle(
-                                                    fontFamily: "Montserrat-Bold",
-                                                    color: Color.fromARGB(255, 79, 79, 79),
-                                                    fontSize: 22,
-                                                  ),),),
-                                                  Row(
-                                                    children: <Widget>[
-                                                      Text(DateFormat("dd MMM").format(date.add(Duration(days: 1))), style: TextStyle(
-                                                        fontFamily: "Montserrat-Regular",
-                                                        fontWeight: FontWeight.bold,
-                                                        color: Color.fromARGB(255, 47, 128, 237),
-                                                        fontSize: 12,
-                                                      )),
-                                                      Container(
-                                                        child: Transform(
-                                                          alignment: Alignment.center,
-                                                          child:IconButton(icon: Icon(CustomIcons.arrowBack, size: 11,color: Color.fromARGB(255, 47, 128, 237),),
-                                                          onPressed: (){
-                                                            setState(() {
-                                                              date = date.add(Duration(days: 1));
-                                                            });
-                                                          },),
-                                                        transform: Matrix4.rotationY(math.pi),),)
-                                                    ],
-                                                  )
-                                                ],
+                                      child: Container(
+                                          margin: EdgeInsets.only(
+                                              left: 16, right: 16),
+                                          child: Column(
+                                            children: <Widget>[
+                                              Container(
+                                                margin:
+                                                    EdgeInsets.only(top: 16),
+                                                child: Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  children: <Widget>[
+                                                    Expanded(
+                                                      child: Text(
+                                                        DateFormat(
+                                                                "dd MMMM, EEEE")
+                                                            .format(date),
+                                                        overflow:
+                                                            TextOverflow.clip,
+                                                        style: TextStyle(
+                                                          fontFamily:
+                                                              "Montserrat-Bold",
+                                                          color: Color.fromARGB(
+                                                              255, 79, 79, 79),
+                                                          fontSize: 22,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    Row(
+                                                      children: <Widget>[
+                                                        Text(
+                                                            DateFormat("dd MMM")
+                                                                .format(date.add(
+                                                                    Duration(
+                                                                        days:
+                                                                            1))),
+                                                            style: TextStyle(
+                                                              fontFamily:
+                                                                  "Montserrat-Regular",
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                              color: Color
+                                                                  .fromARGB(
+                                                                      255,
+                                                                      47,
+                                                                      128,
+                                                                      237),
+                                                              fontSize: 12,
+                                                            )),
+                                                        Container(
+                                                          child: Transform(
+                                                            alignment: Alignment
+                                                                .center,
+                                                            child: IconButton(
+                                                              icon: Icon(
+                                                                CustomIcons
+                                                                    .arrowBack,
+                                                                size: 11,
+                                                                color: Color
+                                                                    .fromARGB(
+                                                                        255,
+                                                                        47,
+                                                                        128,
+                                                                        237),
+                                                              ),
+                                                              onPressed: () {
+                                                                setState(() {
+                                                                  date = date.add(
+                                                                      Duration(
+                                                                          days:
+                                                                              1));
+                                                                  timeWidgets = fetchTime(selectedPlayground.id, date);
+                                                                });
+                                                              },
+                                                            ),
+                                                            transform: Matrix4
+                                                                .rotationY(
+                                                                    math.pi),
+                                                          ),
+                                                        )
+                                                      ],
+                                                    )
+                                                  ],
+                                                ),
                                               ),
-                                            ),
-                                            Container(
-                                              color: Colors.white,
-                                              width: double.infinity,
-                                              child: Row(
-                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                children: <Widget>[
-                                                Row(children: <Widget>[
-                                                  Text("Половина\nплощадки", style: TextStyle(
-                                                    fontFamily: "Montserrat-Regular",
-                                                    color: Color.fromARGB(255, 79, 79, 79),
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 12,
-                                                  )),
-                                                  Transform.scale(child: CupertinoSwitch(value: true, activeColor: Color.fromARGB(255, 47, 128, 237),),
-                                                  scale: 0.7,),
-                                                ],),
-                                                  Container(
-                                                    decoration:BoxDecoration(color: Colors.white),
-                                                    child:Theme(
-                                                      data: ThemeData(canvasColor: Colors.white),
-                                                      child: DropdownButtonHideUnderline(
-                                                      child: DropdownButton(
-                                                        focusColor: Colors.white,
-                                                          iconSize: 24,
-                                                          style: TextStyle(fontFamily: "Montserrat-Regular", fontWeight: FontWeight.bold, color: Color.fromARGB(255, 130, 130, 130)),
-                                                          //elevation: 22,
-                                                          value: str,
-                                                          onChanged: (String newValue) {
-                                                            setState(() {
-                                                              str = newValue;
-                                                            });
-                                                          },
-                                                          items: test.map<DropdownMenuItem<String>>((String valuer) {
-                                                            return DropdownMenuItem<String>(
-                                                              value: valuer,
-                                                              child: Text(valuer),
-                                                            );
-                                                          }).toList()),),),)
-                                              ],),
-                                            ),
-                                            Container(
-                                              margin: EdgeInsets.only(right: 27, bottom: 8),
-                                              child: Row(
-                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                children: <Widget>[
-                                                  Text("Время", style: TextStyle(
-                                                    fontFamily: "Montserrat-Regular",
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Color.fromARGB(255, 130, 130, 130),
-                                                    fontSize: 12,
-                                                  )),
-                                                  Text("Стоимость\nRUB", style: TextStyle(
-                                                    fontFamily: "Montserrat-Regular",
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Color.fromARGB(255, 130, 130, 130),
-                                                    fontSize: 12,
-                                                  )),
-                                                  Text("Статус", style: TextStyle(
-                                                    fontFamily: "Montserrat-Regular",
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Color.fromARGB(255, 130, 130, 130),
-                                                    fontSize: 12,
-                                                  )),
-                                                ],),
-                                            )
-                                          ],))
-                                    ),
-                                  ), preferredSize: Size(double.infinity, 100),
-                                )),
-                          ),
+                                              Container(
+                                                color: Colors.white,
+                                                width: double.infinity,
+                                                child: Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  children: <Widget>[
+                                                    Row(
+                                                      children: <Widget>[
+                                                        Text(
+                                                            "Половина\nплощадки",
+                                                            style: TextStyle(
+                                                              fontFamily:
+                                                                  "Montserrat-Regular",
+                                                              color: Color
+                                                                  .fromARGB(
+                                                                      255,
+                                                                      79,
+                                                                      79,
+                                                                      79),
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                              fontSize: 12,
+                                                            )),
+                                                        Transform.scale(
+                                                          child:
+                                                              CupertinoSwitch(
+                                                            value: true,
+                                                            activeColor:
+                                                                Color.fromARGB(
+                                                                    255,
+                                                                    47,
+                                                                    128,
+                                                                    237),
+                                                          ),
+                                                          scale: 0.7,
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    Container(
+                                                      decoration: BoxDecoration(
+                                                          color: Colors.white),
+                                                      child: Theme(
+                                                        data: ThemeData(
+                                                            canvasColor:
+                                                                Colors.white),
+                                                        child:
+                                                            DropdownButtonHideUnderline(
+                                                          child: DropdownButton(
+                                                              focusColor:
+                                                                  Colors.white,
+                                                              iconSize: 24,
+                                                              style: TextStyle(
+                                                                  fontFamily:
+                                                                      "Montserrat-Regular",
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                  color: Color
+                                                                      .fromARGB(
+                                                                          255,
+                                                                          130,
+                                                                          130,
+                                                                          130)),
+                                                              //elevation: 22,
+                                                              value:
+                                                                  selectedPlayground,
+                                                              onChanged:
+                                                                  (Playground
+                                                                      newValue) {
+                                                                setState(() {
+                                                                  selectedPlayground =
+                                                                      newValue;
+                                                                  timeWidgets = fetchTime(selectedPlayground.id, date);
+                                                                });
+                                                              },
+                                                              items: snapshot
+                                                                  .data
+                                                                  .playgrounds
+                                                                  .map<DropdownMenuItem<Playground>>(
+                                                                      (Playground
+                                                                          valuer) {
+                                                                return DropdownMenuItem<
+                                                                    Playground>(
+                                                                  value: valuer,
+                                                                  child: Text(valuer
+                                                                      .sports[
+                                                                          "name"]
+                                                                      .toString()),
+                                                                );
+                                                              }).toList()),
+                                                        ),
+                                                      ),
+                                                    )
+                                                  ],
+                                                ),
+                                              ),
+                                              Container(
+                                                margin: EdgeInsets.only(
+                                                    right: 27, bottom: 8),
+                                                child: Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  children: <Widget>[
+                                                    Text("Время",
+                                                        style: TextStyle(
+                                                          fontFamily:
+                                                              "Montserrat-Regular",
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          color: Color.fromARGB(
+                                                              255,
+                                                              130,
+                                                              130,
+                                                              130),
+                                                          fontSize: 12,
+                                                        )),
+                                                    Text("Стоимость\nRUB",
+                                                        style: TextStyle(
+                                                          fontFamily:
+                                                              "Montserrat-Regular",
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          color: Color.fromARGB(
+                                                              255,
+                                                              130,
+                                                              130,
+                                                              130),
+                                                          fontSize: 12,
+                                                        )),
+                                                    Text("Статус",
+                                                        style: TextStyle(
+                                                          fontFamily:
+                                                              "Montserrat-Regular",
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          color: Color.fromARGB(
+                                                              255,
+                                                              130,
+                                                              130,
+                                                              130),
+                                                          fontSize: 12,
+                                                        )),
+                                                  ],
+                                                ),
+                                              )
+                                            ],
+                                          ))),
+                                ),
+                                preferredSize: Size(double.infinity, 100),
+                              )),
                         ),
-                      ];
+                      ),
+                    ];
+                  },
+                  body: FutureBuilder(
+                    future: timeWidgets,
+                    builder: (context, AsyncSnapshot snap) {
+                      if (snap.hasData && snap.data.length >= 1) {
+                        return (Container(
+                          margin: EdgeInsets.only(top: 16),
+                          child: Column(
+                            children: <Widget>[
+                              Column(
+                                children: snap.data
+                                    .map<Widget>((time) => TimeWidget(time.to,
+                                        time.price.toString(), !time.isBooked))
+                                    .toList(),
+                              ),
+                              Container(
+                                width: double.infinity,
+                                height: 56,
+                                child: FlatButton(
+                                    child: new Text("Забронировать",
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 14.0,
+                                            fontFamily: "Montserrat-Bold")),
+                                    onPressed: () {
+                                    }),
+                                decoration: new BoxDecoration(
+                                    borderRadius:
+                                        new BorderRadius.circular(30.0),
+                                    color: Color.fromARGB(255, 47, 128, 237)),
+                                margin: EdgeInsets.only(
+                                    left: 16.0, right: 16.0, top: 21.0),
+                              )
+                            ],
+                          ),
+                        ));
+                      } else if (snap.hasData) {
+                        return Container(child: Text("На выбранную дату нет свободных мест", style: TextStyle(
+                            color: Color.fromARGB(255, 130, 130, 130),
+                            fontSize: 14.0,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: "Montserrat-Regular")),
+                        alignment: Alignment.topCenter, margin: EdgeInsets.only(top: 16),);
+                      }
+                      else {
+                        return Center(
+                            child: Container(
+                          child: SizedBox(
+                              child: CircularProgressIndicator(),
+                              width: 30,
+                              height: 30),
+                        ));
+                      }
                     },
-                    body: Container(child: Text("Simple text"))
-              );
+                  ));
             } else {
               return Center(
                   child: Container(
-                    child: SizedBox(
-                        child: CircularProgressIndicator(),
-                        width: 30,
-                        height: 30),
-                  ));
+                child: SizedBox(
+                    child: CircularProgressIndicator(), width: 30, height: 30),
+              ));
             }
           },
         ));
+  }
+}
+
+class TimeWidget extends StatefulWidget {
+  String time;
+  String price;
+  bool isActive;
+
+  TimeWidget(this.time, this.price, this.isActive);
+
+  @override
+  _TimeWidgetState createState() => _TimeWidgetState(time, price, isActive);
+}
+
+class _TimeWidgetState extends State<TimeWidget> {
+  String time;
+  String price;
+  String status = "Занято";
+  bool isActive;
+  bool setTime = false;
+
+  _TimeWidgetState(this.time, this.price, this.isActive);
+
+  @override
+  void initState() {
+    if (isActive) {
+      status = "Свободно";
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      child: Container(
+        color: setTime ? Color.fromARGB(255, 47, 128, 237) : Colors.white,
+        margin: EdgeInsets.only(left: 8, right: 8),
+        padding: EdgeInsets.only(left: 8, top: 8, bottom: 8),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: <Widget>[
+            Expanded(
+              child: Text(
+                time,
+                style: TextStyle(
+                  fontFamily: "Montserrat-Regular",
+                  fontWeight: FontWeight.bold,
+                  color: isActive
+                      ? (setTime
+                          ? Colors.white
+                          : Color.fromARGB(255, 47, 128, 237))
+                      : Color.fromARGB(255, 130, 130, 130),
+                  fontSize: 16,
+                ),
+              ),
+              flex: 3,
+            ),
+            Expanded(
+              child: Text(
+                "\t\t" + price,
+                style: TextStyle(
+                  fontFamily: "Montserrat-Regular",
+                  fontWeight: FontWeight.bold,
+                  color: isActive
+                      ? (setTime
+                          ? Colors.white
+                          : Color.fromARGB(255, 47, 128, 237))
+                      : Color.fromARGB(255, 130, 130, 130),
+                  fontSize: 16,
+                ),
+              ),
+              flex: 3,
+            ),
+            Expanded(
+              child: Text(
+                status,
+                style: TextStyle(
+                  fontFamily: "Montserrat-Regular",
+                  fontWeight: FontWeight.bold,
+                  color: isActive
+                      ? (setTime
+                          ? Colors.white
+                          : Color.fromARGB(255, 47, 128, 237))
+                      : Color.fromARGB(255, 130, 130, 130),
+                  fontSize: 16,
+                ),
+              ),
+              flex: 3,
+            )
+          ],
+        ),
+      ),
+      onTap: () {
+        setState(() {
+          if (isActive) {
+            setTime = !setTime;
+          }
+        });
+      },
+    );
   }
 }

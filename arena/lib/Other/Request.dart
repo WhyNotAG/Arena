@@ -23,14 +23,16 @@ Future refresh() async {
   return await decode["accessToken"];
 }
 
-Future postWithToken(String url) async {
+Future postWithToken(String url, [Map map]) async {
   var token = await getStringValuesSF("accessToken");
   var response = await http.post(url,
+      body: json.encode(map),
       headers: {"Content-type": "application/json", "Authorization": "Bearer ${token}"});
 
   if (response.statusCode == 403) {
     token = refresh();
     response = await http.post(url,
+        body: json.encode(map),
         headers: {"Content-type": "application/json", "Authorization": "Bearer ${token}"});
   }
 

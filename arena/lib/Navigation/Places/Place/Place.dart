@@ -53,6 +53,19 @@ Future<Place> fetchPlace(int id) async {
   }
 }
 
+
+class Sport{
+  String name;
+
+  Sport({this.name});
+
+  factory Sport.fromJson(Map<String, dynamic> json) {
+    return Sport(
+      name: json["name"] as String
+    );
+  }
+
+}
 class Playground {
   int id;
   bool openField;
