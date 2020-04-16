@@ -20,17 +20,23 @@ Future refresh() async {
   var decode = jsonDecode(response.body);
   await addStringToSF("accessToken", decode["accessToken"]);
   await addStringToSF("refreshToken", decode["refreshToken"]);
+  await addIntToSF("expiredIn", decode["expiredIn"]);
   return await decode["accessToken"];
 }
 
 Future postWithToken(String url, [Map map]) async {
   var token = await getStringValuesSF("accessToken");
+  var expIn = await getIntValuesSF("expiredIn");
+
+  if( DateTime.fromMillisecondsSinceEpoch(expIn * 1000).isBefore(DateTime.now()))  {
+    token = await refresh();
+  }
   var response = await http.post(url,
       body: json.encode(map),
       headers: {"Content-type": "application/json", "Authorization": "Bearer ${token}"});
 
-  if (response.statusCode == 403) {
-    token = refresh();
+  if (response.statusCode != 200) {
+    token = await refresh();
     response = await http.post(url,
         body: json.encode(map),
         headers: {"Content-type": "application/json", "Authorization": "Bearer ${token}"});
@@ -42,11 +48,17 @@ Future postWithToken(String url, [Map map]) async {
 
 Future getWithToken(String url) async {
   var token = await getStringValuesSF("accessToken");
+  var expIn = await getIntValuesSF("expiredIn");
+
+  if( DateTime.fromMillisecondsSinceEpoch(expIn * 1000).isBefore(DateTime.now()))  {
+    token = await refresh();
+  }
+
   var response = await http.get(url,
       headers: {"Content-type": "application/json", "Authorization": "Bearer ${token}"});
 
-  if (response.statusCode == 403) {
-    token = refresh();
+  if (response.statusCode != 200) {
+    token = await refresh();
     response = await http.get(url,
         headers: {"Content-type": "application/json", "Authorization": "Bearer ${token}"});
   }

@@ -1,40 +1,402 @@
+import 'dart:convert';
+
 import 'package:arena/Other/CircleThumbShape.dart';
+import 'package:arena/Other/CustomSharedPreferences.dart';
+import 'package:arena/Other/Request.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/physics.dart';
 import 'package:flutter_range_slider/flutter_range_slider.dart' as frs;
+import 'package:http/http.dart' as http;
+import 'package:intl/date_symbol_data_local.dart';
+import 'package:intl/intl.dart';
+import 'package:query_params/query_params.dart';
 
 
-class Filter extends StatelessWidget {
+
+
+class Subway {
+  int id;
+  double longitude;
+  double latitude;
+  String name;
+
+  Subway({this.id, this.longitude, this.latitude, this.name});
+
+  factory Subway.fromJson(Map<String, dynamic> json) {
+    return Subway(
+      id: json["id"] as int,
+      longitude: json["longitude"] as double,
+      latitude: json["latitude"] as double,
+      name: json["name"] as String,
+    );
+  }
+}
+
+class Place {
+  int id; //
+  String name; //
+  double rating; //
+  int countOfRate; //
+  String photo;
+  String timeOfWork;
+  String address; //
+  String info; //
+  bool isFavourite;
+  String workDayEndAt;
+  String workDayStartAt;
+
+  Place(
+      {this.id,
+        this.name,
+        this.rating,
+        this.countOfRate,
+        this.timeOfWork,
+        this.address,
+        this.info,
+        this.isFavourite,
+        this.workDayEndAt,
+        this.workDayStartAt});
+
+  factory Place.fromJson(Map<String, dynamic> json) {
+    return Place(
+        id: json["id"] as int,
+        name: json["name"] as String,
+        rating: json["rating"] as double,
+        countOfRate: json["reviewsCount"] as int,
+        address: json["address"] as String,
+        info: json["description"] as String,
+        isFavourite: json["isFavorite"] as bool,
+        workDayEndAt: json["workDayEndAt"] as String,
+        workDayStartAt: json["workDayStartAt"] as String);
+  }
+}
+
+Future<List<Place>> fetchPlace(Map map) async {
+  List<Place> places = new List<Place>();
+  var response;
+
+  var token = await getStringValuesSF("accessToken");
+
+  String res = "";
+
+  map.forEach((k,v) {
+    if(v != null && k != "subways"){
+     res+= k.toString() + "=" + v.toString() + "&";
+    } else if(v != null) {
+      res+= k.toString() + "=" + v.toString();
+    }
+  });
+
+  print(res);
+
+  if (token != null) {
+    response = await getWithToken("http://217.12.209.180:8080/api/v1/place/?${res}");
+  } else{
+    response = await http.get("http://217.12.209.180:8080/api/v1/place/?${res}",
+        headers: {"Content-type": "application/json"});
+  }
+
+  List<dynamic> responseJson = json.decode(utf8.decode(response.bodyBytes));
+  if (response.statusCode == 200) {
+    List list = json.decode(response.body) as List;
+    print(list);
+    int length = list.length;
+    for (int i = 0; i < length; i++) {
+      places.add(Place.fromJson(responseJson[i]));
+      return places;
+    }
+  } else {
+    throw Exception('Failed to load album');
+  }
+}
+
+Future<List<Subway>> fetchSubway() async {
+  List<Subway> subways = new List<Subway>();
+  var response;
+
+  var token = await getStringValuesSF("accessToken");
+  if (token != null) {
+    response = await getWithToken("http://217.12.209.180:8080/api/v1/subway/");
+  } else{
+    response = await http.get("http://217.12.209.180:8080/api/v1/subway/",
+        headers: {"Content-type": "application/json"});
+  }
+
+  List<dynamic> responseJson = json.decode(utf8.decode(response.bodyBytes));
+  if (response.statusCode == 200) {
+    List list = json.decode(response.body) as List;
+    int length = list.length;
+    for (int i = 0; i < length; i++) {
+      subways.add(Subway.fromJson(responseJson[i]));
+    }
+    return subways;
+  } else {
+    throw Exception('Failed to load album');
+  }
+}
+
+class Filter extends StatefulWidget {
+  @override
+  _FilterState createState() => _FilterState();
+}
+
+class _FilterState extends State<Filter> {
+  Map req = {
+    "sports":null,
+    "hasBaths": null,
+    "hasInventory": null,
+    "hasLockers": null,
+    "hasParking": null,
+    "openField": null,
+    "priceFrom": 0,
+    "priceTo": 10000000,
+    "subways":null,
+  };
+
+  var sportValue = ["Футбол", "Теннис", "Баскетбол", "Волейбол"];
+  String sport;
+
+  Future<List<Subway>> subways;
+  Future places;
+  Subway input;
+
+  int minValue = 0;
+  int maxValue = 100000;
+  RangeValues _values = new RangeValues(0, 12000.0);
+  var firstController = TextEditingController();
+  var secondController = TextEditingController();
+
+  @override
+  void initState() {
+    initializeDateFormatting("ru", null);
+    subways = fetchSubway();
+    places = fetchPlace(req);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: Colors.white,
-      appBar: PreferredSize(preferredSize: Size.fromHeight(112.0), child: TabBar(),),
-      body:Container(color: Colors.white,child: SingleChildScrollView(child:Column(children: <Widget>[
-        FilterWidget(name:"Вид спорта", value:["Все виды","sdd"].toList()),
-        FilterWidget(name:"Метро", value:["Все виды","sdd"].toList()),
-        SwitchWidget(name: "Открытая"),
-        Container(
-          margin: EdgeInsets.only(top: 28, left: 16, right: 20),
-          child: Column(children: <Widget>[
-            Container(width: double.infinity, child: Text("Дополнительно",
-              style: TextStyle(
-                fontFamily: "Montserrat-Regular", fontWeight: FontWeight.bold,
-                fontSize: 12, color: Color.fromARGB(255, 47, 128, 237)
+        appBar: PreferredSize(preferredSize: Size.fromHeight(112.0), child: TabBar(),),
+        body: FutureBuilder<List<Subway>>(
+          future: subways,
+          builder: (context, snapshot) {
+            if(snapshot.hasData) {
+              return Container(color: Colors.white,child: SingleChildScrollView(child:Column(children: <Widget>[
+                Container(
+                    width: double.infinity,
+                    margin: EdgeInsets.only(left: 16, top: 16, right: 16),
+                    child: Column(children: <Widget>[
+                      Container(child: Text("Вид спорта", textAlign: TextAlign.left, style: TextStyle(color: Color.fromARGB(255, 47, 128, 237)),),
+                        width: double.infinity, margin: EdgeInsets.only(bottom: 8.0),),
+                      Container(
+                        decoration: BoxDecoration(color:Colors.white, boxShadow: [
+                          BoxShadow(color: Colors.grey,
+                            blurRadius: 2.0, // has the effect of softening the shadow
+                            spreadRadius: 1.0, // has the effect of extending the shadow
+                            offset: Offset(
+                              0.0, // horizontal, move right 10
+                              0.0, // vertical, move down 10
+                            ),)
+                        ]),
+                        width: double.infinity,
+
+                        child: Stack(children: <Widget>[
+                          Container(width: double.infinity,
+                            margin: EdgeInsets.only(left: 16, right: 20),
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton(
+                                hint: Text("Все Виды"),
+                                  iconSize: 24,
+                                  style: TextStyle(fontFamily: "Montserrat-Regular", fontWeight: FontWeight.bold, color: Color.fromARGB(255, 130, 130, 130)),
+                                  //elevation: 22,
+                                  icon: Icon(Icons.close, color: Colors.red.withAlpha(0),),
+                                  value: sport,
+                                  onChanged: (String newValue) {
+                                    setState(() {
+                                      sport = newValue;
+                                      req["sports"] = newValue;
+                                    });
+                                    places = fetchPlace(req);
+                                  },
+                                  items: sportValue.map<DropdownMenuItem<String>>((String valuer) {
+                                    return DropdownMenuItem<String>(
+                                      value: valuer,
+                                      child: Text(valuer),
+                                    );
+                                  }).toList()),),),
+                          Align(child: Container(child: IconButton(icon: Icon(Icons.arrow_drop_down),),margin: EdgeInsets.only(right: 8.0),),alignment: Alignment.centerRight,)
+                        ],),
+                      )
+                    ],)
                 ),
-              ),
-            ),
-            Container(child: SwitchWidgetExtra(name: "Парковка")),
-            Container(child: SwitchWidgetExtra(name: "Инвентарь")),
-            Container(child: SwitchWidgetExtra(name: "Раздевалки")),
-            Container(child: SwitchWidgetExtra(name: "Душевые")),
-          ],),
-        ),
-        RangeSliderWidget(minValue: 0, maxValue: 15000),
-        ButtonsWidget(),
-      ],),
+                Container(
+                    width: double.infinity,
+                    margin: EdgeInsets.only(left: 16, top: 16, right: 16),
+                    child: Column(children: <Widget>[
+                      Container(child: Text("Метро", textAlign: TextAlign.left, style: TextStyle(color: Color.fromARGB(255, 47, 128, 237)),),
+                        width: double.infinity, margin: EdgeInsets.only(bottom: 8.0),),
+                      Container(
+                        decoration: BoxDecoration(color:Colors.white, boxShadow: [
+                          BoxShadow(color: Colors.grey,
+                            blurRadius: 2.0, // has the effect of softening the shadow
+                            spreadRadius: 1.0, // has the effect of extending the shadow
+                            offset: Offset(
+                              0.0, // horizontal, move right 10
+                              0.0, // vertical, move down 10
+                            ),)
+                        ]),
+                        width: double.infinity,
+
+                        child: Stack(children: <Widget>[
+                          Container(width: double.infinity,
+                            margin: EdgeInsets.only(left: 16, right: 20),
+                            child: Theme(
+                                data: ThemeData(
+                                    canvasColor:
+                                    Colors.white),
+                              child: DropdownButtonHideUnderline(
+                              child: DropdownButton(
+                                  hint: Text("Не выбрано"),
+                                  iconSize: 24,
+                                  style: TextStyle(fontFamily: "Montserrat-Regular", fontWeight: FontWeight.bold, color: Color.fromARGB(255, 130, 130, 130)),
+                                  //elevation: 22,
+                                  icon: Icon(Icons.close, color: Colors.red.withAlpha(0),),
+                                  value: input,
+                                  onChanged: (Subway newValue) {
+                                    setState(() {
+                                      input = newValue;
+                                      req["subways"] = newValue.id;
+                                    });
+                                    places = fetchPlace(req);
+                                  },
+                                  items: snapshot.data.map<DropdownMenuItem<Subway>>((Subway valuer) {
+                                    return DropdownMenuItem<Subway>(
+                                      value: valuer,
+                                      child: Text(valuer.name),
+                                    );
+                                  }).toList()),),)),
+                          Align(child: Container(child: IconButton(icon: Icon(Icons.arrow_drop_down),),margin: EdgeInsets.only(right: 8.0),),alignment: Alignment.centerRight,)
+                        ],),
+                      )
+                    ],)
+                ),
+                    SwitchWidget(name: "Открытая"),
+                    Container(
+                      margin: EdgeInsets.only(top: 28, left: 16, right: 20),
+                      child: Column(children: <Widget>[
+                        Container(width: double.infinity, child: Text("Дополнительно",
+                          style: TextStyle(
+                              fontFamily: "Montserrat-Regular", fontWeight: FontWeight.bold,
+                              fontSize: 12, color: Color.fromARGB(255, 47, 128, 237)
+                          ),
+                        ),
+                        ),
+                        Container(child: SwitchWidgetExtra(name: "Парковка")),
+                        Container(child: SwitchWidgetExtra(name: "Инвентарь")),
+                        Container(child: SwitchWidgetExtra(name: "Раздевалки")),
+                        Container(child: SwitchWidgetExtra(name: "Душевые")),
+                      ],),
+                    ),
+                Container(
+                    margin: EdgeInsets.only(left: 16, right: 16, top: 28),
+                    child: Column(children: <Widget>[
+                      Container(width: double.infinity, child: Text("Стоиомость, RUB",
+                        style: TextStyle(
+                            fontFamily: "Montserrat-Regular", fontWeight: FontWeight.bold,
+                            fontSize: 12, color: Color.fromARGB(255, 47, 128, 237)
+                        ),
+                      ),
+                      ),
+                      Container(
+                        width: double.infinity,
+                        margin: EdgeInsets.only(top: 17),
+                        child: new Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: <Widget>[
+                            new Container(child: new Column(children: <Widget>[
+                              Container(child:new Text("От", style: TextStyle(fontFamily: "Montserrat-Regular", fontSize: 12, fontWeight: FontWeight.bold)), width: 96, alignment: Alignment.topLeft,),
+                              Container(
+                                  margin: EdgeInsets.only(top: 5),
+                                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(5), border: Border.all(color: Colors.grey.withAlpha(75), width: 2),),
+                                  width: 96,
+                                  height: 40,
+                                  child: new TextField(style: TextStyle(fontFamily: "Montserrat-Regular", fontWeight: FontWeight.bold, color: Color.fromARGB(255, 130, 130, 130)),
+                                      decoration: InputDecoration(border: InputBorder.none, contentPadding: new EdgeInsets.fromLTRB(
+                                          10.0, 0.0, 10.0, 10.0),),
+                                      controller: firstController,
+                                      onChanged: (value) {
+                                        setState(() {
+                                          if (int.parse(firstController.text) <= 100000) {minValue = int.parse(firstController.text); firstController.text = minValue.toString();}
+                                          if (minValue >= maxValue) { maxValue = minValue; secondController.text = maxValue.toString();}
+                                          firstController.text = minValue.toString();
+                                        });
+                                      }, keyboardType: TextInputType.number))
+                            ],),),
+                            new Container(child:  new Column(children: <Widget>[
+                              Container(child: new Text("До",
+                                style: TextStyle(fontFamily: "Montserrat-Regular", fontSize: 12, fontWeight: FontWeight.bold), ), width: 96,),
+                              Container(
+                                margin: EdgeInsets.only(top: 5),
+                                decoration: BoxDecoration(borderRadius: BorderRadius.circular(5), border: Border.all(color: Colors.grey.withAlpha(75), width: 2),),
+                                width: 96,
+                                height: 40,
+                                child: new TextField(style: TextStyle(fontFamily: "Montserrat-Regular", fontWeight: FontWeight.bold, color: Color.fromARGB(255, 130, 130, 130)), decoration: InputDecoration(border: InputBorder.none, contentPadding: new EdgeInsets.fromLTRB(
+                                    10.0, 0.0, 10.0, 10.0),), controller: secondController,onChanged: (value) {
+                                  setState(() {
+                                    if(int.parse(secondController.text) <= 100000) {maxValue = int.parse(secondController.text); secondController.text = maxValue.toString();}
+                                    if (minValue >= maxValue) { minValue = maxValue; firstController.text = minValue.toString();}
+                                    secondController.text = maxValue.toString();
+                                  });
+                                }, keyboardType: TextInputType.number),)
+                            ],))
+                          ],),
+                      ),
+                      Container(
+                        margin: EdgeInsets.only(top: 31),
+                        child:SliderTheme(
+                          data: SliderTheme.of(context).copyWith(
+                            activeTrackColor: Color.fromARGB(255, 47, 128, 237),
+                            thumbColor: Colors.grey,
+                            overlayShape: RoundSliderOverlayShape(overlayRadius: 1),
+                            thumbShape: CircleThumbShape(thumbRadius: 15),
+                          ),
+                          child: frs.RangeSlider(
+                            min: 0.0,
+                            max: 100000.0,
+                            lowerValue: minValue.toDouble(),
+                            upperValue: maxValue.toDouble(),
+                            showValueIndicator: true,
+                            valueIndicatorMaxDecimals: 1,
+                            divisions: 500,
+                            onChanged: (double newLowerValue, double newUpperValue) {
+                              setState(() {
+                                minValue = newLowerValue.toInt();
+                                firstController.text = minValue.toString();
+                                maxValue = newUpperValue.toInt();
+                                secondController.text = maxValue.toString();
+                              });
+                            },
+                          ),
+                        ),),
+
+
+                    ])
+                ),
+                    ButtonsWidget(),
+                  ],),
+                  )
+              );
+            }else {
+              return Center(
+                  child: Container(
+                    child: SizedBox(
+                        child: CircularProgressIndicator(), width: 30, height: 30),
+                  ));
+            }
+          },
         )
-      )
     );
   }
 }
@@ -248,114 +610,6 @@ class _SwitchWidgetExtraState extends State<SwitchWidgetExtra> {
     ),);
   }
 }
-
-class RangeSliderWidget extends StatefulWidget {
-  int minValue;
-  int maxValue;
-
-  RangeSliderWidget({Key key, @required this.minValue, @required this.maxValue}) : super(key: key);
-  @override
-  _RangeSliderWidgetState createState() => _RangeSliderWidgetState(minValue, maxValue);
-}
-
-class _RangeSliderWidgetState extends State<RangeSliderWidget> {
-  int minValue;
-  int maxValue;
-  RangeValues _values = new RangeValues(0, 12000.0);
-  var firstController = TextEditingController();
-  var secondController = TextEditingController();
-  _RangeSliderWidgetState(this.minValue, this.maxValue);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.only(left: 16, right: 16, top: 28),
-      child: Column(children: <Widget>[
-        Container(width: double.infinity, child: Text("Стоиомость, RUB",
-          style: TextStyle(
-              fontFamily: "Montserrat-Regular", fontWeight: FontWeight.bold,
-              fontSize: 12, color: Color.fromARGB(255, 47, 128, 237)
-          ),
-        ),
-        ),
-        Container(
-            width: double.infinity,
-            margin: EdgeInsets.only(top: 17),
-            child: new Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-              new Container(child: new Column(children: <Widget>[
-                Container(child:new Text("От", style: TextStyle(fontFamily: "Montserrat-Regular", fontSize: 12, fontWeight: FontWeight.bold)), width: 96, alignment: Alignment.topLeft,),
-                Container(
-                    margin: EdgeInsets.only(top: 5),
-                    decoration: BoxDecoration(borderRadius: BorderRadius.circular(5), border: Border.all(color: Colors.grey.withAlpha(75), width: 2),),
-                    width: 96,
-                    height: 40,
-                    child: new TextField(style: TextStyle(fontFamily: "Montserrat-Regular", fontWeight: FontWeight.bold, color: Color.fromARGB(255, 130, 130, 130)),
-                        decoration: InputDecoration(border: InputBorder.none, contentPadding: new EdgeInsets.fromLTRB(
-                        10.0, 0.0, 10.0, 10.0),),
-                      controller: firstController,
-                    onChanged: (value) {
-                  setState(() {
-                    if (int.parse(firstController.text) <= 100000) {minValue = int.parse(firstController.text); firstController.text = minValue.toString();}
-                    if (minValue >= maxValue) { maxValue = minValue; secondController.text = maxValue.toString();}
-                    firstController.text = minValue.toString();
-                  });
-                }, keyboardType: TextInputType.number))
-              ],),),
-              new Container(child:  new Column(children: <Widget>[
-                Container(child: new Text("До",
-                  style: TextStyle(fontFamily: "Montserrat-Regular", fontSize: 12, fontWeight: FontWeight.bold), ), width: 96,),
-                Container(
-                  margin: EdgeInsets.only(top: 5),
-                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(5), border: Border.all(color: Colors.grey.withAlpha(75), width: 2),),
-                  width: 96,
-                  height: 40,
-                  child: new TextField(style: TextStyle(fontFamily: "Montserrat-Regular", fontWeight: FontWeight.bold, color: Color.fromARGB(255, 130, 130, 130)), decoration: InputDecoration(border: InputBorder.none, contentPadding: new EdgeInsets.fromLTRB(
-                      10.0, 0.0, 10.0, 10.0),), controller: secondController,onChanged: (value) {
-                setState(() {
-                  if(int.parse(secondController.text) <= 100000) {maxValue = int.parse(secondController.text); secondController.text = maxValue.toString();}
-                  if (minValue >= maxValue) { minValue = maxValue; firstController.text = minValue.toString();}
-                  secondController.text = maxValue.toString();
-                  });
-                }, keyboardType: TextInputType.number),)
-            ],))
-            ],),
-    ),
-       Container(
-         margin: EdgeInsets.only(top: 31),
-         child:SliderTheme(
-         data: SliderTheme.of(context).copyWith(
-           activeTrackColor: Color.fromARGB(255, 47, 128, 237),
-           thumbColor: Colors.grey,
-           overlayShape: RoundSliderOverlayShape(overlayRadius: 1),
-           thumbShape: CircleThumbShape(thumbRadius: 15),
-         ),
-         child: frs.RangeSlider(
-           min: 0.0,
-           max: 100000.0,
-           lowerValue: minValue.toDouble(),
-           upperValue: maxValue.toDouble(),
-           showValueIndicator: true,
-           valueIndicatorMaxDecimals: 1,
-           divisions: 500,
-           onChanged: (double newLowerValue, double newUpperValue) {
-             setState(() {
-               minValue = newLowerValue.toInt();
-               firstController.text = minValue.toString();
-               maxValue = newUpperValue.toInt();
-               secondController.text = maxValue.toString();
-             });
-           },
-         ),
-       ),),
-
-
-      ])
-    );
-  }
-}
-
 
 class ButtonsWidget extends StatelessWidget {
   @override

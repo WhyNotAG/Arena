@@ -396,6 +396,7 @@ class EnterButton extends StatelessWidget {
       var decode = jsonDecode(responce.body);
       addStringToSF("accessToken", decode["accessToken"]);
       addStringToSF("refreshToken", decode["refreshToken"]);
+      addIntToSF("expiredIn", decode["expiredIn"]);
       addStringToSF("name", name);
       addIntToSF("enterCode", responce.statusCode);
       addStringToSF("phone", null);

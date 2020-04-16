@@ -10,6 +10,9 @@ import 'package:page_indicator/page_indicator.dart';
 import 'package:smooth_star_rating/smooth_star_rating.dart';
 import 'package:arena/Other/Request.dart';
 
+import 'Places/Place/Booking.dart';
+import 'Places/Place/Place.dart';
+
 
 List<PlaceWidget> parsePlace(String responseBody) {
   final parsed = json.decode(responseBody).cast<Map<String, dynamic>>();
@@ -245,6 +248,7 @@ class _FavouritesState extends State<Favourites> {
   }
 }
 
+
 class PlaceWidget extends StatelessWidget {
   int id;
   bool isFavourite;
@@ -262,7 +266,8 @@ class PlaceWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return InkWell(
+      child: Container(
         margin: EdgeInsets.only(top: 16, left: 16, right: 16),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -279,7 +284,7 @@ class PlaceWidget extends StatelessWidget {
           ],
           borderRadius: BorderRadius.circular(3),
           border:
-              Border.all(color: Color.fromARGB(255, 47, 128, 237), width: 1.5),
+          Border.all(color: Color.fromARGB(255, 47, 128, 237), width: 1.5),
         ),
         child: Container(
           margin: EdgeInsets.only(top: 24),
@@ -301,13 +306,13 @@ class PlaceWidget extends StatelessWidget {
                 child: new Row(
                   children: <Widget>[
                     Flexible(child: InfoPlace(rating, countOfRate)),
-                    FavouritesButton(id: id, isFavourite: isFavourite,),
+                    FavouritesButton(isFavourite: isFavourite, id: id,),
                   ],
                 ),
               ),
               WorkTimeWidget("Время работы: ", timeOfWork),
               WorkTimeWidget("Адрес:", address),
-              PlaceButtons(),
+              PlaceButtons(id),
               Container(
                 margin: EdgeInsets.only(left: 25, right: 24, top: 26),
                 child: Text(
@@ -315,13 +320,19 @@ class PlaceWidget extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   maxLines: 5,
                   style:
-                      TextStyle(fontSize: 14, fontFamily: "Montserrat-Regular"),
+                  TextStyle(fontSize: 14, fontFamily: "Montserrat-Regular",),
                 ),
               ),
               PhotoPage(),
             ],
           ),
-        ));
+        ),
+      ),
+      onTap: () { Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => PlaceInfoWidget(id)),
+      );},
+    );
   }
 }
 
@@ -335,45 +346,44 @@ class InfoPlace extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
         child: new Row(children: <Widget>[
-      Expanded(
-        child: Container(
-          margin: EdgeInsets.only(left: 22.0, top: 0),
-          child: SmoothStarRating(
-              allowHalfRating: false,
-              starCount: 5,
-              rating: rating,
-              size: 14.0,
-              filledIconData: CustomIcons.fill_star,
-              defaultIconData: CustomIcons.star,
-              //halfFilledIconData: CustomIcons.fill_star,
-              color: Colors.orangeAccent,
-              borderColor: Colors.orangeAccent,
-              spacing: 0.0),
-        ),
-      ),
-      Container(
-        child: Text(
-          rating.toString(),
-          style: TextStyle(
-            fontFamily: "Montserrat-Bold",
-            fontSize: 16,
+          Container(
+            margin: EdgeInsets.only(left: 22.0, top: 0),
+            child: SmoothStarRating(
+                allowHalfRating: false,
+                starCount: 5,
+                rating: rating,
+                size: 14.0,
+                filledIconData: CustomIcons.fill_star,
+                defaultIconData: CustomIcons.star,
+                halfFilledIconData: CustomIcons.fill_star,
+                color: Colors.orangeAccent,
+                borderColor: Colors.orangeAccent,
+                spacing: 0.0),
           ),
-          textAlign: TextAlign.start,
-        ),
-        margin: EdgeInsets.only(left: 12, top: 0),
-      ),
-      Container(
-        child: Text(
-          "${countOfRate.toString()} оценки",
-          style: TextStyle(
-            fontFamily: "Montserrat-Regular",
-            fontSize: 13,
+          Container(
+            child: Text(
+              rating.toString(),
+              style: TextStyle(
+                fontFamily: "Montserrat-Bold",
+                fontSize: 16,
+              ),
+              textAlign: TextAlign.start,
+            ),
+            margin: EdgeInsets.only(left: 12, top: 0),
           ),
-          textAlign: TextAlign.start,
-        ),
-        margin: EdgeInsets.only(left: 13, top: 0),
-      )
-    ]));
+          Expanded(child:   Container(
+            child: Text(
+              "${countOfRate.toString()} оценки",
+              overflow: TextOverflow.clip,
+              style: TextStyle(
+                fontFamily: "Montserrat-Regular",
+                fontSize: 13,
+              ),
+              textAlign: TextAlign.start,
+            ),
+            margin: EdgeInsets.only(left: 13, top: 0),
+          ),)
+        ]));
   }
 }
 
@@ -397,18 +407,19 @@ class WorkTimeWidget extends StatelessWidget {
           ),
           Expanded(
               child: Container(
-            margin: EdgeInsets.only(left: 8.0),
-            child: Text(
-              param,
-              style: TextStyle(
-                  fontFamily: "Montserrat-Bold",
-                  color: Colors.black54,
-                  fontSize: 14),
-            ),
-          ))
+                margin: EdgeInsets.only(left: 8.0),
+                child: Text(
+                  param,
+                  style: TextStyle(
+                      fontFamily: "Montserrat-Bold",
+                      color: Colors.black54,
+                      fontSize: 14),
+                ),
+              ))
         ]));
   }
 }
+
 
 class FavouritesButton extends StatefulWidget {
   bool isFavourite;
@@ -456,7 +467,7 @@ class _FavouritesButtonState extends State<FavouritesButton> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.only(left: 80, bottom: 0.0, right: 24),
+      margin: EdgeInsets.only(left: 0, bottom: 0.0, right: 24),
       child: IconButton(
         icon: Icon(
           _icon,
@@ -475,6 +486,10 @@ class _FavouritesButtonState extends State<FavouritesButton> {
 }
 
 class PlaceButtons extends StatelessWidget {
+  int id;
+
+  PlaceButtons(this.id);
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -529,7 +544,7 @@ class PlaceButtons extends StatelessWidget {
                   fontSize: 14),
             ),
           ),
-          PlaceDateButton(),
+          PlaceDateButton(id),
           PlacePhoneButton()
         ],
       ),
@@ -538,6 +553,10 @@ class PlaceButtons extends StatelessWidget {
 }
 
 class PlaceDateButton extends StatelessWidget {
+  int id;
+
+  PlaceDateButton(this.id);
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -563,7 +582,12 @@ class PlaceDateButton extends StatelessWidget {
           color: Colors.white,
           size: 16,
         ),
-        onPressed: () {},
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => Booking(id)),
+          );
+        },
       ),
       margin: EdgeInsets.only(left: 22),
     );

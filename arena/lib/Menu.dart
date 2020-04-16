@@ -1,6 +1,6 @@
 import 'package:arena/Navigation/Favourite.dart';
 import 'package:arena/Navigation/Places/Places.dart';
-import 'package:arena/Navigation/User.dart';
+import 'package:arena/Navigation/User/User.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:arena/Icons/custom_icons_icons.dart';

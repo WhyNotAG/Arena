@@ -228,7 +228,7 @@ class _PlaceInfoWidgetState extends State<PlaceInfoWidget> {
                                 actions: <Widget>[
                                   IconButton(
                                     icon: Icon(
-                                      CustomIcons.star,
+                                      snapshot.data.isFavourite ? CustomIcons.fill_star : CustomIcons.star,
                                       size: 28,
                                       color: Colors.amber,
                                     ),
