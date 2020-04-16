@@ -9,6 +9,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:page_indicator/page_indicator.dart';
 import 'package:smooth_star_rating/smooth_star_rating.dart';
@@ -109,6 +110,28 @@ Future<List<PlaceWidget>> fetchPlaceBySport(String sport) async {
   }
 }
 
+List<PlaceWidget> filter(List<Place> places) {
+  List<PlaceWidget> placeWidgets = List();
+  for (int i = 0; i < places.length; i++) {
+    if (places[i].isFavourite == null) { places[i].isFavourite = false;}
+    var count = places[i].countOfRate;
+    if(count == null) {
+      count = 0;
+    }
+    placeWidgets.add(PlaceWidget(
+        places[i].id,
+        places[i].isFavourite,
+        places[i].name,
+        places[i].rating,
+        count,
+        "places[i].photo",
+        (places[i].workDayStartAt.toString().replaceRange(5, 8, "-")+places[i].workDayEndAt.toString().replaceRange(5, 8, "")),
+        places[i].address,
+        places[i].info));
+  }
+  return placeWidgets;
+}
+
 class Place {
   int id; //
   String name; //
@@ -192,7 +215,37 @@ class _PlacesState extends State<Places> {
                   children: <Widget>[
                     Row(
                       children: <Widget>[
-                        TabBarButton(),
+                        Container(
+                          decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(30),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey,
+                                  blurRadius: 2.0, // has the effect of softening the shadow
+                                  spreadRadius: 0.0, // has the effect of extending the shadow
+                                  offset: Offset(
+                                    0.0, // horizontal, move right 10
+                                    0.0, // vertical, move down 10
+                                  ),
+                                )
+                              ]),
+                          child: IconButton(
+                              icon: Icon(
+                                CustomIcons.filter,
+                                color: Color.fromARGB(255, 47, 128, 237),
+                              ),
+                              onPressed: () async {
+                                List<Place> times = await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => Filter()),
+                                );
+                                setState(() {
+                                  filteredList = filter(times);
+                                });
+                              }),
+                          margin: EdgeInsets.only(left: 17, top: 53),
+                        ),
                         Flexible(
                             child: Container(
                           decoration: BoxDecoration(

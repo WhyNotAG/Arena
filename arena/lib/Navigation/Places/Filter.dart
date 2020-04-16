@@ -12,6 +12,8 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 import 'package:query_params/query_params.dart';
 
+import 'Places.dart';
+
 
 
 
@@ -33,44 +35,44 @@ class Subway {
   }
 }
 
-class Place {
-  int id; //
-  String name; //
-  double rating; //
-  int countOfRate; //
-  String photo;
-  String timeOfWork;
-  String address; //
-  String info; //
-  bool isFavourite;
-  String workDayEndAt;
-  String workDayStartAt;
-
-  Place(
-      {this.id,
-        this.name,
-        this.rating,
-        this.countOfRate,
-        this.timeOfWork,
-        this.address,
-        this.info,
-        this.isFavourite,
-        this.workDayEndAt,
-        this.workDayStartAt});
-
-  factory Place.fromJson(Map<String, dynamic> json) {
-    return Place(
-        id: json["id"] as int,
-        name: json["name"] as String,
-        rating: json["rating"] as double,
-        countOfRate: json["reviewsCount"] as int,
-        address: json["address"] as String,
-        info: json["description"] as String,
-        isFavourite: json["isFavorite"] as bool,
-        workDayEndAt: json["workDayEndAt"] as String,
-        workDayStartAt: json["workDayStartAt"] as String);
-  }
-}
+//class Place {
+//  int id; //
+//  String name; //
+//  double rating; //
+//  int countOfRate; //
+//  String photo;
+//  String timeOfWork;
+//  String address; //
+//  String info; //
+//  bool isFavourite;
+//  String workDayEndAt;
+//  String workDayStartAt;
+//
+//  Place(
+//      {this.id,
+//        this.name,
+//        this.rating,
+//        this.countOfRate,
+//        this.timeOfWork,
+//        this.address,
+//        this.info,
+//        this.isFavourite,
+//        this.workDayEndAt,
+//        this.workDayStartAt});
+//
+//  factory Place.fromJson(Map<String, dynamic> json) {
+//    return Place(
+//        id: json["id"] as int,
+//        name: json["name"] as String,
+//        rating: json["rating"] as double,
+//        countOfRate: json["reviewsCount"] as int,
+//        address: json["address"] as String,
+//        info: json["description"] as String,
+//        isFavourite: json["isFavorite"] as bool,
+//        workDayEndAt: json["workDayEndAt"] as String,
+//        workDayStartAt: json["workDayStartAt"] as String);
+//  }
+//}
 
 Future<List<Place>> fetchPlace(Map map) async {
   List<Place> places = new List<Place>();
@@ -81,13 +83,12 @@ Future<List<Place>> fetchPlace(Map map) async {
   String res = "";
 
   map.forEach((k,v) {
-    if(v != null && k != "subways"){
+    if(v != null){
      res+= k.toString() + "=" + v.toString() + "&";
-    } else if(v != null) {
-      res+= k.toString() + "=" + v.toString();
     }
   });
 
+  res = res.substring(0, res.length-2);
   print(res);
 
   if (token != null) {
@@ -100,12 +101,12 @@ Future<List<Place>> fetchPlace(Map map) async {
   List<dynamic> responseJson = json.decode(utf8.decode(response.bodyBytes));
   if (response.statusCode == 200) {
     List list = json.decode(response.body) as List;
-    print(list);
     int length = list.length;
+    print(length);
     for (int i = 0; i < length; i++) {
       places.add(Place.fromJson(responseJson[i]));
-      return places;
     }
+    return places;
   } else {
     throw Exception('Failed to load album');
   }
@@ -158,6 +159,7 @@ class _FilterState extends State<Filter> {
   String sport;
 
   Future<List<Subway>> subways;
+  List<Place> resPlace;
   Future places;
   Subway input;
 
@@ -166,6 +168,13 @@ class _FilterState extends State<Filter> {
   RangeValues _values = new RangeValues(0, 12000.0);
   var firstController = TextEditingController();
   var secondController = TextEditingController();
+
+  bool hasParking = false;
+  bool hasBaths = false;
+  bool hasInventory = false;
+  bool hasLockers = false;
+  bool openField = true;
+  bool closedField = true;
 
   @override
   void initState() {
@@ -217,8 +226,8 @@ class _FilterState extends State<Filter> {
                                     setState(() {
                                       sport = newValue;
                                       req["sports"] = newValue;
+                                      places = fetchPlace(req);
                                     });
-                                    places = fetchPlace(req);
                                   },
                                   items: sportValue.map<DropdownMenuItem<String>>((String valuer) {
                                     return DropdownMenuItem<String>(
@@ -268,8 +277,8 @@ class _FilterState extends State<Filter> {
                                     setState(() {
                                       input = newValue;
                                       req["subways"] = newValue.id;
+                                      places = fetchPlace(req);
                                     });
-                                    places = fetchPlace(req);
                                   },
                                   items: snapshot.data.map<DropdownMenuItem<Subway>>((Subway valuer) {
                                     return DropdownMenuItem<Subway>(
@@ -282,7 +291,58 @@ class _FilterState extends State<Filter> {
                       )
                     ],)
                 ),
-                    SwitchWidget(name: "Открытая"),
+                Container(
+                    width: double.infinity,
+                    //height: 30,
+                    margin: EdgeInsets.only(left: 16, right: 20, top: 28),
+                    child:  new Column(children: <Widget>[
+                      Container(
+                        width: double.infinity,
+                        child:new Text("Тип площадки", style: TextStyle(fontFamily: "Montserrat-Regular", fontWeight: FontWeight.bold, fontSize: 12, color: Color.fromARGB(255, 47, 128, 237)), textAlign: TextAlign.left,),),
+                      Container(
+                        margin: EdgeInsets.only(top: 8),
+                        child: new Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: <Widget>[
+                            Container(child: Text("Открытая", style: TextStyle(fontFamily: "Montserrat-Regular", fontWeight: FontWeight.bold, color: Color.fromARGB(255, 130, 130, 130)),)),
+                            Container(child: CupertinoSwitch(value: openField,
+                              onChanged: (value) {
+                                setState(() {
+                                  openField = value;
+                                  if(!openField){
+                                    closedField = true;
+                                  }
+                                  if(openField && closedField) {
+                                    req["openField"] = null;
+                                  } else {req["openField"] = openField;}
+                                  places = fetchPlace(req);
+                                });
+                              },
+                              activeColor: Color.fromARGB(255, 47, 128, 237),),)
+                          ],
+                        ),),
+                      new Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
+                          Container(child: Text("Крытая", style: TextStyle(fontFamily: "Montserrat-Regular", fontWeight: FontWeight.bold, color: Color.fromARGB(255, 130, 130, 130)),),),
+                          Container(child: CupertinoSwitch(value: closedField,
+                            onChanged: (value) {
+                              setState(() {
+                                closedField = value;
+                                if(!closedField){
+                                  openField = true;
+                                }
+                                if(openField && closedField) {
+                                  req["openField"] = null;
+                                } else {req["openField"] = openField;}
+                                places = fetchPlace(req);
+                              });
+                            },
+                            activeColor: Color.fromARGB(255, 47, 128, 237),),)
+                        ],
+                      ),
+                      Container(margin: EdgeInsets.only(top: 23, left: 8, right: 8), height: 1, color: Color.fromARGB(100, 47, 128, 237) )
+                    ],)),
                     Container(
                       margin: EdgeInsets.only(top: 28, left: 16, right: 20),
                       child: Column(children: <Widget>[
@@ -293,10 +353,66 @@ class _FilterState extends State<Filter> {
                           ),
                         ),
                         ),
-                        Container(child: SwitchWidgetExtra(name: "Парковка")),
-                        Container(child: SwitchWidgetExtra(name: "Инвентарь")),
-                        Container(child: SwitchWidgetExtra(name: "Раздевалки")),
-                        Container(child: SwitchWidgetExtra(name: "Душевые")),
+                        Container(child: new Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: <Widget>[
+                            Container(child: Text("Парковка", style: TextStyle(fontFamily: "Montserrat-Regular", fontWeight: FontWeight.bold, color: Color.fromARGB(255, 130, 130, 130)),)),
+                            Container(child: CupertinoSwitch(value: hasParking,
+                              onChanged: (value) {
+                                setState(() {
+                                  hasParking = value;
+                                  req["hasParking"] = hasParking;
+                                  places = fetchPlace(req);
+                                });
+                              },
+                              activeColor: Color.fromARGB(255, 47, 128, 237),),)
+                          ],
+                        ),),
+                        Container(child: new Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: <Widget>[
+                            Container(child: Text("Инвентарь", style: TextStyle(fontFamily: "Montserrat-Regular", fontWeight: FontWeight.bold, color: Color.fromARGB(255, 130, 130, 130)),)),
+                            Container(child: CupertinoSwitch(value: hasInventory,
+                              onChanged: (value) {
+                                setState(() {
+                                  hasInventory = value;
+                                  req["hasInventory"] = hasInventory;
+                                  places = fetchPlace(req);
+                                });
+                              },
+                              activeColor: Color.fromARGB(255, 47, 128, 237),),)
+                          ],
+                        ),),
+                        Container(child: new Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: <Widget>[
+                            Container(child: Text("Раздевалки", style: TextStyle(fontFamily: "Montserrat-Regular", fontWeight: FontWeight.bold, color: Color.fromARGB(255, 130, 130, 130)),)),
+                            Container(child: CupertinoSwitch(value: hasLockers,
+                              onChanged: (value) {
+                                setState(() {
+                                  hasLockers = value;
+                                  req["hasLockers"] = hasLockers;
+                                  places = fetchPlace(req);
+                                });
+                              },
+                              activeColor: Color.fromARGB(255, 47, 128, 237),),)
+                          ],
+                        ),),
+                        Container(child: new Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: <Widget>[
+                            Container(child: Text("Душевые", style: TextStyle(fontFamily: "Montserrat-Regular", fontWeight: FontWeight.bold, color: Color.fromARGB(255, 130, 130, 130)),)),
+                            Container(child: CupertinoSwitch(value: hasBaths,
+                              onChanged: (value) {
+                                setState(() {
+                                  hasBaths = value;
+                                  req["hasBaths"] = hasBaths;
+                                  places = fetchPlace(req);
+                                });
+                              },
+                              activeColor: Color.fromARGB(255, 47, 128, 237),),)
+                          ],
+                        ),),
                       ],),
                     ),
                 Container(
@@ -331,6 +447,9 @@ class _FilterState extends State<Filter> {
                                           if (int.parse(firstController.text) <= 100000) {minValue = int.parse(firstController.text); firstController.text = minValue.toString();}
                                           if (minValue >= maxValue) { maxValue = minValue; secondController.text = maxValue.toString();}
                                           firstController.text = minValue.toString();
+                                          req["From"] = minValue;
+                                          req["To"] = maxValue;
+                                          places = fetchPlace(req);
                                         });
                                       }, keyboardType: TextInputType.number))
                             ],),),
@@ -348,6 +467,9 @@ class _FilterState extends State<Filter> {
                                     if(int.parse(secondController.text) <= 100000) {maxValue = int.parse(secondController.text); secondController.text = maxValue.toString();}
                                     if (minValue >= maxValue) { minValue = maxValue; firstController.text = minValue.toString();}
                                     secondController.text = maxValue.toString();
+                                    req["From"] = minValue;
+                                    req["To"] = maxValue;
+                                    places = fetchPlace(req);
                                   });
                                 }, keyboardType: TextInputType.number),)
                             ],))
@@ -378,13 +500,83 @@ class _FilterState extends State<Filter> {
                                 secondController.text = maxValue.toString();
                               });
                             },
+                            onChangeEnd: (double newLowerValue, double newUpperValue) {
+                              setState(() {
+                                req["From"] = newLowerValue;
+                                req["To"] = newUpperValue;
+                                places = fetchPlace(req);
+                              });
+                            },
                           ),
                         ),),
 
 
                     ])
                 ),
-                    ButtonsWidget(),
+                Container(
+                  width: double.infinity,
+                  margin: EdgeInsets.only(top: 16),
+                  decoration: BoxDecoration(color: Colors.white,boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withAlpha(50),
+                      blurRadius: 1.0, // has the effect of softening the shadow
+                      spreadRadius: -1.5, // has the effect of extending the shadow
+                      offset: Offset(
+                        0.0, // horizontal, move right 10
+                        -4, // vertical, move down 10
+                      ),
+                    )
+                  ],),
+                  child: Column(children: <Widget>[
+                    Container(
+                      margin: EdgeInsets.only(left: 16, right: 16, top: 32),
+                      width: double.infinity,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
+                        Text("Найдено мест",
+                          style: TextStyle(fontFamily: "Montserrat-Regular",
+                              fontWeight: FontWeight.bold, fontSize: 16, color: Colors.grey),),
+                        FutureBuilder<List<Place>>(
+                          future: places,
+                          builder: (context, snapshotPlace){
+                            if(snapshotPlace.hasData) {
+                              resPlace = snapshotPlace.data;
+                              return Text(snapshotPlace.data.length.toString(), style: TextStyle(fontFamily: "Montserrat-Regular",
+                                  fontWeight: FontWeight.bold, fontSize: 16, color: Colors.grey),);
+                            } else {
+                              return Container(
+                                child: SizedBox(
+                                    child: CircularProgressIndicator(), width: 30, height: 30),
+                              );
+                            }
+                          },
+                        )
+                      ],)),
+                    Container(
+                      margin: EdgeInsets.only(left: 16, right: 16, top: 12),
+                      decoration: BoxDecoration(borderRadius: new BorderRadius.circular(30.0),
+                        color: Color.fromARGB(255, 47, 128, 237),),
+                      width: double.infinity, height: 56,
+                      child: FlatButton(child: Text("ПОКАЗАТЬ",
+                        style: TextStyle(fontFamily: "Montserrat-Bold", fontSize: 12,
+                            color: Colors.white, fontWeight: FontWeight.bold),),
+                        color: Color.fromARGB(255, 47, 128, 237),
+                      onPressed: (){
+                        Navigator.pop(context, resPlace);
+                      },),),
+
+                    Container(
+                      width: double.infinity,
+                      height: 56,
+                      margin: EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 35),
+                      decoration: BoxDecoration(border:
+                      Border.all(color: Color.fromARGB(255, 47, 128, 237),width: 2),
+                          borderRadius: BorderRadius.circular(30)),
+                      child: FlatButton(child: Text("СБРОСИТЬ",
+                        style: TextStyle(fontFamily: "Montserrat-Bold", fontSize: 12,
+                            color: Color.fromARGB(255, 47, 128, 237), fontWeight: FontWeight.bold),),),)
+                  ],),)
                   ],),
                   )
               );
@@ -512,72 +704,6 @@ class _FilterWidgetState extends State<FilterWidget> {
   }
 }
 
-
-class SwitchWidget extends StatefulWidget {
-  String name;
-
- SwitchWidget({Key key, @required this.name,}) : super(key: key);
-
-  @override
-  _SwitchWidgetState createState() => _SwitchWidgetState(name);
-}
-
-class _SwitchWidgetState extends State<SwitchWidget> {
-  String name;
-  bool isSwitched = true;
-  bool isSwitched2 = true;
-
-  _SwitchWidgetState(this.name);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      //height: 30,
-      margin: EdgeInsets.only(left: 16, right: 20, top: 28),
-      child:  new Column(children: <Widget>[
-        Container(
-          width: double.infinity,
-          child:new Text("Тип площадки", style: TextStyle(fontFamily: "Montserrat-Regular", fontWeight: FontWeight.bold, fontSize: 12, color: Color.fromARGB(255, 47, 128, 237)), textAlign: TextAlign.left,),),
-        Container(
-          margin: EdgeInsets.only(top: 8),
-          child: new Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            Container(child: Text(name, style: TextStyle(fontFamily: "Montserrat-Regular", fontWeight: FontWeight.bold, color: Color.fromARGB(255, 130, 130, 130)),)),
-            Container(child: CupertinoSwitch(value: isSwitched,
-              onChanged: (value) {
-                setState(() {
-                  isSwitched = value;
-                  if(!isSwitched){
-                    isSwitched2 = true;
-                  }
-                });
-              },
-              activeColor: Color.fromARGB(255, 47, 128, 237),),)
-          ],
-        ),),
-        new Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            Container(child: Text("Крытая", style: TextStyle(fontFamily: "Montserrat-Regular", fontWeight: FontWeight.bold, color: Color.fromARGB(255, 130, 130, 130)),),),
-            Container(child: CupertinoSwitch(value: isSwitched2,
-              onChanged: (value) {
-                setState(() {
-                  isSwitched2 = value;
-                  if(!isSwitched2){
-                    isSwitched = true;
-                  }
-                });
-              },
-              activeColor: Color.fromARGB(255, 47, 128, 237),),)
-          ],
-        ),
-        Container(margin: EdgeInsets.only(top: 23, left: 8, right: 8), height: 1, color: Color.fromARGB(100, 47, 128, 237) )
-      ],));
-  }
-}
-
 class SwitchWidgetExtra extends StatefulWidget {
   String name;
   SwitchWidgetExtra({Key key, @required this.name,}) : super(key: key);
@@ -608,54 +734,6 @@ class _SwitchWidgetExtraState extends State<SwitchWidgetExtra> {
           activeColor: Color.fromARGB(255, 47, 128, 237),),)
       ],
     ),);
-  }
-}
-
-class ButtonsWidget extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      margin: EdgeInsets.only(top: 16),
-      decoration: BoxDecoration(color: Colors.white,boxShadow: [
-      BoxShadow(
-        color: Colors.grey.withAlpha(50),
-        blurRadius: 1.0, // has the effect of softening the shadow
-        spreadRadius: -1.5, // has the effect of extending the shadow
-        offset: Offset(
-          0.0, // horizontal, move right 10
-          -4, // vertical, move down 10
-        ),
-      )
-    ],),
-      child: Column(children: <Widget>[
-        Container(
-            margin: EdgeInsets.only(left: 16, right: 16, top: 32),
-            width: double.infinity,
-            child: Text("Найдено мест",
-              style: TextStyle(fontFamily: "Montserrat-Regular",
-                  fontWeight: FontWeight.bold, fontSize: 16, color: Colors.grey),),),
-      Container(
-        margin: EdgeInsets.only(left: 16, right: 16, top: 12),
-        decoration: BoxDecoration(borderRadius: new BorderRadius.circular(30.0),
-          color: Color.fromARGB(255, 47, 128, 237),),
-        width: double.infinity, height: 56,
-        child: FlatButton(child: Text("ПОКАЗАТЬ",
-          style: TextStyle(fontFamily: "Montserrat-Bold", fontSize: 12,
-          color: Colors.white, fontWeight: FontWeight.bold),),
-          color: Color.fromARGB(255, 47, 128, 237),),),
-
-      Container(
-        width: double.infinity,
-        height: 56,
-        margin: EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 35),
-        decoration: BoxDecoration(border: 
-          Border.all(color: Color.fromARGB(255, 47, 128, 237),width: 2),
-            borderRadius: BorderRadius.circular(30)),
-        child: FlatButton(child: Text("СБРОСИТЬ",
-          style: TextStyle(fontFamily: "Montserrat-Bold", fontSize: 12,
-              color: Color.fromARGB(255, 47, 128, 237), fontWeight: FontWeight.bold),),),)
-    ],),);
   }
 }
 
