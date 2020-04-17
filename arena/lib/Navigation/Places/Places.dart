@@ -13,8 +13,11 @@ import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:page_indicator/page_indicator.dart';
 import 'package:smooth_star_rating/smooth_star_rating.dart';
+import 'package:transparent_image/transparent_image.dart';
+import 'package:geolocator/geolocator.dart' as geo;
+import '../Map.dart';
+import 'Place/Place.dart' as Pl;
 
-import 'Place/Place.dart';
 
 List<PlaceWidget> parsePlace(String responseBody) {
   final parsed = json.decode(responseBody).cast<Map<String, dynamic>>();
@@ -26,7 +29,7 @@ Future<List<PlaceWidget>> fetchPlace() async {
   List<Place> places = new List<Place>();
   List<PlaceWidget> placeWidgets = new List<PlaceWidget>();
   var response;
-
+  geo.Position position = await geo.Geolocator().getCurrentPosition(desiredAccuracy: geo.LocationAccuracy.medium);
   var token = await getStringValuesSF("accessToken");
   if (token != null) {
     response = await getWithToken("http://217.12.209.180:8080/api/v1/place/");
@@ -49,16 +52,19 @@ Future<List<PlaceWidget>> fetchPlace() async {
       if(count == null) {
         count = 0;
       }
+      double distanceInMeters = await geo.Geolocator().distanceBetween(position.latitude, position.longitude, places[i].latitude, places[i].longitude);
       placeWidgets.add(PlaceWidget(
           places[i].id,
           places[i].isFavourite,
           places[i].name,
           places[i].rating,
+          distanceInMeters / 1000,
           count,
           "places[i].photo",
           (places[i].workDayStartAt.toString().replaceRange(5, 8, "-")+places[i].workDayEndAt.toString().replaceRange(5, 8, "")),
           places[i].address,
-          places[i].info));
+          places[i].info,
+          places[i].customImages),);
     }
 
     return placeWidgets;
@@ -73,7 +79,7 @@ Future<List<PlaceWidget>> fetchPlaceBySport(String sport) async {
   List<PlaceWidget> placeWidgets = new List<PlaceWidget>();
   var response = await http.get('http://217.12.209.180:8080/api/v1/place/?sports=${sport}',
       headers: {"Content-type": "application/json"});
-
+  geo.Position position = await geo.Geolocator().getCurrentPosition(desiredAccuracy: geo.LocationAccuracy.medium);
   var token = await getStringValuesSF("accessToken");
   if (token != null) {
     response = await getWithToken("http://217.12.209.180:8080/api/v1/place/?sports=${sport}");
@@ -92,16 +98,19 @@ Future<List<PlaceWidget>> fetchPlaceBySport(String sport) async {
       if(count == null) {
         count = 0;
       }
+      double distanceInMeters = await geo.Geolocator().distanceBetween(position.latitude, position.longitude, places[i].latitude, places[i].longitude);
       placeWidgets.add(PlaceWidget(
           places[i].id,
           places[i].isFavourite,
           places[i].name,
           places[i].rating,
+          distanceInMeters / 1000,
           count,
           "places[i].photo",
           (places[i].workDayStartAt.toString().replaceRange(5, 8, "-")+places[i].workDayEndAt.toString().replaceRange(5, 8, "")),
           places[i].address,
-          places[i].info));
+          places[i].info,
+          places[i].customImages));
     }
 
     return placeWidgets;
@@ -110,65 +119,31 @@ Future<List<PlaceWidget>> fetchPlaceBySport(String sport) async {
   }
 }
 
-List<PlaceWidget> filter(List<Place> places) {
+Future<List<PlaceWidget>> filter(List<Place> places) async {
   List<PlaceWidget> placeWidgets = List();
+  geo.Position position = await geo.Geolocator().getCurrentPosition(desiredAccuracy: geo.LocationAccuracy.medium);
   for (int i = 0; i < places.length; i++) {
     if (places[i].isFavourite == null) { places[i].isFavourite = false;}
     var count = places[i].countOfRate;
     if(count == null) {
       count = 0;
     }
+    double distanceInMeters = await geo.Geolocator().distanceBetween(position.latitude, position.longitude, places[i].latitude, places[i].longitude);
+
     placeWidgets.add(PlaceWidget(
         places[i].id,
         places[i].isFavourite,
         places[i].name,
         places[i].rating,
+        distanceInMeters / 1000,
         count,
         "places[i].photo",
         (places[i].workDayStartAt.toString().replaceRange(5, 8, "-")+places[i].workDayEndAt.toString().replaceRange(5, 8, "")),
         places[i].address,
-        places[i].info));
+        places[i].info,
+        places[i].customImages));
   }
   return placeWidgets;
-}
-
-class Place {
-  int id; //
-  String name; //
-  double rating; //
-  int countOfRate; //
-  String photo;
-  String timeOfWork;
-  String address; //
-  String info; //
-  bool isFavourite;
-  String workDayEndAt;
-  String workDayStartAt;
-
-  Place(
-      {this.id,
-      this.name,
-      this.rating,
-      this.countOfRate,
-      this.timeOfWork,
-      this.address,
-      this.info,
-      this.isFavourite,
-      this.workDayEndAt,
-      this.workDayStartAt});
-
-  factory Place.fromJson(Map<String, dynamic> json) {
-    return Place(
-        id: json["id"] as int,
-        name: json["name"] as String,
-        rating: json["rating"] as double,
-        countOfRate: json["reviewsCount"] as int,
-        address: json["address"] as String,
-        info: json["description"] as String,
-        isFavourite: json["isFavorite"] as bool,
-        workDayEndAt: json["workDayEndAt"] as String,
-        workDayStartAt: json["workDayStartAt"] as String);
-  }
 }
 
 class Places extends StatefulWidget {
@@ -190,7 +165,23 @@ class _PlacesState extends State<Places> {
     ));
     return WillPopScope(
         onWillPop: () async => false,
+        child: GestureDetector(
+          onHorizontalDragCancel: (){
+            FocusScopeNode currentFocus = FocusScope.of(context);
+
+            if (!currentFocus.hasPrimaryFocus) {
+              currentFocus.unfocus();
+            }
+          },
+        onTap: () {
+        FocusScopeNode currentFocus = FocusScope.of(context);
+
+        if (!currentFocus.hasPrimaryFocus) {
+            currentFocus.unfocus();
+          }
+        },
         child: Scaffold(
+            resizeToAvoidBottomInset: false,
           backgroundColor: Colors.white,
             appBar: PreferredSize(
               preferredSize: Size.fromHeight(168.0),
@@ -240,8 +231,11 @@ class _PlacesState extends State<Places> {
                                   context,
                                   MaterialPageRoute(builder: (context) => Filter()),
                                 );
-                                setState(() {
-                                  filteredList = filter(times);
+                                setState(()  {
+                                  placeWidgetFuture =  filter(times);
+                                  placeWidgetFuture.then((value){
+                                    filteredList = value;
+                                  });
                                 });
                               }),
                           margin: EdgeInsets.only(left: 17, top: 53),
@@ -464,7 +458,7 @@ class _PlacesState extends State<Places> {
                 } else { return Center(child: Container(child: SizedBox(
                   child: CircularProgressIndicator(), width: 30, height: 30),));}
               },
-            )));
+            ))));
   }
 
 
@@ -568,11 +562,13 @@ class PlaceWidget extends StatelessWidget {
   String photo;
   String timeOfWork;
   String address;
+  double distance;
   String info;
+  List<CustomImage> customImages;
 
 
-  PlaceWidget(this.id, this.isFavourite, this.name, this.rating,
-      this.countOfRate, this.photo, this.timeOfWork, this.address, this.info);
+  PlaceWidget(this.id, this.isFavourite, this.name, this.rating, this.distance,
+      this.countOfRate, this.photo, this.timeOfWork, this.address, this.info, this.customImages);
 
   @override
   Widget build(BuildContext context) {
@@ -622,7 +618,7 @@ class PlaceWidget extends StatelessWidget {
               ),
               WorkTimeWidget("Время работы: ", timeOfWork),
               WorkTimeWidget("Адрес:", address),
-              PlaceButtons(id),
+              PlaceButtons(id, distance),
               Container(
                 margin: EdgeInsets.only(left: 25, right: 24, top: 26),
                 child: Text(
@@ -633,14 +629,14 @@ class PlaceWidget extends StatelessWidget {
                   TextStyle(fontSize: 14, fontFamily: "Montserrat-Regular",),
                 ),
               ),
-              PhotoPage(),
+              PhotoPage(customImages),
             ],
           ),
         ),
       ),
       onTap: () { Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => PlaceInfoWidget(id)),
+        MaterialPageRoute(builder: (context) => Pl.PlaceInfoWidget(id)),
       );},
     );
   }
@@ -797,8 +793,8 @@ class _FavouritesButtonState extends State<FavouritesButton> {
 
 class PlaceButtons extends StatelessWidget {
   int id;
-
-  PlaceButtons(this.id);
+  double distance;
+  PlaceButtons(this.id, this.distance);
 
   @override
   Widget build(BuildContext context) {
@@ -847,7 +843,7 @@ class PlaceButtons extends StatelessWidget {
           Container(
             margin: EdgeInsets.only(left: 9),
             child: Text(
-              "8.5км",
+              distance.toStringAsFixed(2) + "км",
               style: TextStyle(
                   color: Colors.black38,
                   fontFamily: "Montserrat-Bold",
@@ -855,7 +851,7 @@ class PlaceButtons extends StatelessWidget {
             ),
           ),
           PlaceDateButton(id),
-          PlacePhoneButton()
+//          PlacePhoneButton()
         ],
       ),
     );
@@ -952,12 +948,20 @@ class PhotoWidget extends StatelessWidget {
 }
 
 class PhotoPage extends StatefulWidget {
+  List<CustomImage> customImages;
+
+  PhotoPage(this.customImages);
+
   @override
-  _PhotoPageState createState() => _PhotoPageState();
+  _PhotoPageState createState() => _PhotoPageState(customImages);
 }
 
 class _PhotoPageState extends State<PhotoPage> {
   PageController controller;
+  List<CustomImage> customImages;
+  List<Widget> result = List();
+
+  _PhotoPageState(this.customImages);
 
   GlobalKey<PageContainerState> key = GlobalKey();
 
@@ -965,6 +969,9 @@ class _PhotoPageState extends State<PhotoPage> {
   void initState() {
     super.initState();
     controller = PageController();
+    for(int i = 0; i < customImages.length; i++) {
+      result.add(Container(child: FadeInImage.memoryNetwork(placeholder: kTransparentImage, image: customImages[i].thumbImage, fit: BoxFit.fill,),));
+    }
   }
 
   @override
@@ -984,29 +991,12 @@ class _PhotoPageState extends State<PhotoPage> {
       child: PageIndicatorContainer(
         key: key,
         child: PageView(
-          children: <Widget>[
-            Image(
-              image: AssetImage("assets/images/testPhoto.png"),
-              fit: BoxFit.fitHeight,
-            ),
-            Image(
-              image: AssetImage("assets/images/testPhoto.png"),
-              fit: BoxFit.fitHeight,
-            ),
-            Image(
-              image: AssetImage("assets/images/testPhoto.png"),
-              fit: BoxFit.fitHeight,
-            ),
-            Image(
-              image: AssetImage("assets/images/testPhoto.png"),
-              fit: BoxFit.fitHeight,
-            ),
-          ],
+          children: result,
           controller: controller,
           reverse: false,
         ),
         align: IndicatorAlign.bottom,
-        length: 4,
+        length: customImages.length,
         shape: IndicatorShape.circle(size: 10),
         indicatorColor: Colors.grey.withAlpha(200),
         indicatorSelectorColor: Colors.white,

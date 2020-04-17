@@ -13,6 +13,8 @@ import 'package:location/location.dart';
 import 'dart:ui' as ui; // imported as ui to prevent conflict between ui.Image and the Image widget
 import 'package:flutter/services.dart';
 
+import 'Places/Filter.dart';
+
 Future<BitmapDescriptor> _bitmapDescriptorFromSvgAsset(
     BuildContext context, String assetName) async {
   // Read SVG file as String
@@ -36,6 +38,25 @@ Future<BitmapDescriptor> _bitmapDescriptorFromSvgAsset(
   ByteData bytes = await image.toByteData(format: ui.ImageByteFormat.png);
   return BitmapDescriptor.fromBytes(bytes.buffer.asUint8List());
 }
+
+
+class CustomImage {
+  String fullImage;
+  String thumbImage;
+  int id;
+  int uploadTimestamp;
+
+  CustomImage({this.fullImage, this.thumbImage, this.id, this.uploadTimestamp});
+
+  factory CustomImage.fromJson(Map<String, dynamic> json) {
+    return CustomImage(
+        id: json["id"] as int,
+        fullImage: json["fullImage"] as String,
+        thumbImage: json["thumbImage"] as String,
+        uploadTimestamp: json["uploadTimestamp"] as int);
+  }
+}
+
 
 class CustomMarker {
   var text;
@@ -248,6 +269,7 @@ class Place {
   double latitude;
   double longitude;
   List<Playground> playgrounds;
+  List<CustomImage> customImages;
 
   Place(
       {this.id,
@@ -262,11 +284,14 @@ class Place {
       this.workDayStartAt,
       this.latitude,
       this.longitude,
-      this.playgrounds});
+      this.playgrounds,
+      this.customImages});
 
   factory Place.fromJson(Map<String, dynamic> json) {
     var list = json['playgrounds'] as List;
     List<Playground> pl = list.map((i) => Playground.fromJson(i)).toList();
+    var listImages = json['images'] as List;
+    List<CustomImage> img = listImages.map((i) => CustomImage.fromJson(i)).toList();
     return Place(
         id: json["id"] as int,
         name: json["name"] as String,
@@ -279,8 +304,157 @@ class Place {
         workDayStartAt: json["workDayStartAt"] as String,
         latitude: json["latitude"] as double,
         longitude: json["longitude"] as double,
-        playgrounds: pl);
+        playgrounds: pl,
+        customImages: img);
   }
+}
+
+Future <Set<Marker>> filter(BuildContext context, List<Place> places) async {
+  Set<Marker> placeWidgets = Set();
+  geo.Position position = await geo.Geolocator().getCurrentPosition(desiredAccuracy: geo.LocationAccuracy.medium);
+  for (int i = 0; i < places.length; i++) {
+    if (places[i].isFavourite == null) {
+      places[i].isFavourite = false;
+    }
+    var count = places[i].countOfRate;
+    if (count == null) {
+      count = 0;
+    }
+
+    var img;
+
+    if (places[i].playgrounds[0].sports["name"] == "Футбол") {
+      img = "assets/images/Point_Soccer.svg";
+    }
+    if (places[i].playgrounds[0].sports["name"] == "Теннис") {
+      img = "assets/images/Point_Tennis.svg";
+    }
+    if (places[i].playgrounds[0].sports["name"] == "Баскетбол") {
+      img = "assets/images/Point_Basket.svg";
+    }
+    if (places[i].playgrounds[0].sports["name"] == "Волейбол") {
+      img = "assets/images/Point_Volley.svg";
+    }
+    if (places[i].playgrounds.length > 1) {
+      img = "assets/images/LOGO.svg";
+    }
+
+    double distanceInMeters = await geo.Geolocator().distanceBetween(
+        position.latitude, position.longitude, places[i].latitude,
+        places[i].longitude);
+    placeWidgets.add(Marker(
+        consumeTapEvents: true,
+        markerId: MarkerId(places[i].id.toString()),
+        infoWindow: InfoWindow(title: places[i].name),
+        position: LatLng(places[i].latitude, places[i].longitude),
+        icon: await _bitmapDescriptorFromSvgAsset(context, img),
+        onTap: () {
+          showModalBottomSheet(
+              context: context,
+              builder: (context) =>
+                  Container(
+                    child: Container(
+                        decoration: new BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: new BorderRadius.only(
+                                topLeft: const Radius.circular(10.0),
+                                topRight: const Radius.circular(10.0))),
+                        child: Column(
+                          children: <Widget>[
+                            Row(
+                              mainAxisAlignment:
+                              MainAxisAlignment.spaceBetween,
+                              children: <Widget>[
+                                Container(
+                                  padding: EdgeInsets.only(top: 39, left: 24),
+                                  width: 250,
+                                  child: Text(
+                                    places[i].name,
+                                    style: TextStyle(
+                                      color: Colors.black87,
+                                      fontFamily: "Montserrat-Bold",
+                                      fontSize: 24,
+                                    ),
+                                  ),
+                                ),
+                                Container(
+                                    alignment: Alignment.topRight,
+                                    height: 20,
+
+                                    margin:
+                                    EdgeInsets.only(top: 51, right: 32),
+                                    child: Text(
+                                      "${(distanceInMeters / 1000)
+                                          .toStringAsFixed(1)} км",
+                                      style: TextStyle(
+                                        color: Colors.black54,
+                                        fontFamily: "Montserrat-Bold",
+                                        fontSize: 14,
+                                      ),
+                                    ))
+                              ],
+                            ),
+                            //${places[i].workDayStartAt.toString().replaceRange(5, 8, "-")+places[i].workDayEndAt.toString().replaceRange(5, 8, "")}
+                            Container(
+                                alignment: Alignment.topLeft,
+                                margin: EdgeInsets.only(top: 11, left: 24),
+                                child: Row(
+                                  children: <Widget>[
+                                    Text(
+                                      "Время работы: ",
+                                      style: TextStyle(
+                                        color: Colors.black54,
+                                        fontFamily: "Montserrat-Regular",
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                    Text(
+                                      places[i].workDayStartAt.toString()
+                                          .replaceRange(5, 8, "-") +
+                                          places[i].workDayEndAt.toString()
+                                              .replaceRange(5, 8, ""),
+                                      style: TextStyle(
+                                        color: Colors.black87,
+                                        fontFamily: "Montserrat-Regular",
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ],
+                                )),
+                            Container(
+                                alignment: Alignment.topLeft,
+                                margin: EdgeInsets.only(top: 11, left: 24),
+                                child: Row(
+                                  children: <Widget>[
+                                    Text(
+                                      "Адрес: ",
+                                      style: TextStyle(
+                                        color: Colors.black54,
+                                        fontFamily: "Montserrat-Regular",
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                    Text(
+                                      places[i].address,
+                                      style: TextStyle(
+                                        color: Colors.black87,
+                                        fontFamily: "Montserrat-Regular",
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ],
+                                ))
+                          ],
+                        )),
+                    height: 250,
+                  ));
+        }));
+  }
+  return placeWidgets;
 }
 
 class MapSample extends StatefulWidget {
@@ -332,111 +506,124 @@ class MapSampleState extends State<MapSample> {
     return new WillPopScope(
         onWillPop: () async => false,
         child: Scaffold(
-            body: Stack(
-          children: <Widget>[
-            GoogleMap(
-              mapToolbarEnabled: false,
-              myLocationEnabled: true,
-              markers: _markers,
-              myLocationButtonEnabled: false,
-              mapType: MapType.terrain,
-              initialCameraPosition: _kGooglePlex,
-              onMapCreated: (GoogleMapController controller) {
-                _controller = controller;
-              },
-              onCameraIdle: () {
-                for(Marker marker in _markers){
-                  _controller.hideMarkerInfoWindow(marker.markerId);
-                }
-              },
-              onCameraMove: (CameraPosition position) {
-                setState(() {
-                  onPressed = false;
-                });
-              },
-              onTap: (LatLng latLng) {
-                setState(() {
-                  onPressed = false;
-                });
-              },
-            ),
-            Padding(
-              padding: const EdgeInsets.only(top: 50.0, right: 16.0),
-              child: Column(
+            resizeToAvoidBottomInset: false,
+          backgroundColor: Colors.white,
+            body: Container(
+              color: Colors.white,
+              child: Stack(
                 children: <Widget>[
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Container(
-                        margin: EdgeInsets.only(right: 8),
-                        child: FloatingActionButton(
-                          heroTag: "btn1",
-                          materialTapTargetSize: MaterialTapTargetSize.padded,
-                          backgroundColor: Colors.white,
-                          child: const Icon(CustomIcons.filter,
-                              color: Color.fromARGB(255, 47, 128, 237),
-                              size: 20.0),
-                        ),
-                        padding: EdgeInsets.only(left: 16.0),
-                      ),
-                      onPressed
-                          ? Expanded(
-                              child: Container(
-                              alignment: Alignment.topRight,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(30),
-                              ),
-                              height: 47,
-                              width: 268,
-                              child: TextField(
-                                controller: controller,
-                                onChanged: (String value) {
-                                  setState(() {
-                                    search = value;
-                                    controller.text = search;
-                                    controller.selection =
-                                        TextSelection.fromPosition(TextPosition(
-                                            offset: controller.text.length));
-                                    _markers = _before_markers
-                                        .where((u) => (u.infoWindow.title
-                                            .toLowerCase()
-                                            .contains(value.toLowerCase())))
-                                        .toSet();
+                  GoogleMap(
+                    mapToolbarEnabled: false,
+                    myLocationEnabled: true,
+                    markers: _markers,
+                    myLocationButtonEnabled: false,
+                    mapType: MapType.terrain,
+                    initialCameraPosition: _kGooglePlex,
+                    onMapCreated: (GoogleMapController controller) {
+                      _controller = controller;
+                    },
+                    onCameraIdle: () {
+                      for(Marker marker in _markers){
+                        _controller.hideMarkerInfoWindow(marker.markerId);
+                      }
+                    },
+                    onCameraMove: (CameraPosition position) {
+                      setState(() {
+                        onPressed = false;
+                      });
+                    },
+                    onTap: (LatLng latLng) {
+                      setState(() {
+                        onPressed = false;
+                      });
+                    },
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 50.0, right: 16.0),
+                    child: Column(
+                      children: <Widget>[
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: <Widget>[
+                            Container(
+                              margin: EdgeInsets.only(right: 8),
+                              child: FloatingActionButton(
+                                onPressed: () async {
+                                  List<Place> times = await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => Filter()),
+                                  );
+                                  setState(() async{
+                                    _markers = await filter(context, times);
                                   });
                                 },
-                                decoration: InputDecoration(
-                                    filled: true,
-                                    fillColor: Colors.white,
-                                    contentPadding: new EdgeInsets.fromLTRB(
-                                        20.0, 10.0, 10.0, 10.0),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(30),
-                                      borderSide: new BorderSide(
-                                        color:
-                                            Color.fromARGB(255, 47, 128, 237),
-                                        width: 1.0,
-                                      ),
-                                    ),
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(30),
-                                      borderSide: BorderSide(
-                                        color:
-                                            Color.fromARGB(255, 47, 128, 237),
-                                        width: 1.0,
-                                      ),
-                                    ),
-                                    suffixIcon: IconButton(
-                                      icon: Icon(
-                                        CustomIcons.search,
-                                        color:
-                                            Color.fromARGB(255, 47, 128, 237),
-                                        size: 20,
-                                      ),
-                                      onPressed: () {},
-                                    )),
+                                heroTag: "btn1",
+                                materialTapTargetSize: MaterialTapTargetSize.padded,
+                                backgroundColor: Colors.white,
+                                child: const Icon(CustomIcons.filter,
+                                    color: Color.fromARGB(255, 47, 128, 237),
+                                    size: 20.0),
                               ),
-                            ))
-                          : Container(
+                              padding: EdgeInsets.only(left: 16.0),
+                            ),
+                            onPressed
+                                ? Expanded(
+                                child: Container(
+                                  alignment: Alignment.topRight,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(30),
+                                  ),
+                                  height: 47,
+                                  width: 268,
+                                  child: TextField(
+                                    controller: controller,
+                                    onChanged: (String value) {
+                                      setState(() {
+                                        search = value;
+                                        controller.text = search;
+                                        controller.selection =
+                                            TextSelection.fromPosition(TextPosition(
+                                                offset: controller.text.length));
+                                        _markers = _before_markers
+                                            .where((u) => (u.infoWindow.title
+                                            .toLowerCase()
+                                            .contains(value.toLowerCase())))
+                                            .toSet();
+                                      });
+                                    },
+                                    decoration: InputDecoration(
+                                        filled: true,
+                                        fillColor: Colors.white,
+                                        contentPadding: new EdgeInsets.fromLTRB(
+                                            20.0, 10.0, 10.0, 10.0),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(30),
+                                          borderSide: new BorderSide(
+                                            color:
+                                            Color.fromARGB(255, 47, 128, 237),
+                                            width: 1.0,
+                                          ),
+                                        ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(30),
+                                          borderSide: BorderSide(
+                                            color:
+                                            Color.fromARGB(255, 47, 128, 237),
+                                            width: 1.0,
+                                          ),
+                                        ),
+                                        suffixIcon: IconButton(
+                                          icon: Icon(
+                                            CustomIcons.search,
+                                            color:
+                                            Color.fromARGB(255, 47, 128, 237),
+                                            size: 20,
+                                          ),
+                                          onPressed: () {},
+                                        )),
+                                  ),
+                                ))
+                                : Container(
                               alignment: Alignment.topRight,
                               child: FloatingActionButton(
                                 onPressed: () {
@@ -445,70 +632,71 @@ class MapSampleState extends State<MapSample> {
                                   });
                                 },
                                 materialTapTargetSize:
-                                    MaterialTapTargetSize.padded,
+                                MaterialTapTargetSize.padded,
                                 backgroundColor: Colors.white,
                                 child: const Icon(CustomIcons.search,
                                     color: Color.fromARGB(255, 47, 128, 237),
                                     size: 20.0),
                               ),
                             )
-                    ],
-                  ),
-                  Flexible(child: SizedBox(height: 408.0)),
-                  Container(
-                    alignment: Alignment.topRight,
-                    margin: EdgeInsets.only(right: 0.0),
-                    child: FloatingActionButton(
-                      heroTag: "plus",
-                      onPressed: () {
-                        _controller.animateCamera(CameraUpdate.zoomIn());
-                      },
-                      materialTapTargetSize: MaterialTapTargetSize.padded,
-                      backgroundColor: Colors.white,
-                      child: const Icon(CustomIcons.plus,
-                          color: Color.fromARGB(255, 47, 128, 237), size: 20.0),
+                          ],
+                        ),
+                        Flexible(child: SizedBox(height: 408.0)),
+                        Container(
+                          alignment: Alignment.topRight,
+                          margin: EdgeInsets.only(right: 0.0),
+                          child: FloatingActionButton(
+                            heroTag: "plus",
+                            onPressed: () {
+                              _controller.animateCamera(CameraUpdate.zoomIn());
+                            },
+                            materialTapTargetSize: MaterialTapTargetSize.padded,
+                            backgroundColor: Colors.white,
+                            child: const Icon(CustomIcons.plus,
+                                color: Color.fromARGB(255, 47, 128, 237), size: 20.0),
+                          ),
+                        ),
+                        SizedBox(height: 16.0),
+                        Container(
+                          alignment: Alignment.topRight,
+                          margin: EdgeInsets.only(right: 0.0),
+                          child: FloatingActionButton(
+                            heroTag: "minus",
+                            onPressed: () {
+                              _controller.animateCamera(CameraUpdate.zoomOut());
+                            },
+                            materialTapTargetSize: MaterialTapTargetSize.padded,
+                            backgroundColor: Colors.white,
+                            child: const Icon(
+                              Icons.remove,
+                              color: Color.fromARGB(255, 47, 128, 237),
+                              size: 25.0,
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 16.0),
+                        Container(
+                          alignment: Alignment.topRight,
+                          margin: EdgeInsets.only(bottom: 8.0),
+                          child: FloatingActionButton(
+                            heroTag: "findMe",
+                            onPressed: (){
+                              _getLocation();
+                            },
+                            materialTapTargetSize: MaterialTapTargetSize.padded,
+                            backgroundColor: Colors.white,
+                            child: const Icon(
+                              Icons.location_on,
+                              color: Color.fromARGB(255, 47, 128, 237),
+                              size: 25.0,
+                            ),
+                          ),
+                        )
+                      ],
                     ),
                   ),
-                  SizedBox(height: 16.0),
-                  Container(
-                    alignment: Alignment.topRight,
-                    margin: EdgeInsets.only(right: 0.0),
-                    child: FloatingActionButton(
-                      heroTag: "minus",
-                      onPressed: () {
-                        _controller.animateCamera(CameraUpdate.zoomOut());
-                      },
-                      materialTapTargetSize: MaterialTapTargetSize.padded,
-                      backgroundColor: Colors.white,
-                      child: const Icon(
-                        Icons.remove,
-                        color: Color.fromARGB(255, 47, 128, 237),
-                        size: 25.0,
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 16.0),
-                  Container(
-                    alignment: Alignment.topRight,
-                    margin: EdgeInsets.only(bottom: 8.0),
-                    child: FloatingActionButton(
-                      heroTag: "findMe",
-                      onPressed: (){
-                        _getLocation();
-                      },
-                      materialTapTargetSize: MaterialTapTargetSize.padded,
-                      backgroundColor: Colors.white,
-                      child: const Icon(
-                        Icons.location_on,
-                        color: Color.fromARGB(255, 47, 128, 237),
-                        size: 25.0,
-                      ),
-                    ),
-                  )
                 ],
               ),
-            ),
-          ],
-        )));
+            )));
   }
 }

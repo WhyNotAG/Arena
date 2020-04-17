@@ -5,13 +5,11 @@ import 'package:arena/Other/CustomSharedPreferences.dart';
 import 'package:arena/Other/Request.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/physics.dart';
 import 'package:flutter_range_slider/flutter_range_slider.dart' as frs;
 import 'package:http/http.dart' as http;
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:intl/intl.dart';
-import 'package:query_params/query_params.dart';
 
+import '../Map.dart';
 import 'Places.dart';
 
 
@@ -34,45 +32,6 @@ class Subway {
     );
   }
 }
-
-//class Place {
-//  int id; //
-//  String name; //
-//  double rating; //
-//  int countOfRate; //
-//  String photo;
-//  String timeOfWork;
-//  String address; //
-//  String info; //
-//  bool isFavourite;
-//  String workDayEndAt;
-//  String workDayStartAt;
-//
-//  Place(
-//      {this.id,
-//        this.name,
-//        this.rating,
-//        this.countOfRate,
-//        this.timeOfWork,
-//        this.address,
-//        this.info,
-//        this.isFavourite,
-//        this.workDayEndAt,
-//        this.workDayStartAt});
-//
-//  factory Place.fromJson(Map<String, dynamic> json) {
-//    return Place(
-//        id: json["id"] as int,
-//        name: json["name"] as String,
-//        rating: json["rating"] as double,
-//        countOfRate: json["reviewsCount"] as int,
-//        address: json["address"] as String,
-//        info: json["description"] as String,
-//        isFavourite: json["isFavorite"] as bool,
-//        workDayEndAt: json["workDayEndAt"] as String,
-//        workDayStartAt: json["workDayStartAt"] as String);
-//  }
-//}
 
 Future<List<Place>> fetchPlace(Map map) async {
   List<Place> places = new List<Place>();
@@ -214,7 +173,11 @@ class _FilterState extends State<Filter> {
                         child: Stack(children: <Widget>[
                           Container(width: double.infinity,
                             margin: EdgeInsets.only(left: 16, right: 20),
-                            child: DropdownButtonHideUnderline(
+                            child: Theme(
+                              data: ThemeData(
+                                  canvasColor:
+                                  Colors.white),
+                              child: DropdownButtonHideUnderline(
                               child: DropdownButton(
                                 hint: Text("Все Виды"),
                                   iconSize: 24,
@@ -234,7 +197,7 @@ class _FilterState extends State<Filter> {
                                       value: valuer,
                                       child: Text(valuer),
                                     );
-                                  }).toList()),),),
+                                  }).toList()),),)),
                           Align(child: Container(child: IconButton(icon: Icon(Icons.arrow_drop_down),),margin: EdgeInsets.only(right: 8.0),),alignment: Alignment.centerRight,)
                         ],),
                       )
@@ -467,8 +430,8 @@ class _FilterState extends State<Filter> {
                                     if(int.parse(secondController.text) <= 100000) {maxValue = int.parse(secondController.text); secondController.text = maxValue.toString();}
                                     if (minValue >= maxValue) { minValue = maxValue; firstController.text = minValue.toString();}
                                     secondController.text = maxValue.toString();
-                                    req["From"] = minValue;
-                                    req["To"] = maxValue;
+                                    req["priceFrom"] = minValue;
+                                    req["priceTo"] = maxValue;
                                     places = fetchPlace(req);
                                   });
                                 }, keyboardType: TextInputType.number),)
@@ -502,8 +465,8 @@ class _FilterState extends State<Filter> {
                             },
                             onChangeEnd: (double newLowerValue, double newUpperValue) {
                               setState(() {
-                                req["From"] = newLowerValue;
-                                req["To"] = newUpperValue;
+                                req["priceFrom"] = newLowerValue;
+                                req["priceTo"] = newUpperValue;
                                 places = fetchPlace(req);
                               });
                             },
@@ -555,13 +518,15 @@ class _FilterState extends State<Filter> {
                       ],)),
                     Container(
                       margin: EdgeInsets.only(left: 16, right: 16, top: 12),
+
                       decoration: BoxDecoration(borderRadius: new BorderRadius.circular(30.0),
                         color: Color.fromARGB(255, 47, 128, 237),),
+
                       width: double.infinity, height: 56,
+
                       child: FlatButton(child: Text("ПОКАЗАТЬ",
                         style: TextStyle(fontFamily: "Montserrat-Bold", fontSize: 12,
                             color: Colors.white, fontWeight: FontWeight.bold),),
-                        color: Color.fromARGB(255, 47, 128, 237),
                       onPressed: (){
                         Navigator.pop(context, resPlace);
                       },),),
@@ -630,113 +595,6 @@ class TabBar extends StatelessWidget {
         ));
   }
 }
-
-
-
-
-class FilterWidget extends StatefulWidget {
-  String name;
-  List<String> value;
-
-  FilterWidget({Key key, @required this.name, @required this.value,}) : super(key: key);
-  @override
-  _FilterWidgetState createState() => _FilterWidgetState(name, value);
-}
-
-class _FilterWidgetState extends State<FilterWidget> {
-  String name;
-  List<String> value;
-  String input;
-
-  _FilterWidgetState(var name, var value){
-    this.name = name;
-    this.value = value;
-    input = value.first;
-
-  }
-
-  @override
-    Widget build(BuildContext context) {
-      return Container(
-          width: double.infinity,
-          margin: EdgeInsets.only(left: 16, top: 16, right: 16),
-          child: Column(children: <Widget>[
-            Container(child: Text(name, textAlign: TextAlign.left, style: TextStyle(color: Color.fromARGB(255, 47, 128, 237)),),
-            width: double.infinity, margin: EdgeInsets.only(bottom: 8.0),),
-            Container(
-              decoration: BoxDecoration(color:Colors.white, boxShadow: [
-                BoxShadow(color: Colors.grey,
-                  blurRadius: 2.0, // has the effect of softening the shadow
-                  spreadRadius: 1.0, // has the effect of extending the shadow
-                  offset: Offset(
-                    0.0, // horizontal, move right 10
-                    0.0, // vertical, move down 10
-                  ),)
-              ]),
-              width: double.infinity,
-
-                child: Stack(children: <Widget>[
-                  Container(width: double.infinity,
-                    margin: EdgeInsets.only(left: 16, right: 20),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton(
-                      iconSize: 24,
-                        style: TextStyle(fontFamily: "Montserrat-Regular", fontWeight: FontWeight.bold, color: Color.fromARGB(255, 130, 130, 130)),
-                      //elevation: 22,
-                      icon: Icon(Icons.close, color: Colors.red.withAlpha(0),),
-                      value: input,
-                      onChanged: (String newValue) {
-                        setState(() {
-                          input = newValue;
-                        });
-                      },
-                      items: value.map<DropdownMenuItem<String>>((String valuer) {
-                        return DropdownMenuItem<String>(
-                          value: valuer,
-                          child: Text(valuer),
-                        );
-                      }).toList()),),),
-                   Align(child: Container(child: IconButton(icon: Icon(Icons.arrow_drop_down),),margin: EdgeInsets.only(right: 8.0),),alignment: Alignment.centerRight,)
-                ],),
-            )
-          ],)
-      );
-  }
-}
-
-class SwitchWidgetExtra extends StatefulWidget {
-  String name;
-  SwitchWidgetExtra({Key key, @required this.name,}) : super(key: key);
-
-  @override
-  _SwitchWidgetExtraState createState() => _SwitchWidgetExtraState(name);
-}
-
-class _SwitchWidgetExtraState extends State<SwitchWidgetExtra> {
-  bool isSwitched = false;
-  String name;
-
-
-  _SwitchWidgetExtraState(this.name);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(child: new Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: <Widget>[
-        Container(child: Text(name, style: TextStyle(fontFamily: "Montserrat-Regular", fontWeight: FontWeight.bold, color: Color.fromARGB(255, 130, 130, 130)),)),
-        Container(child: CupertinoSwitch(value: isSwitched,
-          onChanged: (value) {
-            setState(() {
-              isSwitched = value;
-            });
-          },
-          activeColor: Color.fromARGB(255, 47, 128, 237),),)
-      ],
-    ),);
-  }
-}
-
 
 
 

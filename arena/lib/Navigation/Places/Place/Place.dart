@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:arena/Icons/custom_icons_icons.dart';
+import 'package:arena/Navigation/Places/Place/Booking.dart';
 import 'package:arena/Navigation/Places/Place/Comment.dart';
 import 'package:arena/Navigation/Places/Place/PhotoGrid.dart';
 import 'package:arena/Other/CustomSharedPreferences.dart';
@@ -128,6 +129,7 @@ class Place {
   int area;
   String workDayEndAt;
   String workDayStartAt;
+  bool inBookedHistory;
   List<Playground> playgrounds;
   List<CustomImage> customImages;
   List<PhoneNumber> phoneNumbers;
@@ -147,6 +149,7 @@ class Place {
     this.area,
     this.hasLockers,
     this.hasBaths,
+    this.inBookedHistory,
     this.hasInventory,
     this.hasParking,
     this.phoneNumbers});
@@ -178,6 +181,7 @@ class Place {
         hasLockers: json["hasLockers"] as bool,
         hasParking: json["hasParking"] as bool,
         area: json["area"] as int,
+        inBookedHistory: json["inBookedHistory"] as bool,
         phoneNumbers: numbers);
   }
 }
@@ -375,7 +379,7 @@ class _PlaceInfoWidgetState extends State<PlaceInfoWidget> {
                           child: InfoWidget(snapshot.data),
                         ),
                         PhotoGrid(snapshot.data),
-                        CommentList(snapshot.data.id)
+                        CommentList(snapshot.data.id, snapshot.data.inBookedHistory)
                       ],
                     )),
               );
@@ -449,7 +453,23 @@ class InfoWidget extends StatelessWidget {
 
           Container(
             margin: EdgeInsets.only(left: 22, top: 45),
-            child: Table(children: addStatus(place)),)
+            child: Table(children: addStatus(place)),),
+
+
+          Container(
+            margin: EdgeInsets.only(left: 16, right: 16, top: 40),
+            decoration: BoxDecoration(borderRadius: new BorderRadius.circular(30.0),
+              color: Color.fromARGB(255, 47, 128, 237),),
+            width: double.infinity, height: 56,
+            child: FlatButton(child: Text("Забронировать",
+              style: TextStyle(fontFamily: "Montserrat-Bold", fontSize: 12,
+                  color: Colors.white, fontWeight: FontWeight.bold),),
+              onPressed: (){
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => Booking(place.id)),
+                );
+              },),)
         ],
       ),
     );

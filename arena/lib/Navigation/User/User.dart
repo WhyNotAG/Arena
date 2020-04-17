@@ -2,6 +2,8 @@ import 'package:arena/Authorization/main.dart';
 import 'package:arena/Icons/custom_icons_icons.dart';
 import 'package:flutter/material.dart';
 
+import 'ProgramFeedback.dart';
+
 class User extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -157,6 +159,11 @@ class Button extends StatelessWidget {
               onPressed: () {
                 if (text == " Выход")
                   Navigator.of(context).popUntil((route) => route.isFirst);
+                if(text == " Напишите нам")
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => FeedBack()),
+                  );
               },
               icon: icon,
               label: Text(text,
@@ -167,6 +174,11 @@ class Button extends StatelessWidget {
       onTap: () {
         if (text == " Выход")
           Navigator.of(context).popUntil((route) => route.isFirst);
+        if(text == " Напишите нам")
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => FeedBack()),
+          );
       },
     );
   }

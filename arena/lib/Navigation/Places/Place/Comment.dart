@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:arena/Icons/custom_icons_icons.dart';
+import 'package:arena/Navigation/Places/Place/PlaceFeedback.dart';
 import 'package:http/http.dart' as http;
 import 'package:arena/Other/CustomSharedPreferences.dart';
 import 'package:arena/Other/Request.dart';
@@ -8,6 +9,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_file.dart';
 import 'package:intl/intl.dart';
 import 'package:smooth_star_rating/smooth_star_rating.dart';
+
+import 'Place.dart';
 
 class Comment {
   String author;
@@ -55,9 +58,9 @@ Future<Content> fetchContent(int id) async {
 
   var token = await getStringValuesSF("accessToken");
   if (token != null) {
-    response = await getWithToken("http://217.12.209.180:8080/api/v1/feedback/${id}/");
+    response = await getWithToken("http://217.12.209.180:8080/api/v1/feedback/${id}/?page=0");
   } else {
-    response = await http.get('http://217.12.209.180:8080/api/v1/feedback/${id}/',
+    response = await http.get('http://217.12.209.180:8080/api/v1/feedback/${id}/?page=0',
         headers: {"Content-type": "application/json"});
   }
 
@@ -149,7 +152,7 @@ class CommentWidget extends StatelessWidget {
           Container(
             alignment: Alignment.centerLeft,
             margin: EdgeInsets.only(top: 10),
-            child: Text(comment.feedback,
+            child: Text(comment.feedback == null ? "" : comment.feedback,
                 textAlign: TextAlign.left,
                 style: TextStyle(
                   fontFamily: "Montserrat-Regular",
@@ -166,23 +169,28 @@ class CommentWidget extends StatelessWidget {
 
 class CommentList extends StatefulWidget {
   int id;
-
-  CommentList(this.id);
+  bool inBook;
+  CommentList(this.id, this.inBook);
 
   @override
-  _CommentListState createState() => _CommentListState(id);
+  _CommentListState createState() => _CommentListState(id, inBook);
 }
 
 class _CommentListState extends State<CommentList> {
   int id;
-
-  _CommentListState(this.id);
+  bool inBook;
+  _CommentListState(this.id, inBook);
 
   Future content;
   List<CommentWidget> commentWidgets = List();
 
   @override
   void initState() {
+    if(inBook == null){
+      inBook = true;
+    }
+    print(inBook);
+
     content = fetchContent(id);
   }
 
@@ -194,12 +202,60 @@ class _CommentListState extends State<CommentList> {
         builder: (context, snapshot){
           if (snapshot.hasData && snapshot.data.comments.length >= 1){
             for(Comment comment in snapshot.data.comments) {
-              commentWidgets.add(CommentWidget(comment));
+              if(commentWidgets.length < snapshot.data.comments.length) {
+                commentWidgets.add(CommentWidget(comment));
+              }
             }
-            return Column(children: commentWidgets,);
+            return Column(children: <Widget>[
+              Column(children: commentWidgets,),
+              inBook ?   Container(
+                margin: EdgeInsets.only(left: 16, right: 16, top: 12),
+
+                decoration: BoxDecoration(borderRadius: new BorderRadius.circular(30.0),
+                  color: Color.fromARGB(255, 47, 128, 237),),
+
+                width: double.infinity, height: 56,
+
+                child: FlatButton(child: Text("ПОКАЗАТЬ",
+                  style: TextStyle(fontFamily: "Montserrat-Bold", fontSize: 12,
+                      color: Colors.white, fontWeight: FontWeight.bold),),
+                  onPressed: (){
+                    setState(() {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => FeedBackPlace(id)),
+                      );
+                      commentWidgets = List();
+                    });
+                  },),) : Container()
+            ],);
           }
           else if(snapshot.hasData) {
-            return Container(child: Text("Нет отзывов"), alignment: Alignment.topCenter,);
+            return Column(children: <Widget>[
+            Container(child: Text("Нет отзывов"), alignment: Alignment.topCenter,),
+              inBook ?   Container(
+                margin: EdgeInsets.only(left: 16, right: 16, top: 12),
+
+                decoration: BoxDecoration(borderRadius: new BorderRadius.circular(30.0),
+                  color: Color.fromARGB(255, 47, 128, 237),),
+
+                width: double.infinity, height: 56,
+
+                child: FlatButton(child: Text("Написать отзыв",
+                  style: TextStyle(fontFamily: "Montserrat-Bold", fontSize: 12,
+                      color: Colors.white, fontWeight: FontWeight.bold),),
+                  onPressed: (){
+                    setState(() {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => FeedBackPlace(id)),
+                      );
+                      commentWidgets = List();
+                      content = fetchContent(id);
+                    });
+                  },),) : Container(),
+              SizedBox(height: 8, width: 8,)
+            ],);
           }
           else { return Center(
               child: Container(

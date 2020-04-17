@@ -9,9 +9,12 @@ import 'package:http/http.dart' as http;
 import 'package:page_indicator/page_indicator.dart';
 import 'package:smooth_star_rating/smooth_star_rating.dart';
 import 'package:arena/Other/Request.dart';
+import 'package:transparent_image/transparent_image.dart';
 
+import 'Map.dart';
 import 'Places/Place/Booking.dart';
-import 'Places/Place/Place.dart';
+import 'Places/Place/Place.dart' as Pl;
+
 
 
 List<PlaceWidget> parsePlace(String responseBody) {
@@ -57,7 +60,8 @@ Future<List<PlaceWidget>> fetchPlace() async {
           "places[i].photo",
           (places[i].workDayStartAt.toString().replaceRange(5, 8, "-")+places[i].workDayEndAt.toString().replaceRange(5, 8, "")),
           places[i].address,
-          places[i].info));
+          places[i].info,
+          places[i].customImages));
     }
 
     return placeWidgets;
@@ -66,50 +70,12 @@ Future<List<PlaceWidget>> fetchPlace() async {
   }
 }
 
-class Place {
-  int id; //
-  String name; //
-  double rating; //
-  int countOfRate; //
-  String photo;
-  String timeOfWork;
-  String address; //
-  String info; //
-  bool isFavourite;
-  String workDayEndAt;
-  String workDayStartAt;
-
-  Place(
-      {this.id,
-        this.name,
-        this.rating,
-        this.countOfRate,
-        this.timeOfWork,
-        this.address,
-        this.info,
-        this.isFavourite,
-        this.workDayEndAt,
-        this.workDayStartAt});
-
-  factory Place.fromJson(Map<String, dynamic> json) {
-    return Place(
-        id: json["id"] as int,
-        name: json["name"] as String,
-        rating: json["rating"] as double,
-        countOfRate: json["reviewsCount"] as int,
-        address: json["address"] as String,
-        info: json["description"] as String,
-        isFavourite: json["isFavorite"] as bool,
-        workDayEndAt: json["workDayEndAt"] as String,
-        workDayStartAt: json["workDayStartAt"] as String);
-  }
-}
-
-
 class Favourites extends StatefulWidget {
   @override
   _FavouritesState createState() => _FavouritesState();
 }
+
+
 
 class _FavouritesState extends State<Favourites> {
   Future<List<PlaceWidget>> placeWidgetFuture;
@@ -123,117 +89,134 @@ class _FavouritesState extends State<Favourites> {
     ));
     return WillPopScope(
         onWillPop: () async => false,
-        child: Scaffold(
-            backgroundColor: Colors.white,
-            appBar: PreferredSize(
-              preferredSize: Size.fromHeight(168.0),
-              child: Container(
-                  padding: EdgeInsets.only(),
-                  width: double.infinity,
-                  height: 168,
-                  decoration: BoxDecoration(color: Colors.white, boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey,
-                      blurRadius: 10.0,
-                      // has the effect of softening the shadow
-                      spreadRadius: 0.0,
-                      // has the effect of extending the shadow
-                      offset: Offset(
-                        10.0, // horizontal, move right 10
-                        0.0, // vertical, move down 10
-                      ),
-                    )
-                  ]),
-                  child: Column(
-                    children: <Widget>[
-                      Flexible(
-                          child: Container(
-                        decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(30),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey,
-                                blurRadius: 2.0,
-                                // has the effect of softening the shadow
-                                spreadRadius: 0.0,
-                                // has the effect of extending the shadow
-                                offset: Offset(
-                                  0.0, // horizontal, move right 10
-                                  0.0, // vertical, move down 10
-                                ),
-                              )
-                            ]),
-                        margin: EdgeInsets.only(top: 56, left: 23, right: 16),
-                        child: TextField(
-                          onChanged: (String value) {
-                            setState(() {
-                              filteredList = placeWidgets
-                                  .where((u) => (u.name
-                                  .toLowerCase()
-                                  .contains(value.toLowerCase())))
-                                  .toList();
-                            });
-                          },
-                          decoration: InputDecoration(
-                              contentPadding: new EdgeInsets.fromLTRB(
-                                  20.0, 10.0, 10.0, 10.0),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(30),
-                                borderSide: new BorderSide(
-                                  color: Color.fromARGB(255, 47, 128, 237),
-                                  width: 1.0,
-                                ),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(30),
-                                borderSide: BorderSide(
-                                  color: Colors.grey.withAlpha(0),
-                                ),
-                              ),
-                              fillColor: Colors.white,
-                              suffixIcon: IconButton(
-                                icon: Icon(
-                                  CustomIcons.search,
-                                  color: Color.fromARGB(255, 47, 128, 237),
-                                  size: 20,
+        child: GestureDetector(
+            onHorizontalDragCancel: (){
+              FocusScopeNode currentFocus = FocusScope.of(context);
+
+              if (!currentFocus.hasPrimaryFocus) {
+                currentFocus.unfocus();
+              }
+            },
+            onTap: () {
+              FocusScopeNode currentFocus = FocusScope.of(context);
+
+              if (!currentFocus.hasPrimaryFocus) {
+                currentFocus.unfocus();
+              }
+            },
+            child: Scaffold(
+                resizeToAvoidBottomInset: false,
+                backgroundColor: Colors.white,
+                appBar: PreferredSize(
+                  preferredSize: Size.fromHeight(168.0),
+                  child: Container(
+                      padding: EdgeInsets.only(),
+                      width: double.infinity,
+                      height: 168,
+                      decoration: BoxDecoration(color: Colors.white, boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey,
+                          blurRadius: 10.0,
+                          // has the effect of softening the shadow
+                          spreadRadius: 0.0,
+                          // has the effect of extending the shadow
+                          offset: Offset(
+                            10.0, // horizontal, move right 10
+                            0.0, // vertical, move down 10
+                          ),
+                        )
+                      ]),
+                      child: Column(
+                        children: <Widget>[
+                          Flexible(
+                              child: Container(
+                                decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(30),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.grey,
+                                        blurRadius: 2.0,
+                                        // has the effect of softening the shadow
+                                        spreadRadius: 0.0,
+                                        // has the effect of extending the shadow
+                                        offset: Offset(
+                                          0.0, // horizontal, move right 10
+                                          0.0, // vertical, move down 10
+                                        ),
+                                      )
+                                    ]),
+                                margin: EdgeInsets.only(top: 56, left: 23, right: 16),
+                                child: TextField(
+                                  onChanged: (String value) {
+                                    setState(() {
+                                      filteredList = placeWidgets
+                                          .where((u) => (u.name
+                                          .toLowerCase()
+                                          .contains(value.toLowerCase())))
+                                          .toList();
+                                    });
+                                  },
+                                  decoration: InputDecoration(
+                                      contentPadding: new EdgeInsets.fromLTRB(
+                                          20.0, 10.0, 10.0, 10.0),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(30),
+                                        borderSide: new BorderSide(
+                                          color: Color.fromARGB(255, 47, 128, 237),
+                                          width: 1.0,
+                                        ),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(30),
+                                        borderSide: BorderSide(
+                                          color: Colors.grey.withAlpha(0),
+                                        ),
+                                      ),
+                                      fillColor: Colors.white,
+                                      suffixIcon: IconButton(
+                                        icon: Icon(
+                                          CustomIcons.search,
+                                          color: Color.fromARGB(255, 47, 128, 237),
+                                          size: 20,
+                                        ),
+                                      )),
                                 ),
                               )),
-                        ),
+                          Container(
+                            child: Text(
+                              "Избранное",
+                              style: TextStyle(
+                                fontSize: 28,
+                                fontFamily: "Montserrat-Bold",
+                              ),
+                              textAlign: TextAlign.left,
+                            ),
+                            margin: EdgeInsets.only(top: 13.0, left: 20.0),
+                            width: double.infinity,
+                          )
+                        ],
                       )),
-                      Container(
-                        child: Text(
-                          "Избранное",
-                          style: TextStyle(
-                            fontSize: 28,
-                            fontFamily: "Montserrat-Bold",
-                          ),
-                          textAlign: TextAlign.left,
-                        ),
-                        margin: EdgeInsets.only(top: 13.0, left: 20.0),
-                        width: double.infinity,
-                      )
-                    ],
-                  )),
-            ),
-            body: FutureBuilder<List<PlaceWidget>>(
-              future: placeWidgetFuture,
-              builder: (context, snapshot){
-                if(snapshot.hasData){
-                  return Container(
-                      margin: EdgeInsets.only(bottom: 0.0),
-                      color: Colors.white,
-                      child: SingleChildScrollView(
-                        child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: filteredList),
-                      ));
-                } else if(snapshot.error != null){
-                  return Container(color: Colors.white,);
-                }else { return Center(child: Container(child: SizedBox(
-                    child: CircularProgressIndicator(), width: 30, height: 30),));}
-              },
-            )));
+                ),
+                body: FutureBuilder<List<PlaceWidget>>(
+                  future: placeWidgetFuture,
+                  builder: (context, snapshot){
+                    if(snapshot.hasData){
+                      return Container(
+                          margin: EdgeInsets.only(bottom: 0.0),
+                          color: Colors.white,
+                          child: SingleChildScrollView(
+                            child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: filteredList),
+                          ));
+                    } else if(snapshot.error != null){
+                      return Container(color: Colors.white,);
+                    }else { return Center(child: Container(child: SizedBox(
+                        child: CircularProgressIndicator(), width: 30, height: 30),));}
+                  },
+                ))
+        ));
   }
 
   @override
@@ -259,10 +242,10 @@ class PlaceWidget extends StatelessWidget {
   String timeOfWork;
   String address;
   String info;
-
+  List<CustomImage> customImages;
 
   PlaceWidget(this.id, this.isFavourite, this.name, this.rating,
-      this.countOfRate, this.photo, this.timeOfWork, this.address, this.info);
+      this.countOfRate, this.photo, this.timeOfWork, this.address, this.info, this.customImages);
 
   @override
   Widget build(BuildContext context) {
@@ -323,14 +306,14 @@ class PlaceWidget extends StatelessWidget {
                   TextStyle(fontSize: 14, fontFamily: "Montserrat-Regular",),
                 ),
               ),
-              PhotoPage(),
+              PhotoPage(customImages),
             ],
           ),
         ),
       ),
       onTap: () { Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => PlaceInfoWidget(id)),
+        MaterialPageRoute(builder: (context) => Pl.PlaceInfoWidget(id)),
       );},
     );
   }
@@ -642,12 +625,20 @@ class PhotoWidget extends StatelessWidget {
 }
 
 class PhotoPage extends StatefulWidget {
+  List<CustomImage> customImages;
+
+  PhotoPage(this.customImages);
+
   @override
-  _PhotoPageState createState() => _PhotoPageState();
+  _PhotoPageState createState() => _PhotoPageState(customImages);
 }
 
 class _PhotoPageState extends State<PhotoPage> {
   PageController controller;
+  List<CustomImage> customImages;
+  List<Widget> result = List();
+
+  _PhotoPageState(this.customImages);
 
   GlobalKey<PageContainerState> key = GlobalKey();
 
@@ -655,6 +646,9 @@ class _PhotoPageState extends State<PhotoPage> {
   void initState() {
     super.initState();
     controller = PageController();
+    for(int i = 0; i < customImages.length; i++) {
+      result.add(Container(child: FadeInImage.memoryNetwork(placeholder: kTransparentImage, image: customImages[i].thumbImage, fit: BoxFit.fill,),));
+    }
   }
 
   @override
@@ -674,29 +668,12 @@ class _PhotoPageState extends State<PhotoPage> {
       child: PageIndicatorContainer(
         key: key,
         child: PageView(
-          children: <Widget>[
-            Image(
-              image: AssetImage("assets/images/testPhoto.png"),
-              fit: BoxFit.fitHeight,
-            ),
-            Image(
-              image: AssetImage("assets/images/testPhoto.png"),
-              fit: BoxFit.fitHeight,
-            ),
-            Image(
-              image: AssetImage("assets/images/testPhoto.png"),
-              fit: BoxFit.fitHeight,
-            ),
-            Image(
-              image: AssetImage("assets/images/testPhoto.png"),
-              fit: BoxFit.fitHeight,
-            ),
-          ],
+          children: result,
           controller: controller,
           reverse: false,
         ),
         align: IndicatorAlign.bottom,
-        length: 4,
+        length: customImages.length,
         shape: IndicatorShape.circle(size: 10),
         indicatorColor: Colors.grey.withAlpha(200),
         indicatorSelectorColor: Colors.white,

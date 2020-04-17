@@ -29,8 +29,10 @@ void main() async {
   
   runApp(new MaterialApp(
       theme: ThemeData(
+          scaffoldBackgroundColor: Colors.white,
           canvasColor: Colors.transparent,
           primaryColor: Colors.white,
+          backgroundColor: Colors.white,
           appBarTheme: AppBarTheme(
             color: Colors.white,
           )),

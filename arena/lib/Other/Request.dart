@@ -42,7 +42,7 @@ Future postWithToken(String url, [Map map]) async {
         headers: {"Content-type": "application/json", "Authorization": "Bearer ${token}"});
   }
 
-  return response.body;
+  return response;
 }
 
 
