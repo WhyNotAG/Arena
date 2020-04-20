@@ -1,5 +1,6 @@
 import 'package:arena/Authorization/main.dart';
 import 'package:arena/Icons/custom_icons_icons.dart';
+import 'package:arena/Navigation/User/Profile.dart';
 import 'package:arena/Navigation/User/Settings.dart';
 import 'package:flutter/material.dart';
 
@@ -170,6 +171,11 @@ class Button extends StatelessWidget {
                     context,
                     MaterialPageRoute(builder: (context) => SettingsWidget()),
                   );
+                if(text == " Редактировать профиль")
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => ProfileWidget()),
+                  );
               },
               icon: icon,
               label: Text(text,
@@ -189,6 +195,11 @@ class Button extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => SettingsWidget()),
+          );
+        if(text == " Редактировать профиль")
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => ProfileWidget()),
           );
       },
     );
