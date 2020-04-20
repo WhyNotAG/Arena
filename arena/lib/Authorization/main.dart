@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:arena/Menu.dart';
 import 'package:arena/Navigation/Places/Place/Booking.dart';
 import 'package:arena/Navigation/Places/Place/Place.dart';
@@ -380,8 +382,27 @@ class EnterButton extends StatelessWidget {
   Data data;
   bool isPhone;
   EnterButton(this._formKey, this._formKey2, this.data, this.isPhone);
-  Future<int> httpGet(String email, String password, String phone) async {
+  Future<int> httpGet(String password, String enter) async {
+   var email;
+   var phone;
     try {
+
+      String p = "[a-zA-Z0-9+.\_\%-+]{1,256}@[a-zA-Z0-9][a-zA-Z0-9-]{0,64}(.[a-zA-Z0-9][a-zA-Z0-9-]{0,25})+";
+      RegExp regExp = new RegExp(p);
+
+      String p2 = "^((8|\\+7)[\\- ]?)?(\\(?\\d{3}\\)?[\\- ]?)?[\\d\\- ]{7,10}\$";
+      RegExp regExp2 = new RegExp(p2);
+
+      if (regExp.hasMatch(enter)) {
+        email = enter;
+        phone = null;
+      }
+
+      if(regExp2.hasMatch(enter)) {
+        email = null;
+        phone = enter;
+      }
+
       Map jsonFile = {
           "email": email,
           "password": password,
@@ -389,22 +410,22 @@ class EnterButton extends StatelessWidget {
         };
 
       print(jsonEncode(jsonFile));
-      var responce =
+      var response =
       await http.post("http://217.12.209.180:8080/api/v1/auth/sign-in",
           body:json.encode(jsonFile),
           headers: {"content-Type":"application/json"});
-      print(responce.statusCode);
-      print(responce.body);
-      var decode = jsonDecode(responce.body);
+      print(response.statusCode);
+      print(response.body);
+      var decode = jsonDecode(response.body);
       addStringToSF("accessToken", decode["accessToken"]);
       addStringToSF("refreshToken", decode["refreshToken"]);
       addIntToSF("expiredIn", decode["expiredIn"]);
       addStringToSF("name", name);
-      addIntToSF("enterCode", responce.statusCode);
+      addIntToSF("enterCode", response.statusCode);
       addStringToSF("phone", null);
       addStringToSF("password", password);
 
-      return responce.statusCode;
+      return response.statusCode;
     } catch(error) {print(error);}
   }
 
@@ -435,9 +456,8 @@ class EnterButton extends StatelessWidget {
 
           int a = 0;
 
-          if(!isPhone) {
-            a = await httpGet(data._myController.text, data._passController.text, null);
-          } else { a = await httpGet(null, data._passController.text, data._myController.text);}
+
+          a = await httpGet(data._passController.text, data._myController.text);
           print(a);
           if(a == 200) {
             Navigator.push(

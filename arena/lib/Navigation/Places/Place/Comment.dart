@@ -216,7 +216,7 @@ class _CommentListState extends State<CommentList> {
 
                 width: double.infinity, height: 56,
 
-                child: FlatButton(child: Text("ПОКАЗАТЬ",
+                child: FlatButton(child: Text("Написать отзыв",
                   style: TextStyle(fontFamily: "Montserrat-Bold", fontSize: 12,
                       color: Colors.white, fontWeight: FontWeight.bold),),
                   onPressed: (){
@@ -227,7 +227,8 @@ class _CommentListState extends State<CommentList> {
                       );
                       commentWidgets = List();
                     });
-                  },),) : Container()
+                  },),) : Container(),
+              SizedBox(height: 30,)
             ],);
           }
           else if(snapshot.hasData) {
