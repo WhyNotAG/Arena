@@ -1,5 +1,6 @@
 import 'package:arena/Authorization/main.dart';
 import 'package:arena/Icons/custom_icons_icons.dart';
+import 'package:arena/Navigation/User/Settings.dart';
 import 'package:flutter/material.dart';
 
 import 'ProgramFeedback.dart';
@@ -164,6 +165,11 @@ class Button extends StatelessWidget {
                     context,
                     MaterialPageRoute(builder: (context) => FeedBack()),
                   );
+                if(text == " Настройки")
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => SettingsWidget()),
+                  );
               },
               icon: icon,
               label: Text(text,
@@ -178,6 +184,11 @@ class Button extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => FeedBack()),
+          );
+        if(text == " Настройки")
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => SettingsWidget()),
           );
       },
     );
