@@ -510,7 +510,7 @@ class _BookingState extends State<Booking> {
                             children: <Widget>[
                               Column(
                                 children: snap.data
-                                    .map<Widget>((time) => TimeWidget(time.from.toString().substring(0,5) + " - " + time.to.toString().substring(0,5),
+                                    .map<Widget>((time) => TimeWidget(time.id, time.from.toString().substring(0,5) + " - " + time.to.toString().substring(0,5),
                                         time.price.toString(), !time.isBooked))
                                     .toList(),
                               ),
@@ -567,24 +567,26 @@ class _BookingState extends State<Booking> {
 }
 
 class TimeWidget extends StatefulWidget {
+  int id;
   String time;
   String price;
   bool isActive;
 
-  TimeWidget(this.time, this.price, this.isActive);
+  TimeWidget(this.id, this.time, this.price, this.isActive);
 
   @override
-  _TimeWidgetState createState() => _TimeWidgetState(time, price, isActive);
+  _TimeWidgetState createState() => _TimeWidgetState(id, time, price, isActive);
 }
 
 class _TimeWidgetState extends State<TimeWidget> {
+  int id;
   String time;
   String price;
   String status = "Занято";
   bool isActive;
   bool setTime = false;
 
-  _TimeWidgetState(this.time, this.price, this.isActive);
+  _TimeWidgetState(this.id,this.time, this.price, this.isActive);
 
   @override
   void initState() {

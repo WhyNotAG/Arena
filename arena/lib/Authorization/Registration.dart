@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:arena/Menu.dart';
 import 'package:arena/Other/CustomSharedPreferences.dart';
 import 'package:flutter/material.dart';
+import 'package:http_parser/http_parser.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:flutter/services.dart';
@@ -358,17 +359,23 @@ class RegistrationButton extends StatelessWidget {
               addStringToSF("accessToken", decode["accessToken"]);
               addStringToSF("refreshToken", decode["refreshToken"]);
               addIntToSF("expiredIn", decode["expiredIn"]);
-
-              if(response.statusCode == 200) {
+              addIntToSF("id", decode["id"]);
+              if(response.statusCode == 200 && img != null) {
                 var token = await getStringValuesSF("accessToken");
                 var stream = new http.ByteStream(DelegatingStream.typed(img.openRead()));
                 var length = await img.length();
-                var uri = Uri.parse('http://217.12.209.180:8080/api/v1/account/upload/avatar');
-                var request = new http.MultipartRequest("POST", uri)
-                ..files.add(await http.MultipartFile('imageUrl',stream, length, filename: basename(img.path)))
-                ..headers["Authorization"] = "Bearer ${token}";
+                var uri = Uri.parse('http://217.12.209.180:8080/api/v1/account/upload/avatar/');
+                var request = new http.MultipartRequest("POST", uri);
+                request.files.add(http.MultipartFile('file', stream, length, filename: basename(img.path), contentType: new MediaType('image', 'jpg')));
+                request.headers["Authorization"] = "Bearer ${token}";
+                request.headers["Content-type"]= "application/json";
                 var response2 = await request.send();
                 if(response2.statusCode == 200) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => MenuScreen()),
+                  );
+                } else if(response.statusCode == 200){
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => MenuScreen()),

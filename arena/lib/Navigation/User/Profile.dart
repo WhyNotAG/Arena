@@ -5,8 +5,17 @@ import 'package:arena/Other/CustomSharedPreferences.dart';
 import 'package:arena/Other/Request.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
+import 'dart:convert';
+import 'dart:io';
+import 'dart:async';
+
+import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
+import 'package:path/path.dart';
+import 'package:async/async.dart';
 
 class ProfileWidget extends StatefulWidget {
   @override
@@ -17,8 +26,12 @@ class _ProfileWidgetState extends State<ProfileWidget> {
   File _image;
   String _name;
   bool _obscureText = true;
+  bool _obscureText2 = true;
   IconData _icon = Icons.visibility_off;
+  IconData _icon2 = Icons.visibility_off;
   final passController = TextEditingController();
+  final passReqController = TextEditingController();
+
   Future getImage() async {
     var image = await ImagePicker.pickImage(source: ImageSource.gallery);
 
@@ -38,6 +51,16 @@ class _ProfileWidgetState extends State<ProfileWidget> {
         _icon = Icons.visibility_off;
       } else {
         _icon = Icons.visibility;
+      }
+    });
+  }
+
+  void setIcon2(bool obscure) {
+    setState(() {
+      if (obscure) {
+        _icon2 = Icons.visibility_off;
+      } else {
+        _icon2 = Icons.visibility;
       }
     });
   }
@@ -127,8 +150,8 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                         hintStyle:  TextStyle(fontFamily: "Montserrat-Regular",
                             fontSize: 14, color: Color.fromARGB(255, 130, 130, 130))),
                     onChanged: (value){
-                      setState(() {
-                        _name = value;
+                      setState(() async {
+                          _name = value;
                       });
                     },
                   ),
@@ -141,7 +164,31 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                   child: FlatButton(child: Text("Сохранить изменения",
                     style: TextStyle(fontFamily: "Montserrat-Bold", fontSize: 12,
                         color: Colors.white, fontWeight: FontWeight.bold),),
-                    onPressed: (){
+                    onPressed: () async {
+                      var token = await getStringValuesSF("accessToken");
+                      var id = await getIntValuesSF("id");
+                      var expIn = await getIntValuesSF("expiredIn");
+
+                      if( DateTime.fromMillisecondsSinceEpoch(expIn * 1000).isBefore(DateTime.now()))  {
+                        token = await refresh();
+                      }
+
+                      if(_name != null) {
+                          print(_name);
+                      }
+                     if(_image != null) {
+                       var stream = new http.ByteStream(DelegatingStream.typed(_image.openRead()));
+                       var length = await _image.length();
+                       var uri = Uri.parse('http://217.12.209.180:8080/api/v1/account/upload/avatar/');
+                       var request = new http.MultipartRequest("POST", uri);
+                       request.files.add(http.MultipartFile('file', stream, length, filename: basename(_image.path), contentType: new MediaType('image', 'jpg')));
+                       request.headers["Authorization"] = "Bearer ${token}";
+                       request.headers["Content-type"]= "application/json";
+                       var response = await request.send();
+                       print(response.statusCode);
+                     }
+
+                     print(passReqController.text == passController.text);
                     },),),
 
                 Container(
@@ -161,7 +208,7 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                             cursorColor: Colors.black,
                             //autofocus: true,
                             decoration: new InputDecoration(
-                              hintText: "ПАРОЛЬ",
+                              hintText: "СТАРЫЙ ПАРОЛЬ",
                               hintStyle: TextStyle(
                                 color: Colors.black38,
                                 fontFamily: 'Montserrat-Bold',
@@ -207,12 +254,12 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                       height: 56,
                       child: Form(
                           child: new TextFormField(
-                            obscureText: _obscureText,
-                            controller: passController,
+                            obscureText: _obscureText2,
+                            controller: passReqController,
                             cursorColor: Colors.black,
                             //autofocus: true,
                             decoration: new InputDecoration(
-                              hintText: "ПОВТОРИТЕ ПАРОЛЬ",
+                              hintText: "НОВЫЙ ПАРОЛЬ",
                               hintStyle: TextStyle(
                                 color: Colors.black38,
                                 fontFamily: 'Montserrat-Bold',
@@ -242,11 +289,11 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                               suffixIcon: IconButton(
                                 onPressed: () {
                                   setState(() {
-                                    _obscureText = !_obscureText;
-                                    setIcon(_obscureText);
+                                    _obscureText2 = !_obscureText2;
+                                    setIcon2(_obscureText2);
                                   });
                                 },
-                                icon: Icon(_icon),
+                                icon: Icon(_icon2),
                                 color: Colors.black38,
                               ),
                             ),
@@ -266,6 +313,12 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                   style: TextStyle(fontFamily: "Montserrat-Bold", fontSize: 12,
                       color: Color.fromARGB(255, 47, 128, 237), fontWeight: FontWeight.bold),),
                   onPressed: () async{
+                    if(passController.text != passReqController.text && passReqController != null && passController != null) {
+                      var response = await postWithToken("http://217.12.209.180:8080/api/v1/account/change-password",{"currentPassword": passController.text,
+                      "newPassword": passReqController.text});
+                      print(response.statusCode);
+                      print(response.body);
+                    }
                   },),
                 ),
                 Container(child: FlatButton(
