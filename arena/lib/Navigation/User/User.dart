@@ -1,5 +1,6 @@
 import 'package:arena/Authorization/main.dart';
 import 'package:arena/Icons/custom_icons_icons.dart';
+import 'package:arena/Navigation/User/Book/BookStory.dart';
 import 'package:arena/Navigation/User/Profile.dart';
 import 'package:arena/Navigation/User/Settings.dart';
 import 'package:flutter/material.dart';
@@ -32,12 +33,6 @@ class User extends StatelessWidget {
                         color: Color.fromARGB(255, 47, 128, 237),
                       ),
                       " Забронировано"),
-                  Button(
-                      Icon(
-                        CustomIcons.ring,
-                        color: Color.fromARGB(255, 47, 128, 237),
-                      ),
-                      " Уведомления"),
                   Button(
                       Icon(
                         CustomIcons.settings,
@@ -176,6 +171,11 @@ class Button extends StatelessWidget {
                     context,
                     MaterialPageRoute(builder: (context) => ProfileWidget()),
                   );
+                if(text == " Забронировано")
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => BookStory()),
+                  );
               },
               icon: icon,
               label: Text(text,
@@ -200,6 +200,11 @@ class Button extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => ProfileWidget()),
+          );
+        if(text == " Забронировано")
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => BookStory()),
           );
       },
     );

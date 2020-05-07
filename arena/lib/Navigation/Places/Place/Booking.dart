@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:arena/Icons/custom_icons_icons.dart';
+import 'package:arena/Navigation/Places/Place/PayScreen.dart';
 import 'package:arena/Other/CustomSharedPreferences.dart';
 import 'package:arena/Other/Request.dart';
 import 'package:flutter/cupertino.dart';
@@ -140,7 +141,7 @@ class _BookingState extends State<Booking> {
                                       onConfirm: (tecDate) {
                                        setState(() {
                                          date = tecDate;
-                                         timeWidgets = fetchTime(id, date, isHalf);
+                                         timeWidgets = fetchTime(selectedPlayground.id, date, isHalf);
                                        });
                                       },
                                         currentTime: DateTime.now(), locale: LocaleType.ru
@@ -537,12 +538,14 @@ class _BookingState extends State<Booking> {
                                             fontFamily: "Montserrat-Bold")),
                                     onPressed: () async{
                                       if(ids.length >= 1){
-                                        var response = await postWithToken("http://217.12.209.180:8080/api/v1/booking/booking/", {"bookingsId": ids.toList(), "date": DateFormat("yyyy-MM-dd").format(date)});
+                                        bool test = await Navigator.push(context,  MaterialPageRoute(builder: (context) => PayScreen(date: date)));
                                         setState(() {
-                                          timeWidgets = fetchTime(id, date, isHalf);
-                                          ids = new Set();
+                                          if(test) {
+                                            print(date);
+                                            print(isHalf);
+                                            timeWidgets = fetchTime(selectedPlayground.id, date, isHalf);
+                                          }
                                         });
-
                                       }
                                     }),
                                 decoration: new BoxDecoration(

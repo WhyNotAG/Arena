@@ -95,7 +95,6 @@ Future<List<Place>> fetchPlace(BuildContext context) async {
     List list = json.decode(response.body) as List;
     int length = list.length;
 
-    geo.Position position = await geo.Geolocator().getCurrentPosition(desiredAccuracy: geo.LocationAccuracy.medium);
     for (int i = 0; i < length; i++) {
       places.add(Place.fromJson(responseJson[i]));
       if (places[i].isFavourite == null) {
@@ -105,136 +104,6 @@ Future<List<Place>> fetchPlace(BuildContext context) async {
       if (count == null) {
         count = 0;
       }
-
-//      for(int j = 0; j < places[i].playgrounds.length; j++)
-//        {
-//
-//        }
-      var img;
-
-      if (places[i].playgrounds[0].sports["name"] == "Футбол") {
-        img = "assets/images/Point_Soccer.svg";
-      }
-      if (places[i].playgrounds[0].sports["name"] == "Теннис") {
-        img = "assets/images/Point_Tennis.svg";
-      }
-      if (places[i].playgrounds[0].sports["name"] == "Баскетбол") {
-        img = "assets/images/Point_Basket.svg";
-      }
-      if (places[i].playgrounds[0].sports["name"] == "Волейбол") {
-        img = "assets/images/Point_Volley.svg";
-      }
-      if (places[i].playgrounds.length > 1) {
-        img = "assets/images/LOGO.svg";
-      }
-
-      double distanceInMeters = await geo.Geolocator().distanceBetween(position.latitude, position.longitude, places[i].latitude, places[i].longitude);
-      placeWidgets.add(Marker(
-          consumeTapEvents: true,
-          markerId: MarkerId(places[i].id.toString()),
-          infoWindow: InfoWindow(title: places[i].name),
-          position: LatLng(places[i].latitude, places[i].longitude),
-          icon: await _bitmapDescriptorFromSvgAsset(context, img),
-          onTap: () {
-            showModalBottomSheet(
-                context: context,
-                builder: (context) => Container(
-                  child: Container(
-                      decoration: new BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: new BorderRadius.only(
-                              topLeft: const Radius.circular(10.0),
-                              topRight: const Radius.circular(10.0))),
-                      child: Column(
-                        children: <Widget>[
-                          Row(
-                            mainAxisAlignment:
-                            MainAxisAlignment.spaceBetween,
-                            children: <Widget>[
-                              Container(
-                                padding: EdgeInsets.only(top: 39, left: 24),
-                                width: 250,
-                                child: Text(
-                                  places[i].name,
-                                  style: TextStyle(
-                                    color: Colors.black87,
-                                    fontFamily: "Montserrat-Bold",
-                                    fontSize: 24,
-                                  ),
-                                ),
-                              ),
-                              Container(
-                                  alignment: Alignment.topRight,
-                                  height: 20,
-
-                                  margin:
-                                  EdgeInsets.only(top: 51, right: 32),
-                                  child: Text(
-                                    "${(distanceInMeters/1000).toStringAsFixed(1)} км",
-                                    style: TextStyle(
-                                      color: Colors.black54,
-                                      fontFamily: "Montserrat-Bold",
-                                      fontSize: 14,
-                                    ),
-                                  ))
-                            ],
-                          ),
-                          //${places[i].workDayStartAt.toString().replaceRange(5, 8, "-")+places[i].workDayEndAt.toString().replaceRange(5, 8, "")}
-                          Container(
-                              alignment: Alignment.topLeft,
-                              margin: EdgeInsets.only(top: 11, left: 24),
-                              child: Row(
-                                children: <Widget>[
-                                  Text(
-                                    "Время работы: ",
-                                    style: TextStyle(
-                                      color: Colors.black54,
-                                      fontFamily: "Montserrat-Regular",
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                  Text(
-                                    places[i].workDayStartAt.toString().replaceRange(5, 8, "-")+places[i].workDayEndAt.toString().replaceRange(5, 8, ""),
-                                    style: TextStyle(
-                                      color: Colors.black87,
-                                      fontFamily: "Montserrat-Regular",
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                ],
-                              )),
-                          Container(
-                              alignment: Alignment.topLeft,
-                              margin: EdgeInsets.only(top: 11, left: 24),
-                              child: Row(
-                                children: <Widget>[
-                                  Text(
-                                    "Адрес: ",
-                                    style: TextStyle(
-                                      color: Colors.black54,
-                                      fontFamily: "Montserrat-Regular",
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                  Text(
-                                    places[i].address,
-                                    style: TextStyle(
-                                      color: Colors.black87,
-                                      fontFamily: "Montserrat-Regular",
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                ],
-                              ))
-                        ],
-                      )),
-                  height: 250,
-                ));
-          }));
     }
 
     return places;
@@ -664,7 +533,7 @@ class MapSampleState extends State<MapSample> {
 
   ClusterManager _initClusterManager() {
     return ClusterManager<Place>(items, _updateMarkers,
-        markerBuilder: _markerBuilder, initialZoom: _kGooglePlex.zoom + 10);
+        markerBuilder: _markerBuilder, initialZoom: _kGooglePlex.zoom);
   }
 
   @override

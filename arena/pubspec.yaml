@@ -40,6 +40,7 @@ dependencies:
   transparent_image: ^1.0.0
   page_indicator: ^0.3.0
   google_maps_flutter: ^0.5.25+2
+  webview_flutter: ^0.3.21
   flutter_range_slider: ^1.4.0
   flutter_svg: ^0.17.3+1
   solid_bottom_sheet: ^0.1.9
