@@ -29,7 +29,13 @@ Future<List<PlaceWidget>> fetchPlace() async {
   List<Place> places = new List<Place>();
   List<PlaceWidget> placeWidgets = new List<PlaceWidget>();
   var response;
-  geo.Position position = await geo.Geolocator().getCurrentPosition(desiredAccuracy: geo.LocationAccuracy.medium);
+
+  geo.Position position = null;
+  geo.GeolocationStatus geolocationStatus = await geo.Geolocator().checkGeolocationPermissionStatus();
+  if(geolocationStatus != geo.GeolocationStatus.denied && geolocationStatus != geo.GeolocationStatus.disabled){
+    position = await geo.Geolocator().getCurrentPosition(desiredAccuracy: geo.LocationAccuracy.medium);
+  }
+
   var token = await getStringValuesSF("accessToken");
   if (token != null) {
     response = await getWithToken("http://217.12.209.180:8080/api/v1/place/");
@@ -52,7 +58,7 @@ Future<List<PlaceWidget>> fetchPlace() async {
       if(count == null) {
         count = 0;
       }
-      double distanceInMeters = await geo.Geolocator().distanceBetween(position.latitude, position.longitude, places[i].latitude, places[i].longitude);
+      double distanceInMeters = position == null ? 0.0 : await geo.Geolocator().distanceBetween(position.latitude, position.longitude, places[i].latitude, places[i].longitude);
       placeWidgets.add(PlaceWidget(
           places[i].id,
           places[i].isFavourite,
@@ -446,40 +452,50 @@ class _PlacesState extends State<Places> {
             body: FutureBuilder<List<PlaceWidget>>(
               future: placeWidgetFuture,
               builder: (context, snapshot){
-                if(snapshot.hasData){
-                  return Container(
-                      margin: EdgeInsets.only(bottom: 0.0),
-                      color: Colors.white,
-                      child: SingleChildScrollView(
-                        child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: filteredList),
-                      ));
-                } else { return Center(child: Container(child: SizedBox(
-                  child: CircularProgressIndicator(), width: 30, height: 30),));}
+                  switch(snapshot.connectionState){
+                    case ConnectionState.none:
+                      return Container(
+                        width: double.infinity,
+                        margin: EdgeInsets.only(top: 16),
+                        child: Text("Отсутсвует соединение с интернетом"),
+                      );
+                    case ConnectionState.waiting:
+                      return Center(
+                          child: CircularProgressIndicator()
+                      );
+                    default:
+                        return Container(
+                            margin: EdgeInsets.only(bottom: 0.0),
+                            color: Colors.white,
+                            child: SingleChildScrollView(
+                              child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  children: filteredList),
+                            ));
+                  }
               },
             ))));
   }
 
 
   findSport(){
-    fetchPlaceBySport(sport).then((placesFromServer) {
+    placeWidgetFuture = fetchPlaceBySport(sport).then((placesFromServer) {
       setState(() {
         placeWidgets = placesFromServer;
         filteredList = placeWidgets;
-        placeWidgetFuture = fetchPlaceBySport(sport);
       });
+      return placesFromServer;
     });
   }
 
   @override
   void initState() {
-    fetchPlace().then((placesFromServer) {
+    placeWidgetFuture = fetchPlace().then((placesFromServer) {
       setState(() {
         placeWidgets = placesFromServer;
         filteredList = placeWidgets;
-        placeWidgetFuture = fetchPlace();
       });
+      return placesFromServer;
     });
   }
 }

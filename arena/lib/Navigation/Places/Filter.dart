@@ -110,7 +110,7 @@ class _FilterState extends State<Filter> {
     "hasParking": null,
     "openField": null,
     "priceFrom": 0,
-    "priceTo": 10000000,
+    "priceTo": 50000,
     "subways":null,
   };
 
@@ -123,7 +123,7 @@ class _FilterState extends State<Filter> {
   Subway input;
 
   int minValue = 0;
-  int maxValue = 100000;
+  int maxValue = 5000;
   RangeValues _values = new RangeValues(0, 12000.0);
   var firstController = TextEditingController();
   var secondController = TextEditingController();
@@ -407,7 +407,7 @@ class _FilterState extends State<Filter> {
                                       controller: firstController,
                                       onChanged: (value) {
                                         setState(() {
-                                          if (int.parse(firstController.text) <= 100000) {minValue = int.parse(firstController.text); firstController.text = minValue.toString();}
+                                          if (int.parse(firstController.text) <= 5000) {minValue = int.parse(firstController.text); firstController.text = minValue.toString();}
                                           if (minValue >= maxValue) { maxValue = minValue; secondController.text = maxValue.toString();}
                                           firstController.text = minValue.toString();
                                           req["From"] = minValue;
@@ -427,7 +427,7 @@ class _FilterState extends State<Filter> {
                                 child: new TextField(style: TextStyle(fontFamily: "Montserrat-Regular", fontWeight: FontWeight.bold, color: Color.fromARGB(255, 130, 130, 130)), decoration: InputDecoration(border: InputBorder.none, contentPadding: new EdgeInsets.fromLTRB(
                                     10.0, 0.0, 10.0, 10.0),), controller: secondController,onChanged: (value) {
                                   setState(() {
-                                    if(int.parse(secondController.text) <= 100000) {maxValue = int.parse(secondController.text); secondController.text = maxValue.toString();}
+                                    if(int.parse(secondController.text) <= 5000) {maxValue = int.parse(secondController.text); secondController.text = maxValue.toString();}
                                     if (minValue >= maxValue) { minValue = maxValue; firstController.text = minValue.toString();}
                                     secondController.text = maxValue.toString();
                                     req["priceFrom"] = minValue;
@@ -449,7 +449,7 @@ class _FilterState extends State<Filter> {
                           ),
                           child: frs.RangeSlider(
                             min: 0.0,
-                            max: 100000.0,
+                            max: 5000.0,
                             lowerValue: minValue.toDouble(),
                             upperValue: maxValue.toDouble(),
                             showValueIndicator: true,

@@ -13,6 +13,8 @@ import 'Place.dart';
 import 'dart:math' as math;
 import 'package:http/http.dart' as http;
 
+Set<String> ids = new Set<String>();
+
 class Book {
   int id;
   bool isHalfBookingAvailable;
@@ -98,7 +100,7 @@ class _BookingState extends State<Booking> {
   @override
   void initState() {
     date = DateTime.now();
-
+    ids = new Set<String>();
     place = fetchPlace(id).then((value){
 
       selectedPlayground = value.playgrounds[0];
@@ -138,6 +140,7 @@ class _BookingState extends State<Booking> {
                                       onConfirm: (tecDate) {
                                        setState(() {
                                          date = tecDate;
+                                         timeWidgets = fetchTime(id, date, isHalf);
                                        });
                                       },
                                         currentTime: DateTime.now(), locale: LocaleType.ru
@@ -320,7 +323,8 @@ class _BookingState extends State<Booking> {
                                                                   date = date.add(
                                                                       Duration(
                                                                           days:
-                                                                              1));
+                                                                          1));
+                                                                  print(date);
                                                                   timeWidgets = fetchTime(selectedPlayground.id, date, isHalf);
                                                                 });
                                                               },
@@ -503,6 +507,14 @@ class _BookingState extends State<Booking> {
                   body: FutureBuilder(
                     future: timeWidgets,
                     builder: (context, AsyncSnapshot snap) {
+                     switch(snap.connectionState){
+                       case ConnectionState.none:
+                         return Container(child: Text("Нет соединения с интернетом"),);
+                       case ConnectionState.waiting:
+                         return Center(
+                             child: CircularProgressIndicator()
+                         );
+                       default:
                       if (snap.hasData && snap.data.length >= 1) {
                         return (Container(
                           margin: EdgeInsets.only(top: 16),
@@ -523,7 +535,15 @@ class _BookingState extends State<Booking> {
                                             color: Colors.white,
                                             fontSize: 14.0,
                                             fontFamily: "Montserrat-Bold")),
-                                    onPressed: () {
+                                    onPressed: () async{
+                                      if(ids.length >= 1){
+                                        var response = await postWithToken("http://217.12.209.180:8080/api/v1/booking/booking/", {"bookingsId": ids.toList(), "date": DateFormat("yyyy-MM-dd").format(date)});
+                                        setState(() {
+                                          timeWidgets = fetchTime(id, date, isHalf);
+                                          ids = new Set();
+                                        });
+
+                                      }
                                     }),
                                 decoration: new BoxDecoration(
                                     borderRadius:
@@ -535,7 +555,7 @@ class _BookingState extends State<Booking> {
                             ],
                           ),
                         ));
-                      } else if (snap.hasData) {
+                      } else {
                         return Container(child: Text("На выбранную дату нет свободных мест", style: TextStyle(
                             color: Color.fromARGB(255, 130, 130, 130),
                             fontSize: 14.0,
@@ -543,15 +563,7 @@ class _BookingState extends State<Booking> {
                             fontFamily: "Montserrat-Regular")),
                         alignment: Alignment.topCenter, margin: EdgeInsets.only(top: 16),);
                       }
-                      else {
-                        return Center(
-                            child: Container(
-                          child: SizedBox(
-                              child: CircularProgressIndicator(),
-                              width: 30,
-                              height: 30),
-                        ));
-                      }
+                     }
                     },
                   ));
             } else {
@@ -659,7 +671,14 @@ class _TimeWidgetState extends State<TimeWidget> {
       onTap: () {
         setState(() {
           if (isActive) {
-            setTime = !setTime;
+            if(!setTime) {
+              ids.add(id.toString());
+              print(ids);
+            } else {
+              ids.remove(id.toString());
+              print(ids);
+            }
+              setTime = !setTime;
           }
         });
       },

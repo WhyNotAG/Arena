@@ -1,4 +1,7 @@
+
+import 'dart:async';
 import 'dart:convert';
+import 'dart:ui';
 
 import 'package:arena/Icons/custom_icons_icons.dart';
 import 'package:arena/Other/CustomSharedPreferences.dart';
@@ -7,12 +10,13 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:geolocator/geolocator.dart' as geo;
+import 'package:google_maps_cluster_manager/google_maps_cluster_manager.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:location/location.dart';
 import 'dart:ui' as ui; // imported as ui to prevent conflict between ui.Image and the Image widget
 import 'package:flutter/services.dart';
-
+import 'package:arena/Navigation/Cluster.dart';
 import 'Places/Filter.dart';
 
 Future<BitmapDescriptor> _bitmapDescriptorFromSvgAsset(
@@ -72,7 +76,7 @@ List<CustomMarker> parsePlace(String responseBody) {
   return parsed.map<CustomMarker>((json) => Place.fromJson(json)).toList();
 }
 
-Future<Set<Marker>> fetchPlace(BuildContext context) async {
+Future<List<Place>> fetchPlace(BuildContext context) async {
   List<Place> places = new List<Place>();
   Set<Marker> placeWidgets = new Set<Marker>();
   var response;
@@ -135,105 +139,105 @@ Future<Set<Marker>> fetchPlace(BuildContext context) async {
             showModalBottomSheet(
                 context: context,
                 builder: (context) => Container(
-                      child: Container(
-                          decoration: new BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: new BorderRadius.only(
-                                  topLeft: const Radius.circular(10.0),
-                                  topRight: const Radius.circular(10.0))),
-                          child: Column(
+                  child: Container(
+                      decoration: new BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: new BorderRadius.only(
+                              topLeft: const Radius.circular(10.0),
+                              topRight: const Radius.circular(10.0))),
+                      child: Column(
+                        children: <Widget>[
+                          Row(
+                            mainAxisAlignment:
+                            MainAxisAlignment.spaceBetween,
                             children: <Widget>[
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: <Widget>[
-                                  Container(
-                                    padding: EdgeInsets.only(top: 39, left: 24),
-                                    width: 250,
-                                    child: Text(
-                                      places[i].name,
-                                      style: TextStyle(
-                                        color: Colors.black87,
-                                        fontFamily: "Montserrat-Bold",
-                                        fontSize: 24,
-                                      ),
-                                    ),
+                              Container(
+                                padding: EdgeInsets.only(top: 39, left: 24),
+                                width: 250,
+                                child: Text(
+                                  places[i].name,
+                                  style: TextStyle(
+                                    color: Colors.black87,
+                                    fontFamily: "Montserrat-Bold",
+                                    fontSize: 24,
                                   ),
-                                  Container(
-                                      alignment: Alignment.topRight,
-                                      height: 20,
-
-                                      margin:
-                                          EdgeInsets.only(top: 51, right: 32),
-                                      child: Text(
-                                        "${(distanceInMeters/1000).toStringAsFixed(1)} км",
-                                        style: TextStyle(
-                                          color: Colors.black54,
-                                          fontFamily: "Montserrat-Bold",
-                                          fontSize: 14,
-                                        ),
-                                      ))
-                                ],
+                                ),
                               ),
-                              //${places[i].workDayStartAt.toString().replaceRange(5, 8, "-")+places[i].workDayEndAt.toString().replaceRange(5, 8, "")}
                               Container(
-                                  alignment: Alignment.topLeft,
-                                  margin: EdgeInsets.only(top: 11, left: 24),
-                                  child: Row(
-                                    children: <Widget>[
-                                      Text(
-                                        "Время работы: ",
-                                        style: TextStyle(
-                                          color: Colors.black54,
-                                          fontFamily: "Montserrat-Regular",
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                      Text(
-                                        places[i].workDayStartAt.toString().replaceRange(5, 8, "-")+places[i].workDayEndAt.toString().replaceRange(5, 8, ""),
-                                        style: TextStyle(
-                                          color: Colors.black87,
-                                          fontFamily: "Montserrat-Regular",
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                    ],
-                                  )),
-                              Container(
-                                  alignment: Alignment.topLeft,
-                                  margin: EdgeInsets.only(top: 11, left: 24),
-                                  child: Row(
-                                    children: <Widget>[
-                                      Text(
-                                        "Адрес: ",
-                                        style: TextStyle(
-                                          color: Colors.black54,
-                                          fontFamily: "Montserrat-Regular",
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                      Text(
-                                        places[i].address,
-                                        style: TextStyle(
-                                          color: Colors.black87,
-                                          fontFamily: "Montserrat-Regular",
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                    ],
+                                  alignment: Alignment.topRight,
+                                  height: 20,
+
+                                  margin:
+                                  EdgeInsets.only(top: 51, right: 32),
+                                  child: Text(
+                                    "${(distanceInMeters/1000).toStringAsFixed(1)} км",
+                                    style: TextStyle(
+                                      color: Colors.black54,
+                                      fontFamily: "Montserrat-Bold",
+                                      fontSize: 14,
+                                    ),
                                   ))
                             ],
-                          )),
-                      height: 250,
-                    ));
+                          ),
+                          //${places[i].workDayStartAt.toString().replaceRange(5, 8, "-")+places[i].workDayEndAt.toString().replaceRange(5, 8, "")}
+                          Container(
+                              alignment: Alignment.topLeft,
+                              margin: EdgeInsets.only(top: 11, left: 24),
+                              child: Row(
+                                children: <Widget>[
+                                  Text(
+                                    "Время работы: ",
+                                    style: TextStyle(
+                                      color: Colors.black54,
+                                      fontFamily: "Montserrat-Regular",
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  Text(
+                                    places[i].workDayStartAt.toString().replaceRange(5, 8, "-")+places[i].workDayEndAt.toString().replaceRange(5, 8, ""),
+                                    style: TextStyle(
+                                      color: Colors.black87,
+                                      fontFamily: "Montserrat-Regular",
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ],
+                              )),
+                          Container(
+                              alignment: Alignment.topLeft,
+                              margin: EdgeInsets.only(top: 11, left: 24),
+                              child: Row(
+                                children: <Widget>[
+                                  Text(
+                                    "Адрес: ",
+                                    style: TextStyle(
+                                      color: Colors.black54,
+                                      fontFamily: "Montserrat-Regular",
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  Text(
+                                    places[i].address,
+                                    style: TextStyle(
+                                      color: Colors.black87,
+                                      fontFamily: "Montserrat-Regular",
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ],
+                              ))
+                        ],
+                      )),
+                  height: 250,
+                ));
           }));
     }
 
-    return placeWidgets;
+    return places;
   } else {
     throw Exception('Failed to load album');
   }
@@ -273,19 +277,19 @@ class Place {
 
   Place(
       {this.id,
-      this.name,
-      this.rating,
-      this.countOfRate,
-      this.timeOfWork,
-      this.address,
-      this.info,
-      this.isFavourite,
-      this.workDayEndAt,
-      this.workDayStartAt,
-      this.latitude,
-      this.longitude,
-      this.playgrounds,
-      this.customImages});
+        this.name,
+        this.rating,
+        this.countOfRate,
+        this.timeOfWork,
+        this.address,
+        this.info,
+        this.isFavourite,
+        this.workDayEndAt,
+        this.workDayStartAt,
+        this.latitude,
+        this.longitude,
+        this.playgrounds,
+        this.customImages});
 
   factory Place.fromJson(Map<String, dynamic> json) {
     var list = json['playgrounds'] as List;
@@ -467,12 +471,16 @@ class MapSampleState extends State<MapSample> {
   BitmapDescriptor pinLocationIcon;
   Set<Marker> _markers = {};
   Set<Marker> _before_markers = {};
+  List<Place> places = List();
+  List<Place> beforePlaces = List();
+  ClusterManager _manager;
   bool onPressed = false;
-  GoogleMapController _controller;
+  Completer<GoogleMapController> _controller = Completer();
   LatLng pinPosition = LatLng(55.753878, 37.620851);
   LocationData currentLocation;
   var location = new Location();
-  TextEditingController controller = TextEditingController();
+  List<ClusterItem<Place>> items = List();
+  TextEditingController textController = TextEditingController();
 
   static final CameraPosition _kGooglePlex = CameraPosition(
     target: LatLng(55.753878, 37.620851),
@@ -481,18 +489,198 @@ class MapSampleState extends State<MapSample> {
 
   void _getLocation() async {
     geo.Position position = await geo.Geolocator().getCurrentPosition(desiredAccuracy: geo.LocationAccuracy.medium);
-    _controller.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(
+    final GoogleMapController controller = await _controller.future;
+    controller.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(
         zoom: 14.4746,target: LatLng(position.latitude, position.longitude,))));
   }
+
+
+  Future<BitmapDescriptor> _getMarkerBitmap(int size, {String text}) async {
+    assert(size != null);
+
+    final PictureRecorder pictureRecorder = PictureRecorder();
+    final Canvas canvas = Canvas(pictureRecorder);
+    final Paint paint1 = Paint()..color = Color.fromARGB(255, 47, 128, 237);
+    final Paint paint2 = Paint()..color = Colors.white;
+
+    canvas.drawCircle(Offset(size / 2, size / 2), size / 2.0, paint1);
+    canvas.drawCircle(Offset(size / 2, size / 2), size / 2.2, paint2);
+    canvas.drawCircle(Offset(size / 2, size / 2), size / 2.8, paint1);
+
+    if (text != null) {
+      TextPainter painter = TextPainter(textDirection: TextDirection.ltr);
+      painter.text = TextSpan(
+        text: text,
+        style: TextStyle(
+            fontSize: size / 3,
+            color: Colors.white,
+            fontWeight: FontWeight.normal),
+      );
+      painter.layout();
+      painter.paint(
+        canvas,
+        Offset(size / 2 - painter.width / 2, size / 2 - painter.height / 2),
+      );
+    }
+
+    final img = await pictureRecorder.endRecording().toImage(size, size);
+    final data = await img.toByteData(format: ImageByteFormat.png);
+
+    return BitmapDescriptor.fromBytes(data.buffer.asUint8List());
+  }
+  Future<Marker> Function(Cluster<Place>) get _markerBuilder =>
+          (cluster) async {
+            geo.Position position = await geo.Geolocator().getCurrentPosition(desiredAccuracy: geo.LocationAccuracy.medium);
+            var img;
+            if (cluster.items.first.playgrounds[0].sports["name"] == "Футбол") {
+              img = "assets/images/Point_Soccer.svg";
+            }
+            if (cluster.items.first.playgrounds[0].sports["name"] == "Теннис") {
+              img = "assets/images/Point_Tennis.svg";
+            }
+            if (cluster.items.first.playgrounds[0].sports["name"] == "Баскетбол") {
+              img = "assets/images/Point_Basket.svg";
+            }
+            if (cluster.items.first.playgrounds[0].sports["name"] == "Волейбол") {
+              img = "assets/images/Point_Volley.svg";
+            }
+            if (cluster.items.first.playgrounds.length > 1) {
+              img = "assets/images/LOGO.svg";
+            }
+
+            return Marker(
+          markerId: MarkerId(cluster.getId()),
+          position: cluster.location,
+          onTap: !cluster.isMultiple ? () async{
+            double distanceInMeters = await geo.Geolocator().distanceBetween(position.latitude, position.longitude, cluster.items.first.latitude, cluster.items.first.longitude);
+            showModalBottomSheet(
+                context: context,
+                builder: (context) => Container(
+                  child: Container(
+                      decoration: new BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: new BorderRadius.only(
+                              topLeft: const Radius.circular(10.0),
+                              topRight: const Radius.circular(10.0))),
+                      child: Column(
+                        children: <Widget>[
+                          Row(
+                            mainAxisAlignment:
+                            MainAxisAlignment.spaceBetween,
+                            children: <Widget>[
+                              Container(
+                                padding: EdgeInsets.only(top: 39, left: 24),
+                                width: 250,
+                                child: Text(
+                                  cluster.items.first.name,
+                                  style: TextStyle(
+                                    color: Colors.black87,
+                                    fontFamily: "Montserrat-Bold",
+                                    fontSize: 24,
+                                  ),
+                                ),
+                              ),
+                              Container(
+                                  alignment: Alignment.topRight,
+                                  height: 20,
+
+                                  margin:
+                                  EdgeInsets.only(top: 51, right: 32),
+                                  child: Text(
+                                    "${(distanceInMeters/1000).toStringAsFixed(1)} км",
+                                    style: TextStyle(
+                                      color: Colors.black54,
+                                      fontFamily: "Montserrat-Bold",
+                                      fontSize: 14,
+                                    ),
+                                  ))
+                            ],
+                          ),
+                          //${places[i].workDayStartAt.toString().replaceRange(5, 8, "-")+places[i].workDayEndAt.toString().replaceRange(5, 8, "")}
+                          Container(
+                              alignment: Alignment.topLeft,
+                              margin: EdgeInsets.only(top: 11, left: 24),
+                              child: Row(
+                                children: <Widget>[
+                                  Text(
+                                    "Время работы: ",
+                                    style: TextStyle(
+                                      color: Colors.black54,
+                                      fontFamily: "Montserrat-Regular",
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  Text(
+                                    cluster.items.first.workDayStartAt.toString().replaceRange(5, 8, "-")+cluster.items.first.workDayEndAt.toString().replaceRange(5, 8, ""),
+                                    style: TextStyle(
+                                      color: Colors.black87,
+                                      fontFamily: "Montserrat-Regular",
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ],
+                              )),
+                          Container(
+                              alignment: Alignment.topLeft,
+                              margin: EdgeInsets.only(top: 11, left: 24),
+                              child: Row(
+                                children: <Widget>[
+                                  Text(
+                                    "Адрес: ",
+                                    style: TextStyle(
+                                      color: Colors.black54,
+                                      fontFamily: "Montserrat-Regular",
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  Text(
+                                    cluster.items.first.address,
+                                    style: TextStyle(
+                                      color: Colors.black87,
+                                      fontFamily: "Montserrat-Regular",
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ],
+                              ))
+                        ],
+                      )),
+                  height: 250,
+                ));
+          } : () {},
+          icon: cluster.isMultiple ? await _getMarkerBitmap(125,text: cluster.count.toString()) : await _bitmapDescriptorFromSvgAsset(context, img),
+        );
+      };
+
+  void _updateMarkers(Set<Marker> markers) {
+    setState(() {
+      this._markers = markers;
+    });
+  }
+
+  ClusterManager _initClusterManager() {
+    return ClusterManager<Place>(items, _updateMarkers,
+        markerBuilder: _markerBuilder, initialZoom: _kGooglePlex.zoom + 10);
+  }
+
   @override
   void initState() {
-    super.initState();
     fetchPlace(context).then((placesFromServer) {
       setState(() {
-        _before_markers = placesFromServer;
-        _markers = _before_markers;
+        beforePlaces = placesFromServer;
+        places = beforePlaces;
+        for(Place place in places) {
+          items.add(ClusterItem(LatLng(place.latitude, place.longitude), item: place));
+          _manager.updateClusters();
+        }
       });
     });
+    _manager = _initClusterManager();
+    super.initState();
   }
 
   void setCustomMapPin() async {
@@ -507,7 +695,7 @@ class MapSampleState extends State<MapSample> {
         onWillPop: () async => false,
         child: Scaffold(
             resizeToAvoidBottomInset: false,
-          backgroundColor: Colors.white,
+            backgroundColor: Colors.white,
             body: Container(
               color: Colors.white,
               child: Stack(
@@ -520,17 +708,17 @@ class MapSampleState extends State<MapSample> {
                     mapType: MapType.terrain,
                     initialCameraPosition: _kGooglePlex,
                     onMapCreated: (GoogleMapController controller) {
-                      _controller = controller;
+                      _controller.complete(controller);
+                      _manager.setMapController(controller);
                     },
                     onCameraIdle: () {
-                      for(Marker marker in _markers){
-                        _controller.hideMarkerInfoWindow(marker.markerId);
-                      }
+                      _manager.updateMap();
                     },
                     onCameraMove: (CameraPosition position) {
                       setState(() {
                         onPressed = false;
                       });
+                      _manager.onCameraMove(position);
                     },
                     onTap: (LatLng latLng) {
                       setState(() {
@@ -549,13 +737,22 @@ class MapSampleState extends State<MapSample> {
                               margin: EdgeInsets.only(right: 8),
                               child: FloatingActionButton(
                                 onPressed: () async {
-                                  List<Place> times = await Navigator.push(
+                                 beforePlaces = await Navigator.push(
                                     context,
                                     MaterialPageRoute(builder: (context) => Filter()),
                                   );
-                                  setState(() async{
-                                    _markers = await filter(context, times);
-                                  });
+                                    items = new List();
+                                   places = beforePlaces;
+                                   print(places.length);
+                                 if(places.length != 0) {
+                                   for(Place place in places) {
+                                     items.add(ClusterItem(LatLng(place.latitude, place.longitude), item: place));
+                                     _manager.setItems(items);
+                                   }
+                                 } else {
+                                   _markers = null;
+                                   _manager.setItems(null);
+                                 }
                                 },
                                 heroTag: "btn1",
                                 materialTapTargetSize: MaterialTapTargetSize.padded,
@@ -576,19 +773,29 @@ class MapSampleState extends State<MapSample> {
                                   height: 47,
                                   width: 268,
                                   child: TextField(
-                                    controller: controller,
+                                    controller: textController,
                                     onChanged: (String value) {
                                       setState(() {
                                         search = value;
-                                        controller.text = search;
-                                        controller.selection =
+                                        textController.text = search;
+                                        textController.selection =
                                             TextSelection.fromPosition(TextPosition(
-                                                offset: controller.text.length));
+                                                offset: textController.text.length));
+                                        items = new List();
+                                        places = beforePlaces
+                                            .where((u) => (u.name
+                                            .toLowerCase()
+                                            .contains(value.toLowerCase())))
+                                            .toList();
                                         _markers = _before_markers
                                             .where((u) => (u.infoWindow.title
                                             .toLowerCase()
                                             .contains(value.toLowerCase())))
                                             .toSet();
+                                        for(Place place in places) {
+                                          items.add(ClusterItem(LatLng(place.latitude, place.longitude), item: place));
+                                          _manager.setItems(items);
+                                        }
                                       });
                                     },
                                     decoration: InputDecoration(
@@ -647,8 +854,9 @@ class MapSampleState extends State<MapSample> {
                           margin: EdgeInsets.only(right: 0.0),
                           child: FloatingActionButton(
                             heroTag: "plus",
-                            onPressed: () {
-                              _controller.animateCamera(CameraUpdate.zoomIn());
+                            onPressed: () async{
+                              final GoogleMapController controller = await _controller.future;
+                              controller.animateCamera(CameraUpdate.zoomIn());
                             },
                             materialTapTargetSize: MaterialTapTargetSize.padded,
                             backgroundColor: Colors.white,
@@ -662,8 +870,9 @@ class MapSampleState extends State<MapSample> {
                           margin: EdgeInsets.only(right: 0.0),
                           child: FloatingActionButton(
                             heroTag: "minus",
-                            onPressed: () {
-                              _controller.animateCamera(CameraUpdate.zoomOut());
+                            onPressed: () async {
+                              final GoogleMapController controller = await _controller.future;
+                              controller.animateCamera(CameraUpdate.zoomOut());
                             },
                             materialTapTargetSize: MaterialTapTargetSize.padded,
                             backgroundColor: Colors.white,

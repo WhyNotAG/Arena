@@ -10,7 +10,7 @@ import 'package:page_indicator/page_indicator.dart';
 import 'package:smooth_star_rating/smooth_star_rating.dart';
 import 'package:arena/Other/Request.dart';
 import 'package:transparent_image/transparent_image.dart';
-
+import 'package:geolocator/geolocator.dart' as geo;
 import 'Map.dart';
 import 'Places/Place/Booking.dart';
 import 'Places/Place/Place.dart' as Pl;
@@ -26,6 +26,12 @@ List<PlaceWidget> parsePlace(String responseBody) {
 Future<List<PlaceWidget>> fetchPlace() async {
   List<Place> places = new List<Place>();
   List<PlaceWidget> placeWidgets = new List<PlaceWidget>();
+
+  geo.Position position = null;
+  geo.GeolocationStatus geolocationStatus = await geo.Geolocator().checkGeolocationPermissionStatus();
+  if(geolocationStatus != geo.GeolocationStatus.denied && geolocationStatus != geo.GeolocationStatus.disabled){
+    position = await geo.Geolocator().getCurrentPosition(desiredAccuracy: geo.LocationAccuracy.medium);
+  }
 
   var response;
   var token = await getStringValuesSF("accessToken");
@@ -51,11 +57,13 @@ Future<List<PlaceWidget>> fetchPlace() async {
       if(count == null) {
         count = 0;
       }
+      double distanceInMeters = position == null ? 0.0 : await geo.Geolocator().distanceBetween(position.latitude, position.longitude, places[i].latitude, places[i].longitude);
       placeWidgets.add(PlaceWidget(
           places[i].id,
           places[i].isFavourite,
           places[i].name,
           places[i].rating,
+          distanceInMeters / 1000,
           count,
           "places[i].photo",
           (places[i].workDayStartAt.toString().replaceRange(5, 8, "-")+places[i].workDayEndAt.toString().replaceRange(5, 8, "")),
@@ -240,11 +248,12 @@ class PlaceWidget extends StatelessWidget {
   int countOfRate;
   String photo;
   String timeOfWork;
+  double distance;
   String address;
   String info;
   List<CustomImage> customImages;
 
-  PlaceWidget(this.id, this.isFavourite, this.name, this.rating,
+  PlaceWidget(this.id, this.isFavourite, this.name, this.rating, this.distance,
       this.countOfRate, this.photo, this.timeOfWork, this.address, this.info, this.customImages);
 
   @override
@@ -295,7 +304,7 @@ class PlaceWidget extends StatelessWidget {
               ),
               WorkTimeWidget("Время работы: ", timeOfWork),
               WorkTimeWidget("Адрес:", address),
-              PlaceButtons(id),
+              PlaceButtons(id, distance),
               Container(
                 margin: EdgeInsets.only(left: 25, right: 24, top: 26),
                 child: Text(
@@ -470,8 +479,9 @@ class _FavouritesButtonState extends State<FavouritesButton> {
 
 class PlaceButtons extends StatelessWidget {
   int id;
+  double distance;
 
-  PlaceButtons(this.id);
+  PlaceButtons(this.id, this.distance);
 
   @override
   Widget build(BuildContext context) {
@@ -520,7 +530,7 @@ class PlaceButtons extends StatelessWidget {
           Container(
             margin: EdgeInsets.only(left: 9),
             child: Text(
-              "8.5км",
+              distance.toStringAsFixed(2) + "км",
               style: TextStyle(
                   color: Colors.black38,
                   fontFamily: "Montserrat-Bold",
@@ -528,7 +538,7 @@ class PlaceButtons extends StatelessWidget {
             ),
           ),
           PlaceDateButton(id),
-          PlacePhoneButton()
+          //PlacePhoneButton()
         ],
       ),
     );

@@ -200,72 +200,82 @@ class _CommentListState extends State<CommentList> {
       child: FutureBuilder<Content>(
         future: content,
         builder: (context, snapshot){
-          if (snapshot.hasData && snapshot.data.comments.length >= 1){
-            for(Comment comment in snapshot.data.comments) {
-              if(commentWidgets.length < snapshot.data.comments.length) {
+      switch(snapshot.connectionState) {
+        case ConnectionState.none:
+          return Container(
+            width: double.infinity,
+            margin: EdgeInsets.only(top: 16),
+            child: Text("Отсутсвует соединение с интернетом"),
+          );
+        case ConnectionState.waiting:
+          return Center(
+              child: CircularProgressIndicator()
+          );
+        default:
+          if (snapshot.hasData && snapshot.data.comments.length >= 1) {
+            for (Comment comment in snapshot.data.comments) {
+              if (commentWidgets.length < snapshot.data.comments.length) {
                 commentWidgets.add(CommentWidget(comment));
               }
             }
             return Column(children: <Widget>[
               Column(children: commentWidgets,),
-              inBook ?   Container(
+              inBook ? Container(
                 margin: EdgeInsets.only(left: 16, right: 16, top: 12),
 
-                decoration: BoxDecoration(borderRadius: new BorderRadius.circular(30.0),
+                decoration: BoxDecoration(
+                  borderRadius: new BorderRadius.circular(30.0),
                   color: Color.fromARGB(255, 47, 128, 237),),
 
-                width: double.infinity, height: 56,
+                width: double.infinity,
+                height: 56,
 
                 child: FlatButton(child: Text("Написать отзыв",
                   style: TextStyle(fontFamily: "Montserrat-Bold", fontSize: 12,
                       color: Colors.white, fontWeight: FontWeight.bold),),
-                  onPressed: (){
+                  onPressed: () {
                     setState(() {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => FeedBackPlace(id)),
+                        MaterialPageRoute(
+                            builder: (context) => FeedBackPlace(id)),
                       );
-                      commentWidgets = List();
+                      content = fetchContent(id);
                     });
                   },),) : Container(),
               SizedBox(height: 30,)
             ],);
           }
-          else if(snapshot.hasData) {
+          else {
             return Column(children: <Widget>[
-            Container(child: Text("Нет отзывов"), alignment: Alignment.topCenter,),
-              inBook ?   Container(
-                margin: EdgeInsets.only(left: 16, right: 16, top: 12),
-
-                decoration: BoxDecoration(borderRadius: new BorderRadius.circular(30.0),
-                  color: Color.fromARGB(255, 47, 128, 237),),
-
-                width: double.infinity, height: 56,
-
+              Container(
+                margin: EdgeInsets.only(top: 16),
+                child: Text("Нет отзывов", style: TextStyle(fontFamily: "Montserrat-Regular", fontSize: 12,
+                    color: Color.fromARGB(255, 130, 130, 130), fontWeight: FontWeight.bold),), alignment: Alignment.topCenter,),
+              inBook ? Container(
                 child: FlatButton(child: Text("Написать отзыв",
-                  style: TextStyle(fontFamily: "Montserrat-Bold", fontSize: 12,
-                      color: Colors.white, fontWeight: FontWeight.bold),),
-                  onPressed: (){
+                  style: TextStyle(
+                  decoration: TextDecoration.underline, fontSize: 14.0,
+                  fontFamily: "Montserrat-Regular",
+                  color:Color.fromARGB(255, 130, 130, 130))
+                  ),
+                  color: Colors.white,
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  textColor: Color.fromARGB(255, 130, 130, 130),
+                  onPressed: () {
                     setState(() {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => FeedBackPlace(id)),
+                        MaterialPageRoute(
+                            builder: (context) => FeedBackPlace(id)),
                       );
-                      commentWidgets = List();
                       content = fetchContent(id);
                     });
                   },),) : Container(),
               SizedBox(height: 8, width: 8,)
             ],);
           }
-          else { return Center(
-              child: Container(
-                margin: EdgeInsets.only(top: 20),
-                child: SizedBox(
-                    child: CircularProgressIndicator(),
-                    width: 30,
-                    height: 30),
-              ));}
+          }
         },
       ),
     ));
