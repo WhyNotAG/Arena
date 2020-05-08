@@ -321,6 +321,7 @@ class _BookingState extends State<Booking> {
                                                               ),
                                                               onPressed: () {
                                                                 setState(() {
+                                                                  ids = new Set();
                                                                   date = date.add(
                                                                       Duration(
                                                                           days:
@@ -541,8 +542,6 @@ class _BookingState extends State<Booking> {
                                         bool test = await Navigator.push(context,  MaterialPageRoute(builder: (context) => PayScreen(date: date)));
                                         setState(() {
                                           if(test) {
-                                            print(date);
-                                            print(isHalf);
                                             timeWidgets = fetchTime(selectedPlayground.id, date, isHalf);
                                           }
                                         });
@@ -676,10 +675,8 @@ class _TimeWidgetState extends State<TimeWidget> {
           if (isActive) {
             if(!setTime) {
               ids.add(id.toString());
-              print(ids);
             } else {
               ids.remove(id.toString());
-              print(ids);
             }
               setTime = !setTime;
           }

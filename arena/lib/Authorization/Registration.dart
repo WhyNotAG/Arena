@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:async';
 import 'package:arena/Menu.dart';
 import 'package:arena/Other/CustomSharedPreferences.dart';
+import 'package:arena/Other/Request.dart';
 import 'package:flutter/material.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:image_picker/image_picker.dart';
@@ -370,15 +371,21 @@ class RegistrationButton extends StatelessWidget {
                 request.headers["Authorization"] = "Bearer ${token}";
                 request.headers["Content-type"]= "application/json";
                 var response2 = await request.send();
+
+                var responseRes = await getWithToken("http://217.12.209.180:8080/api/v1/account/");
+                var decode = jsonDecode(responseRes.body);
+                addStringToSF("name", decode["name"]);
+                addIntToSF("id", decode["id"]);
+                addStringToSF("imageUrl", decode["imageUrl"]);
                 if(response2.statusCode == 200) {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => MenuScreen()),
+                    MaterialPageRoute(builder: (context) => MenuScreen(0)),
                   );
                 } else if(response.statusCode == 200){
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => MenuScreen()),
+                    MaterialPageRoute(builder: (context) => MenuScreen(0)),
                   );
                 }
               }

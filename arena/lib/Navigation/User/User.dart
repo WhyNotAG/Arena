@@ -3,18 +3,104 @@ import 'package:arena/Icons/custom_icons_icons.dart';
 import 'package:arena/Navigation/User/Book/BookStory.dart';
 import 'package:arena/Navigation/User/Profile.dart';
 import 'package:arena/Navigation/User/Settings.dart';
+import 'package:arena/Other/CustomSharedPreferences.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:transparent_image/transparent_image.dart';
 
 import 'ProgramFeedback.dart';
 
-class User extends StatelessWidget {
+class User extends StatefulWidget {
+  @override
+  _UserState createState() => _UserState();
+}
+
+class _UserState extends State<User> {
+  String imageUrl = '';
+  String name = '';
+  SharedPreferences preferences;
+  FadeInImage fadeInImage;
+
+  Future<Null> getSharedPrefs() async {
+    name = await getStringValuesSF("name");
+    imageUrl = await getStringValuesSF("imageUrl");
+    print(imageUrl);
+    setState(() {
+      fadeInImage = FadeInImage.memoryNetwork(placeholder: kTransparentImage, image: imageUrl, fit: BoxFit.fill,height: 80, width: 80,);
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    getSharedPrefs();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: Colors.white,
         appBar: PreferredSize(
           preferredSize: Size.fromHeight(220.0),
-          child: TabBar(),
+          child: Container(
+              padding: EdgeInsets.only(),
+              width: double.infinity,
+              height: 220,
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey,
+                      blurRadius: 10.0, // has the effect of softening the shadow
+                      spreadRadius: 0.0, // has the effect of extending the shadow
+                      offset: Offset(
+                        10.0, // horizontal, move right 10
+                        0.0, // vertical, move down 10
+                      ),
+                    )
+                  ]),
+              child: Column(
+                children: <Widget>[
+                  Container(
+                    child: Text(
+                      "Профиль",
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontFamily: "Montserrat-Bold",
+                      ),
+                      textAlign: TextAlign.left,
+                    ),
+                    margin: EdgeInsets.only(top: 60.0, left: 20.0),
+                    width: double.infinity,
+                  ),
+                  Container(
+                    margin: EdgeInsets.only(left: 16.0, top: 27.0),
+                    child: Row(
+                      children: <Widget>[
+                           imageUrl == null ? CircularProgressIndicator :
+                           Center(child: ClipRRect(
+                               borderRadius: BorderRadius.circular(40.0),
+                               child:fadeInImage
+                           )
+                       ),
+                        Container(
+                            margin: EdgeInsets.only(
+                              left: 10.0,
+                            ),
+                            child:
+                            Text(name == null ? "" : name,
+                                style: new TextStyle(
+                                    color: Color.fromARGB(255, 79, 79, 79),
+                                    fontSize: 18.0,
+                                    fontFamily: 'Montserrat-Regular',
+                                    fontWeight: FontWeight.bold)
+                            )),
+                      ],
+                    ),
+                  ),
+                ],
+              )),
         ),
         body: WillPopScope(
             child: SingleChildScrollView(
@@ -56,85 +142,6 @@ class User extends StatelessWidget {
               ),
             ),
             onWillPop: () async => false));
-  }
-}
-
-class TabBar extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-        padding: EdgeInsets.only(),
-        width: double.infinity,
-        height: 220,
-        decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            color: Colors.white,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey,
-                blurRadius: 10.0, // has the effect of softening the shadow
-                spreadRadius: 0.0, // has the effect of extending the shadow
-                offset: Offset(
-                  10.0, // horizontal, move right 10
-                  0.0, // vertical, move down 10
-                ),
-              )
-            ]),
-        child: Column(
-          children: <Widget>[
-            Container(
-              child: Text(
-                "Профиль",
-                style: TextStyle(
-                  fontSize: 28,
-                  fontFamily: "Montserrat-Bold",
-                ),
-                textAlign: TextAlign.left,
-              ),
-              margin: EdgeInsets.only(top: 60.0, left: 20.0),
-              width: double.infinity,
-            ),
-            TabBarPhoto(),
-          ],
-        ));
-  }
-}
-
-class TabBarPhoto extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.only(left: 16.0, top: 27.0),
-      child: Row(
-        children: <Widget>[
-          CircleAvatar(
-            backgroundColor: Colors.red,
-            backgroundImage: AssetImage("assets/images/login.jpeg"),
-            radius: 40,
-          ),
-          Container(
-              margin: EdgeInsets.only(
-                left: 10.0,
-              ),
-              child: Column(
-                children: <Widget>[
-                  Text("Test",
-                      style: new TextStyle(
-                          color: Color.fromARGB(255, 79, 79, 79),
-                          fontSize: 18.0,
-                          fontFamily: 'Montserrat-Regular',
-                          fontWeight: FontWeight.bold)),
-                  Text("Test",
-                      style: new TextStyle(
-                          color: Color.fromARGB(255, 79, 79, 79),
-                          fontSize: 18.0,
-                          fontFamily: 'Montserrat-Regular',
-                          fontWeight: FontWeight.bold))
-                ],
-              )),
-        ],
-      ),
-    );
   }
 }
 

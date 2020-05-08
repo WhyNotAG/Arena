@@ -1,8 +1,10 @@
 import 'dart:math';
 
+import 'package:arena/Authorization/LostPassword.dart';
 import 'package:arena/Menu.dart';
 import 'package:arena/Navigation/Places/Place/Booking.dart';
 import 'package:arena/Navigation/Places/Place/Place.dart';
+import 'package:arena/Other/Request.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:arena/Authorization/Registration.dart';
@@ -27,7 +29,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   var token = await getStringValuesSF("accessToken");
 
-  if(token != null) { _defaultHome = MenuScreen(); }
+  if(token != null) { _defaultHome = MenuScreen(0); }
   
   runApp(new MaterialApp(
       theme: ThemeData(
@@ -43,7 +45,8 @@ void main() async {
         // When navigating to the "/" route, build the FirstScreen widget.
         '/first': (context) => ArenaApp(),
         // When navigating to the "/second" route, build the SecondScreen widget.
-        '/second': (context) => MenuScreen(),
+        '/second': (context) => MenuScreen(0),
+        '/user': (context) => MenuScreen(3),
       },
       debugShowCheckedModeBanner: false,
       home: _defaultHome));
@@ -358,7 +361,11 @@ class LostPass extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return new Container(
-      child: FlatButton(onPressed: null, child: new Text(
+      child: FlatButton(onPressed: (){
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => LostPassword()));
+      },
+        child: new Text(
           "Забыли пароль?",
           style: TextStyle(
               color: Colors.white,
@@ -366,7 +373,6 @@ class LostPass extends StatelessWidget {
               fontFamily: "Montserrat-Regular",
               fontWeight: FontWeight.bold)
       ),
-
         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),
 
@@ -420,7 +426,6 @@ class EnterButton extends StatelessWidget {
       addStringToSF("accessToken", decode["accessToken"]);
       addStringToSF("refreshToken", decode["refreshToken"]);
       addIntToSF("expiredIn", decode["expiredIn"]);
-      addStringToSF("name", name);
       addIntToSF("enterCode", response.statusCode);
       addStringToSF("phone", null);
       addStringToSF("password", password);
@@ -450,19 +455,24 @@ class EnterButton extends StatelessWidget {
               fontFamily: "Montserrat-Bold")
       ),
         onPressed: () async{
-          print(data._myController.text);
-          print(data._passController.text);
           addStringToSF("password", data._passController.text);
 
           int a = 0;
 
 
           a = await httpGet(data._passController.text, data._myController.text);
-          print(a);
+          var response = await getWithToken("http://217.12.209.180:8080/api/v1/account/");
+          var decode = jsonDecode(response.body);
+          print(response.body);
+          print(response.statusCode);
+          addStringToSF("name", decode["firstName"]);
+          addIntToSF("id", decode["id"]);
+          print(decode["imageUrl"]);
+          addStringToSF("imageUrl", decode["imageUrl"]);
           if(a == 200) {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => MenuScreen()),);
+              MaterialPageRoute(builder: (context) => MenuScreen(0)),);
           } else {Scaffold.of(context).showSnackBar(SnackBar(content:Text("Ошибка логин/пароль"), backgroundColor: Colors.red,));}
         },
       ),
@@ -487,7 +497,7 @@ class WithoutRegButton extends StatelessWidget {
         child: Row(
           children: <Widget>[
             new FlatButton(onPressed: (){Navigator.push(
-              context, MaterialPageRoute(builder: (context) => MenuScreen()),);},child: new Text(
+              context, MaterialPageRoute(builder: (context) => MenuScreen(0)),);},child: new Text(
                 "Продолжить без регистрации",
                 style: TextStyle(
                     decoration: TextDecoration.underline, fontSize: 14.0,
@@ -502,7 +512,7 @@ class WithoutRegButton extends StatelessWidget {
                 child: IconButton(icon: Icon(Icons.arrow_forward, color: Colors.white,),
                   onPressed: (){Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => MenuScreen()),);}, color: Colors.white,)
+                    MaterialPageRoute(builder: (context) => MenuScreen(0)),);}, color: Colors.white,)
             )
           ],)
     );

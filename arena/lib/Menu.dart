@@ -7,13 +7,19 @@ import 'package:arena/Icons/custom_icons_icons.dart';
 import 'package:arena/Navigation/Map.dart';
 
 class MenuScreen extends StatefulWidget {
+  int _currentIndex;
+
+  MenuScreen(this._currentIndex);
+
   @override
-  _MenuScreenState createState() => _MenuScreenState();
+  _MenuScreenState createState() => _MenuScreenState(_currentIndex);
 }
 
 class _MenuScreenState extends State<MenuScreen> {
-  int _currentIndex = 0;
+  int _currentIndex;
 
+
+  _MenuScreenState(this._currentIndex);
 
   final List<Widget> _children = [
     MapSample(),

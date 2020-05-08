@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:app_settings/app_settings.dart';
+import 'package:arena/Navigation/User/User.dart';
 import 'package:arena/Other/CustomSharedPreferences.dart';
 import 'package:arena/Other/Request.dart';
 import 'package:flutter/material.dart';
@@ -174,7 +175,10 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                       }
 
                       if(_name != null) {
-                          print(_name);
+                         var response = await postWithToken('http://217.12.209.180:8080/api/v1/account/', {"id": id, "firstName": _name});
+                         var decode = jsonDecode(response.body);
+                         addStringToSF("name", decode["firstName"]);
+                         addStringToSF("imageUrl", decode["imageUrl"]);
                       }
                      if(_image != null) {
                        var stream = new http.ByteStream(DelegatingStream.typed(_image.openRead()));
@@ -185,10 +189,13 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                        request.headers["Authorization"] = "Bearer ${token}";
                        request.headers["Content-type"]= "application/json";
                        var response = await request.send();
-                       print(response.statusCode);
+                       var response2 = await getWithToken("http://217.12.209.180:8080/api/v1/account/");
+                       var decode = jsonDecode(response2.body);
+                       addStringToSF("name", decode["firstName"]);
+                       addStringToSF("imageUrl", decode["imageUrl"]);
                      }
 
-                     print(passReqController.text == passController.text);
+                      Navigator.pushNamed(context, "/user");
                     },),),
 
                 Container(
