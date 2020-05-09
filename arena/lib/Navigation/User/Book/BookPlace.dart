@@ -1,5 +1,7 @@
 
-import 'package:arena/Navigation/Map.dart';
+
+
+import '../../Map.dart';
 
 class BookTime {
   int hour;

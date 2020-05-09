@@ -16,7 +16,6 @@ import 'package:http/http.dart' as http;
 import 'package:location/location.dart';
 import 'dart:ui' as ui; // imported as ui to prevent conflict between ui.Image and the Image widget
 import 'package:flutter/services.dart';
-import 'package:arena/Navigation/Cluster.dart';
 import 'Places/Filter.dart';
 
 Future<BitmapDescriptor> _bitmapDescriptorFromSvgAsset(
