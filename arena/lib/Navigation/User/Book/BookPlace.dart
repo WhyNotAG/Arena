@@ -45,6 +45,7 @@ class BookFresh {
   List<Booking> bookings;
   double amount;
   int id;
+  String status;
   String paymentId;
   String paymentUrl;
   Place place;
@@ -52,7 +53,7 @@ class BookFresh {
   String date;
 
   BookFresh({this.bookings, this.amount, this.id, this.paymentId,
-      this.paymentUrl, this.place, this.playground, this.date});
+      this.paymentUrl, this.place, this.playground, this.date, this.status});
 
   factory BookFresh.fromJson(Map<String, dynamic> json) {
     var list = json['booking'] as List;
@@ -65,7 +66,8 @@ class BookFresh {
       paymentUrl: json["paymentUrl"] as String,
       place: Place.fromJson(json["place"]),
       playground: Playground.fromJson(json["playground"]),
-      date: json["date"] as String
+      date: json["date"] as String,
+      status: json["status"] as String,
     );
   }
 }

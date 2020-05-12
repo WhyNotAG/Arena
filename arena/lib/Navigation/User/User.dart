@@ -4,6 +4,7 @@ import 'package:arena/Navigation/User/Book/BookStory.dart';
 import 'package:arena/Navigation/User/Profile.dart';
 import 'package:arena/Navigation/User/Settings.dart';
 import 'package:arena/Other/CustomSharedPreferences.dart';
+import 'package:arena/Other/Request.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:transparent_image/transparent_image.dart';
@@ -27,7 +28,7 @@ class _UserState extends State<User> {
   Future<String> getSharedPrefs() async {
     name = await getStringValuesSF("name");
     imageUrl = await getStringValuesSF("imageUrl");
-    token = await getStringValuesSF("accessToken");
+    token = await refresh();
     ftToken = await getStringValuesSF("fbToken");
     print(token);
     if(imageUrl != null) {

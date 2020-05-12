@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:arena/Authorization/main.dart';
+import 'package:arena/Navigation/Places/Place/PayScreen.dart';
 
 import 'package:arena/Navigation/User/Book/BookPlace.dart';
 import 'package:arena/Other/CustomSharedPreferences.dart';
@@ -69,15 +70,13 @@ class _BookStoryState extends State<BookStory> {
   List<BookWidget> booksWidgetOld = new List<BookWidget>();
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    refresh();
     booksFresh = fetchFresh().then((value) {
       for(BookFresh bk in value) {
         booksWidget.add(BookWidget(name: bk.place.name,
           workTime:bk.place.workDayStartAt.toString().replaceRange(5, 8, "-")+bk.place.workDayEndAt.toString().replaceRange(5, 8, ""),
           address: bk.place.address, bookings: bk.bookings,
-          date: DateFormat("dd MMMM yyyy").format(DateFormat("yyyy-MM-dd").parse(bk.date)), playground: bk.playground,));
+          date: DateFormat("dd MMMM yyyy").format(DateFormat("yyyy-MM-dd").parse(bk.date)), playground: bk.playground, paymentURL: bk.paymentUrl, status: bk.status,));
       }
       return value;
     });
@@ -86,7 +85,7 @@ class _BookStoryState extends State<BookStory> {
         booksWidgetOld.add(BookWidget(name: bk.place.name,
           workTime:bk.place.workDayStartAt.toString().replaceRange(5, 8, "-")+bk.place.workDayEndAt.toString().replaceRange(5, 8, ""),
           address: bk.place.address, bookings: bk.bookings,
-          date: DateFormat("dd MMMM yyyy").format(DateFormat("yyyy-MM-dd").parse(bk.date)), playground: bk.playground,));
+          date: DateFormat("dd MMMM yyyy").format(DateFormat("yyyy-MM-dd").parse(bk.date)), playground: bk.playground, paymentURL: bk.paymentUrl, status: bk.status,));
       }
       return value;
     });
@@ -181,24 +180,28 @@ class BookWidget extends StatefulWidget {
   Playground playground;
   String workTime;
   String address;
+  String paymentURL;
+  String status;
   List<Booking> bookings = List<Booking>();
   List<BookingsWidget> books = List<BookingsWidget>();
-  BookWidget({this.name, this.workTime, this.address, this.bookings, this.date, this.playground});
+  BookWidget({this.name, this.workTime, this.address, this.bookings, this.date, this.playground, this.paymentURL, this.status});
 
   @override
-  _BookWidgetState createState() => _BookWidgetState(name: name, workTime: workTime, date:date, address: address, bookings: bookings, playground: playground);
+  _BookWidgetState createState() => _BookWidgetState(name: name, workTime: workTime, date:date, address: address, bookings: bookings, playground: playground, paymentURL: paymentURL, status: status);
 }
 
 class _BookWidgetState extends State<BookWidget> {
   String name;
   String date;
+  String paymentURL;
+  String status;
   int i;
   Playground playground;
   String workTime;
   String address;
   List<Booking> bookings = List<Booking>();
   List<BookingsWidget> books = List<BookingsWidget>();
-  _BookWidgetState({this.name, this.workTime, this.address, this.bookings, this.date, this.playground});
+  _BookWidgetState({this.name, this.workTime, this.address, this.bookings, this.date, this.playground, this.paymentURL, this.status});
 
 
   @override
@@ -249,7 +252,21 @@ class _BookWidgetState extends State<BookWidget> {
           alignment: Alignment.centerLeft,
           child: Text("Вы забронировали:", style: TextStyle(color: Color.fromARGB(255,47, 128, 237), fontFamily: "Montserrat-Regular", fontWeight: FontWeight.bold, fontSize: 16)),),
         Container(margin: EdgeInsets.only(top: 0),
-          child: Column(children: books,),)
+          child: Column(children: books,),),
+        status == "CREATED" ?  Container(
+          margin: EdgeInsets.only(left: 16, right: 16, top: 40),
+          decoration: BoxDecoration(borderRadius: new BorderRadius.circular(30.0),
+            color: Color.fromARGB(255, 47, 128, 237),),
+          width: double.infinity, height: 56,
+          child: FlatButton(child: Text("Оплатить",
+            style: TextStyle(fontFamily: "Montserrat-Bold", fontSize: 12,
+                color: Colors.white, fontWeight: FontWeight.bold),),
+            onPressed: () async{
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => WebPage(url: paymentURL,)),
+              );
+            },),) : Container()
       ],),
     );
   }
@@ -295,7 +312,7 @@ class BookingsWidget extends StatelessWidget {
               Container(
                   margin: EdgeInsets.only(left: 8),
                   child:Text(date, style: TextStyle(color: Color.fromARGB(255,79, 79, 79), fontFamily: "Montserrat-Regular", fontWeight: FontWeight.bold,fontSize: 14),))
-            ],),)
+            ],),),
         ],
       ),
     );
