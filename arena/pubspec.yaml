@@ -38,6 +38,7 @@ dependencies:
   smooth_star_rating: ^1.0.4+2
   statusbar: ^1.1.0
   transparent_image: ^1.0.0
+  firebase_messaging: ^6.0.13
   page_indicator: ^0.3.0
   google_maps_flutter: ^0.5.25+2
   webview_flutter: ^0.3.21
@@ -75,6 +76,7 @@ flutter:
     - assets/images/Point_Volley.svg
     - assets/images/Point_Basket.svg
     - assets/images/Point_Tennis.svg
+    - assets/images/arena.svg
     - assets/images/status/Bath.png
     - assets/images/status/ClosedField.png
     - assets/images/status/Inventory.png

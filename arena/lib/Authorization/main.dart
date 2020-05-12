@@ -1,10 +1,16 @@
+import 'dart:async';
+import 'dart:io';
+import 'dart:io';
 import 'dart:math';
 
 import 'package:arena/Authorization/LostPassword.dart';
+import 'package:arena/Authorization/Politics.dart';
 import 'package:arena/Menu.dart';
 import 'package:arena/Navigation/Places/Place/Booking.dart';
 import 'package:arena/Navigation/Places/Place/Place.dart';
+import 'package:arena/Other/Notification.dart';
 import 'package:arena/Other/Request.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:arena/Authorization/Registration.dart';
@@ -30,7 +36,6 @@ void main() async {
   var token = await getStringValuesSF("accessToken");
 
   if(token != null) { _defaultHome = MenuScreen(0); }
-  
   runApp(new MaterialApp(
       theme: ThemeData(
           scaffoldBackgroundColor: Colors.white,
@@ -62,9 +67,50 @@ addStringToSF(String name, String value) async {
   prefs.setString(name, value);
 }
 
+class ArenaApp extends StatefulWidget {
+  @override
+  _ArenaAppState createState() => _ArenaAppState();
+}
 
+class _ArenaAppState extends State<ArenaApp> {
+  final FirebaseMessaging _fcm = FirebaseMessaging();
+  StreamSubscription iosSubscription;
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    update(String token) async {
+      token = await _fcm.getToken();
+      print("Instance ID: " + token);
+      addStringToSF("fbToken",token);
+    }
+    if (Platform.isIOS) {
 
-class ArenaApp extends StatelessWidget {
+      _fcm.configure(
+          onMessage: (Map<String, dynamic> message) async {
+            print("onMessage $message");
+          },
+          onBackgroundMessage: Platform.isIOS ? null : myBackgroundMessageHandler,
+          onLaunch: (Map<String, dynamic> message) async {
+            print("onMessage $message");
+          },
+
+          onResume: (Map<String, dynamic> message) async {
+            print("onMessage $message");
+          }
+
+      );
+
+      _fcm.requestNotificationPermissions(
+          const IosNotificationSettings(
+              sound: true, badge: true, alert: true));
+    }
+    _fcm.getToken().then((token) =>
+    {
+      update(token)
+    });
+
+  }
   @override
   Widget build(BuildContext context) {
     Intl.defaultLocale = "ru";
@@ -85,6 +131,7 @@ class ArenaApp extends StatelessWidget {
     );
   }
 }
+
 
 class BaseLayout extends StatelessWidget {
   Data data;
@@ -140,7 +187,7 @@ class Info extends StatelessWidget {
               WithoutRegButton()
             ],)
         )
-      )
+    )
     );
   }
 }
@@ -204,59 +251,59 @@ class InfoFields extends StatelessWidget {
             child: Container(
                 height: 56,
                 child: Form(key: _formKey,
-                  child: new TextFormField(
-                    controller: data._myController,
-                    focusNode: myFocusNode,
-                    validator: (value){
-                      if (value.isEmpty) return 'Пожалуйста введите свой Email';
-                      String p = "[a-zA-Z0-9+.\_\%-+]{1,256}@[a-zA-Z0-9][a-zA-Z0-9-]{0,64}(.[a-zA-Z0-9][a-zA-Z0-9-]{0,25})+";
-                      RegExp regExp = new RegExp(p);
+                    child: new TextFormField(
+                      controller: data._myController,
+                      focusNode: myFocusNode,
+                      validator: (value){
+                        if (value.isEmpty) return 'Пожалуйста введите свой Email';
+                        String p = "[a-zA-Z0-9+.\_\%-+]{1,256}@[a-zA-Z0-9][a-zA-Z0-9-]{0,64}(.[a-zA-Z0-9][a-zA-Z0-9-]{0,25})+";
+                        RegExp regExp = new RegExp(p);
 
-                      String p2 = "^((8|\\+7)[\\- ]?)?(\\(?\\d{3}\\)?[\\- ]?)?[\\d\\- ]{7,10}\$";
-                      RegExp regExp2 = new RegExp(p2);
-                      if (regExp.hasMatch(value)) return null;
-                      if (regExp2.hasMatch(value)) { data.isPhone = true; return null;}
-                      return 'Это не E-mail';
-                    },
+                        String p2 = "^((8|\\+7)[\\- ]?)?(\\(?\\d{3}\\)?[\\- ]?)?[\\d\\- ]{7,10}\$";
+                        RegExp regExp2 = new RegExp(p2);
+                        if (regExp.hasMatch(value)) return null;
+                        if (regExp2.hasMatch(value)) { data.isPhone = true; return null;}
+                        return 'Это не E-mail';
+                      },
 
-                  cursorColor: Colors.black38,
-                  decoration: new InputDecoration(
-                    hintText: "Email/Phone",
-                    border: OutlineInputBorder(),
-                    hintStyle: TextStyle(
-                        color: myFocusNode.hasFocus ? Colors.green : Colors.black,
-                    ),
+                      cursorColor: Colors.black38,
+                      decoration: new InputDecoration(
+                        hintText: "Email/Phone",
+                        border: OutlineInputBorder(),
+                        hintStyle: TextStyle(
+                          color: myFocusNode.hasFocus ? Colors.green : Colors.black,
+                        ),
 
-                    errorStyle: TextStyle(fontSize: 0.0, ),
-                    errorBorder: (
-                        OutlineInputBorder(
+                        errorStyle: TextStyle(fontSize: 0.0, ),
+                        errorBorder: (
+                            OutlineInputBorder(
+                              borderSide: new BorderSide(color: Colors.red, width: 2.0),
+                            )
+                        ),
+
+                        focusedErrorBorder: OutlineInputBorder(
                           borderSide: new BorderSide(color: Colors.red, width: 2.0),
-                        )
-                    ),
+                        ),
 
-                    focusedErrorBorder: OutlineInputBorder(
-                      borderSide: new BorderSide(color: Colors.red, width: 2.0),
-                    ),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: Colors.black38,
+                          ),
+                        ),
 
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: Colors.black38,
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: new BorderSide(color: Color.fromARGB(255, 47, 128, 237), width: 2.0,),
+                        ),
+
+
+                        contentPadding: new EdgeInsets.fromLTRB(
+                            10.0, 10.0, 10.0, 10.0),
+                        filled: true,
+                        fillColor: Colors.white,
                       ),
-                    ),
-
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: new BorderSide(color: Color.fromARGB(255, 47, 128, 237), width: 2.0,),
-                    ),
-
-
-                    contentPadding: new EdgeInsets.fromLTRB(
-                        10.0, 10.0, 10.0, 10.0),
-                    filled: true,
-                    fillColor: Colors.white,
-                  ),
-              )
+                    )
+                )
             )
-          )
         ),
         Password(data:data),
         Container(child: LostPass(),alignment: Alignment.centerRight,),
@@ -311,47 +358,47 @@ class _PasswordState extends State<Password> {
         margin: EdgeInsets.only(left:16.0, right: 16.0),
         child: Container(
           child: Form(
-            child: new TextFormField(
-            obscureText: _obscureText,
-            controller: widget.data._passController,
-            cursorColor: Colors.black,
-            decoration: new InputDecoration(
-              hintText: "Пароль",
-              hintStyle: TextStyle(color: Colors.black),
-              enabledBorder: OutlineInputBorder(
-                borderSide: BorderSide(
-                  color: Colors.black38,
+              child: new TextFormField(
+                obscureText: _obscureText,
+                controller: widget.data._passController,
+                cursorColor: Colors.black,
+                decoration: new InputDecoration(
+                  hintText: "Пароль",
+                  hintStyle: TextStyle(color: Colors.black),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(
+                      color: Colors.black38,
+                    ),
+                  ),
+                  errorStyle: TextStyle(fontSize: 0.0, ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: new BorderSide(color: Color.fromARGB(255, 47, 128, 237), width: 2.0),
+                  ),
+                  errorBorder: OutlineInputBorder(
+                    borderSide: new BorderSide(color: Colors.red, width: 2.0),
+                  ) ,
+                  focusedErrorBorder: OutlineInputBorder(
+                    borderSide: new BorderSide(color: Colors.red, width: 2.0),
+                  ) ,
+                  contentPadding: new EdgeInsets.fromLTRB(
+                      10.0, 10.0, 10.0, 10.0),
+                  filled: true,
+                  fillColor: Colors.white,
+                  suffixIcon: IconButton(
+                    onPressed: () {
+                      setState(() {
+                        _obscureText = !_obscureText;
+                        setIcon(_obscureText);
+                      });
+                    },
+                    icon: Icon(_icon),
+                    color: Colors.black,
+                  ),
                 ),
-              ),
-              errorStyle: TextStyle(fontSize: 0.0, ),
-              focusedBorder: OutlineInputBorder(
-                borderSide: new BorderSide(color: Color.fromARGB(255, 47, 128, 237), width: 2.0),
-              ),
-              errorBorder: OutlineInputBorder(
-                borderSide: new BorderSide(color: Colors.red, width: 2.0),
-              ) ,
-              focusedErrorBorder: OutlineInputBorder(
-                borderSide: new BorderSide(color: Colors.red, width: 2.0),
-              ) ,
-              contentPadding: new EdgeInsets.fromLTRB(
-                  10.0, 10.0, 10.0, 10.0),
-              filled: true,
-              fillColor: Colors.white,
-              suffixIcon: IconButton(
-                onPressed: () {
-                  setState(() {
-                    _obscureText = !_obscureText;
-                    setIcon(_obscureText);
-                  });
-                },
-                icon: Icon(_icon),
-                color: Colors.black,
-              ),
-            ),
-            )
-        ),
+              )
+          ),
         )
-      );
+    );
   }
 }
 
@@ -366,13 +413,13 @@ class LostPass extends StatelessWidget {
             MaterialPageRoute(builder: (context) => LostPassword()));
       },
         child: new Text(
-          "Забыли пароль?",
-          style: TextStyle(
-              color: Colors.white,
-              decoration: TextDecoration.underline, fontSize: 12.0,
-              fontFamily: "Montserrat-Regular",
-              fontWeight: FontWeight.bold)
-      ),
+            "Забыли пароль?",
+            style: TextStyle(
+                color: Colors.white,
+                decoration: TextDecoration.underline, fontSize: 12.0,
+                fontFamily: "Montserrat-Regular",
+                fontWeight: FontWeight.bold)
+        ),
         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),
 
@@ -389,8 +436,8 @@ class EnterButton extends StatelessWidget {
   bool isPhone;
   EnterButton(this._formKey, this._formKey2, this.data, this.isPhone);
   Future<int> httpGet(String password, String enter) async {
-   var email;
-   var phone;
+    var email;
+    var phone;
     try {
 
       String p = "[a-zA-Z0-9+.\_\%-+]{1,256}@[a-zA-Z0-9][a-zA-Z0-9-]{0,64}(.[a-zA-Z0-9][a-zA-Z0-9-]{0,25})+";
@@ -410,14 +457,14 @@ class EnterButton extends StatelessWidget {
       }
 
       Map jsonFile = {
-          "email": email,
-          "password": password,
-          "number": phone,
-        };
+        "email": email,
+        "password": password,
+        "number": phone,
+      };
 
       print(jsonEncode(jsonFile));
       var response =
-      await http.post("http://217.12.209.180:8080/api/v1/auth/sign-in",
+      await http.post("${server}auth/sign-in",
           body:json.encode(jsonFile),
           headers: {"content-Type":"application/json"});
       print(response.statusCode);
@@ -461,15 +508,17 @@ class EnterButton extends StatelessWidget {
 
 
           a = await httpGet(data._passController.text, data._myController.text);
-          var response = await getWithToken("http://217.12.209.180:8080/api/v1/account/");
+          var response = await getWithToken("${server}account/");
           var decode = jsonDecode(response.body);
           print(response.body);
           print(response.statusCode);
           addStringToSF("name", decode["firstName"]);
           addIntToSF("id", decode["id"]);
+          var fbToken = await getStringValuesSF("fbToken");
           print(decode["imageUrl"]);
           addStringToSF("imageUrl", decode["imageUrl"]);
           if(a == 200) {
+            response = await postWithToken("${server}account/device/token", {"token": fbToken});
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => MenuScreen(0)),);
@@ -497,7 +546,7 @@ class WithoutRegButton extends StatelessWidget {
         child: Row(
           children: <Widget>[
             new FlatButton(onPressed: (){Navigator.push(
-              context, MaterialPageRoute(builder: (context) => MenuScreen(0)),);},child: new Text(
+              context, MaterialPageRoute(builder: (context) =>Politics()),);},child: new Text(
                 "Продолжить без регистрации",
                 style: TextStyle(
                     decoration: TextDecoration.underline, fontSize: 14.0,
@@ -512,7 +561,7 @@ class WithoutRegButton extends StatelessWidget {
                 child: IconButton(icon: Icon(Icons.arrow_forward, color: Colors.white,),
                   onPressed: (){Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => MenuScreen(0)),);}, color: Colors.white,)
+                    MaterialPageRoute(builder: (context) => Politics()),);}, color: Colors.white,)
             )
           ],)
     );

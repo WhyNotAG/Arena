@@ -158,6 +158,7 @@ class _FavouritesState extends State<Favourites> {
                                 child: TextField(
                                   onChanged: (String value) {
                                     setState(() {
+                                      placeWidgetFuture = fetchPlace();
                                       filteredList = placeWidgets
                                           .where((u) => (u.name
                                           .toLowerCase()
@@ -209,19 +210,27 @@ class _FavouritesState extends State<Favourites> {
                 body: FutureBuilder<List<PlaceWidget>>(
                   future: placeWidgetFuture,
                   builder: (context, snapshot){
-                    if(snapshot.hasData){
-                      return Container(
-                          margin: EdgeInsets.only(bottom: 0.0),
-                          color: Colors.white,
-                          child: SingleChildScrollView(
-                            child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: filteredList),
-                          ));
-                    } else if(snapshot.error != null){
-                      return Container(color: Colors.white,);
-                    }else { return Center(child: Container(child: SizedBox(
-                        child: CircularProgressIndicator(), width: 30, height: 30),));}
+                    switch(snapshot.connectionState){
+                      case ConnectionState.none:
+                        return Container(
+                          width: double.infinity,
+                          margin: EdgeInsets.only(top: 16),
+                          child: Text("Отсутсвует соединение с интернетом"),
+                        );
+                      case ConnectionState.waiting:
+                        return Center(
+                            child: CircularProgressIndicator()
+                        );
+                      default:
+                        return Container(
+                            margin: EdgeInsets.only(bottom: 0.0),
+                            color: Colors.white,
+                            child: SingleChildScrollView(
+                              child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  children: filteredList),
+                            ));
+                    }
                   },
                 ))
         ));
@@ -229,12 +238,12 @@ class _FavouritesState extends State<Favourites> {
 
   @override
   void initState() {
-    fetchPlace().then((placesFromServer) {
+    placeWidgetFuture = fetchPlace().then((placesFromServer) {
       setState(() {
         placeWidgets = placesFromServer;
-        filteredList = placeWidgets;
-        placeWidgetFuture = fetchPlace();
+        filteredList = placesFromServer;
       });
+      return placesFromServer;
     });
   }
 }
@@ -438,9 +447,9 @@ class _FavouritesButtonState extends State<FavouritesButton> {
 
   Future<int> setFavourite(bool obscure) async{
     if(obscure) {
-      await postWithToken("http://217.12.209.180:8080/api/v1/favorite/mark/${id}");
+      await postWithToken("${server}favorite/mark/${id}");
     } else {
-      await postWithToken("http://217.12.209.180:8080/api/v1/favorite/unmark/${id}");
+      await postWithToken("${server}favorite/unmark/${id}");
     }
   }
 

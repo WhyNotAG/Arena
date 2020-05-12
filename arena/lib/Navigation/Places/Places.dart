@@ -38,10 +38,10 @@ Future<List<PlaceWidget>> fetchPlace() async {
 
   var token = await getStringValuesSF("accessToken");
   if (token != null) {
-    response = await getWithToken("http://217.12.209.180:8080/api/v1/place/");
+    response = await getWithToken("${server}place/");
   } else{
-   response = await http.get('http://217.12.209.180:8080/api/v1/place/',
-       headers: {"Content-type": "application/json"});
+    response = await http.get('${server}place/',
+        headers: {"Content-type": "application/json"});
   }
 
   List<dynamic> responseJson = json.decode(utf8.decode(response.bodyBytes));
@@ -83,12 +83,12 @@ Future<List<PlaceWidget>> fetchPlace() async {
 Future<List<PlaceWidget>> fetchPlaceBySport(String sport) async {
   List<Place> places = new List<Place>();
   List<PlaceWidget> placeWidgets = new List<PlaceWidget>();
-  var response = await http.get('http://217.12.209.180:8080/api/v1/place/?sports=${sport}',
+  var response = await http.get('${server}place/?sports=${sport}',
       headers: {"Content-type": "application/json"});
   geo.Position position = await geo.Geolocator().getCurrentPosition(desiredAccuracy: geo.LocationAccuracy.medium);
   var token = await getStringValuesSF("accessToken");
   if (token != null) {
-    response = await getWithToken("http://217.12.209.180:8080/api/v1/place/?sports=${sport}");
+    response = await getWithToken("${server}place/?sports=${sport}");
   }
 
   List<dynamic> responseJson = json.decode(utf8.decode(response.bodyBytes));
@@ -172,148 +172,49 @@ class _PlacesState extends State<Places> {
     return WillPopScope(
         onWillPop: () async => false,
         child: GestureDetector(
-          onHorizontalDragCancel: (){
-            FocusScopeNode currentFocus = FocusScope.of(context);
+            onHorizontalDragCancel: (){
+              FocusScopeNode currentFocus = FocusScope.of(context);
 
-            if (!currentFocus.hasPrimaryFocus) {
-              currentFocus.unfocus();
-            }
-          },
-        onTap: () {
-        FocusScopeNode currentFocus = FocusScope.of(context);
+              if (!currentFocus.hasPrimaryFocus) {
+                currentFocus.unfocus();
+              }
+            },
+            onTap: () {
+              FocusScopeNode currentFocus = FocusScope.of(context);
 
-        if (!currentFocus.hasPrimaryFocus) {
-            currentFocus.unfocus();
-          }
-        },
-        child: Scaffold(
-            resizeToAvoidBottomInset: false,
-          backgroundColor: Colors.white,
-            appBar: PreferredSize(
-              preferredSize: Size.fromHeight(168.0),
-              child: Container(
-                padding: EdgeInsets.only(),
-                width: double.infinity,
-                height: 168,
-                decoration: BoxDecoration(color: Colors.white, boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey,
-                    blurRadius: 10.0,
-                    // has the effect of softening the shadow
-                    spreadRadius: 0.0,
-                    // has the effect of extending the shadow
-                    offset: Offset(
-                      10.0, // horizontal, move right 10
-                      0.0, // vertical, move down 10
-                    ),
-                  )
-                ]),
-                child: Column(
-                  children: <Widget>[
-                    Row(
-                      children: <Widget>[
-                        Container(
-                          decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(30),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey,
-                                  blurRadius: 2.0, // has the effect of softening the shadow
-                                  spreadRadius: 0.0, // has the effect of extending the shadow
-                                  offset: Offset(
-                                    0.0, // horizontal, move right 10
-                                    0.0, // vertical, move down 10
-                                  ),
-                                )
-                              ]),
-                          child: IconButton(
-                              icon: Icon(
-                                CustomIcons.filter,
-                                color: Color.fromARGB(255, 47, 128, 237),
-                              ),
-                              onPressed: () async {
-                                List<Place> times = await Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (context) => Filter()),
-                                );
-                                setState(()  {
-                                  placeWidgetFuture =  filter(times);
-                                  placeWidgetFuture.then((value){
-                                    filteredList = value;
-                                  });
-                                });
-                              }),
-                          margin: EdgeInsets.only(left: 17, top: 53),
+              if (!currentFocus.hasPrimaryFocus) {
+                currentFocus.unfocus();
+              }
+            },
+            child: Scaffold(
+                resizeToAvoidBottomInset: false,
+                backgroundColor: Colors.white,
+                appBar: PreferredSize(
+                  preferredSize: Size.fromHeight(168.0),
+                  child: Container(
+                    padding: EdgeInsets.only(),
+                    width: double.infinity,
+                    height: 168,
+                    decoration: BoxDecoration(color: Colors.white, boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey,
+                        blurRadius: 10.0,
+                        // has the effect of softening the shadow
+                        spreadRadius: 0.0,
+                        // has the effect of extending the shadow
+                        offset: Offset(
+                          10.0, // horizontal, move right 10
+                          0.0, // vertical, move down 10
                         ),
-                        Flexible(
-                            child: Container(
-                          decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(30),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey,
-                                  blurRadius: 2.0,
-                                  // has the effect of softening the shadow
-                                  spreadRadius: 0.0,
-                                  // has the effect of extending the shadow
-                                  offset: Offset(
-                                    0.0, // horizontal, move right 10
-                                    0.0, // vertical, move down 10
-                                  ),
-                                )
-                              ]),
-                          margin: EdgeInsets.only(top: 56, left: 23, right: 16),
-                          child: TextField(
-                            onChanged: (String value) {
-                              setState(() {
-                                filteredList = placeWidgets
-                                    .where((u) => (u.name
-                                        .toLowerCase()
-                                        .contains(value.toLowerCase())))
-                                    .toList();
-                              });
-                            },
-                            decoration: InputDecoration(
-                                contentPadding: new EdgeInsets.fromLTRB(
-                                    20.0, 10.0, 10.0, 10.0),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(30),
-                                  borderSide: new BorderSide(
-                                    color: Color.fromARGB(255, 47, 128, 237),
-                                    width: 1.0,
-                                  ),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(30),
-                                  borderSide: BorderSide(
-                                    color: Colors.grey.withAlpha(0),
-                                  ),
-                                ),
-                                fillColor: Colors.white,
-                                suffixIcon: IconButton(
-                                  icon: Icon(
-                                    CustomIcons.search,
-                                    color: Color.fromARGB(255, 47, 128, 237),
-                                    size: 20,
-                                  ),
-                                  onPressed: () {},
-                                )),
-                          ),
-                        )),
-                      ],
-                    ),
-                    Container(
-                        height: 40,
-                        margin: EdgeInsets.only(top: 16),
-                        padding: EdgeInsets.only(left: 0, right: 0, top: 0),
-                        child: ListView(
-                          scrollDirection: Axis.horizontal,
+                      )
+                    ]),
+                    child: Column(
+                      children: <Widget>[
+                        Row(
                           children: <Widget>[
                             Container(
                               decoration: BoxDecoration(
-                                  color: status == 0 ? Color.fromARGB(255, 47, 128, 237) : Colors.white,
+                                  color: Colors.white,
                                   borderRadius: BorderRadius.circular(30),
                                   boxShadow: [
                                     BoxShadow(
@@ -326,144 +227,244 @@ class _PlacesState extends State<Places> {
                                       ),
                                     )
                                   ]),
-                              width: 120,
-                              height: 32,
-                              margin: EdgeInsets.only(left: 8, right: 8, top: 1, bottom: 1),
-                              child: FlatButton(
-                                  child: Text(
-                                    "Все виды",
-                                    style: TextStyle(color: status == 0 ? Colors.white : Colors.black54),
+                              child: IconButton(
+                                  icon: Icon(
+                                    CustomIcons.filter,
+                                    color: Color.fromARGB(255, 47, 128, 237),
                                   ),
-                                  onPressed: () {
-                                    placeWidgetFuture = null;
-                                    setState(() {
-                                      filteredList = List<PlaceWidget>();
-                                      status = 0;
-                                      sport = "";
-                                      initState();
+                                  onPressed: () async {
+                                    List<Place> times = await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(builder: (context) => Filter()),
+                                    );
+                                    setState(()  {
+                                      placeWidgetFuture =  filter(times);
+                                      placeWidgetFuture.then((value){
+                                        filteredList = value;
+                                      });
                                     });
                                   }),
+                              margin: EdgeInsets.only(left: 17, top: 53),
                             ),
-                            Container(
-                              decoration: BoxDecoration(
-                                  color: status == 1 ? Color.fromARGB(255, 47, 128, 237) : Colors.white,
-                                  borderRadius: BorderRadius.circular(30),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.grey,
-                                      blurRadius: 2.0, // has the effect of softening the shadow
-                                      spreadRadius: 0.0, // has the effect of extending the shadow
-                                      offset: Offset(
-                                        0.0, // horizontal, move right 10
-                                        0.0, // vertical, move down 10
-                                      ),
-                                    )
-                                  ]),
-                              width: 120,
-                              height: 32,
-                              margin: EdgeInsets.only(left: 8, right: 8, top: 1, bottom: 1),
-                              child: FlatButton(
-                                  child: Text(
-                                    "Теннис",
-                                    style: TextStyle(color: status == 1 ? Colors.white : Colors.black54),
+                            Flexible(
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(30),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.grey,
+                                          blurRadius: 2.0,
+                                          // has the effect of softening the shadow
+                                          spreadRadius: 0.0,
+                                          // has the effect of extending the shadow
+                                          offset: Offset(
+                                            0.0, // horizontal, move right 10
+                                            0.0, // vertical, move down 10
+                                          ),
+                                        )
+                                      ]),
+                                  margin: EdgeInsets.only(top: 56, left: 23, right: 16),
+                                  child: TextField(
+                                    onChanged: (String value) {
+                                      setState(() {
+                                        placeWidgetFuture = fetchPlace();
+                                        filteredList = placeWidgets
+                                            .where((u) => (u.name
+                                            .toLowerCase()
+                                            .contains(value.toLowerCase())))
+                                            .toList();
+                                      });
+                                    },
+                                    decoration: InputDecoration(
+                                        contentPadding: new EdgeInsets.fromLTRB(
+                                            20.0, 10.0, 10.0, 10.0),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(30),
+                                          borderSide: new BorderSide(
+                                            color: Color.fromARGB(255, 47, 128, 237),
+                                            width: 1.0,
+                                          ),
+                                        ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(30),
+                                          borderSide: BorderSide(
+                                            color: Colors.grey.withAlpha(0),
+                                          ),
+                                        ),
+                                        fillColor: Colors.white,
+                                        suffixIcon: IconButton(
+                                          icon: Icon(
+                                            CustomIcons.search,
+                                            color: Color.fromARGB(255, 47, 128, 237),
+                                            size: 20,
+                                          ),
+                                          onPressed: () {},
+                                        )),
                                   ),
-                                  onPressed: () {
-                                    placeWidgetFuture = null;
-                                    setState(() {
-                                      filteredList = List<PlaceWidget>();
-                                      status = 1;
-                                      sport = "Теннис";
-                                      findSport();
-                                    });
-                                  }),
-                            ),
-                            Container(
-                              decoration: BoxDecoration(
-                                  color: status == 2 ? Color.fromARGB(255, 47, 128, 237) : Colors.white,
-                                  borderRadius: BorderRadius.circular(30),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.grey,
-                                      blurRadius: 2.0, // has the effect of softening the shadow
-                                      spreadRadius: 0.0, // has the effect of extending the shadow
-                                      offset: Offset(
-                                        0.0, // horizontal, move right 10
-                                        0.0, // vertical, move down 10
-                                      ),
-                                    )
-                                  ]),
-                              width: 120,
-                              height: 32,
-                              margin: EdgeInsets.only(left: 8, right: 8, top: 1, bottom: 1),
-                              child: FlatButton(
-                                  child: Text(
-                                    "Футбол",
-                                    style: TextStyle(color: status == 2 ? Colors.white : Colors.black54),
-                                  ),
-                                  onPressed: () {
-                                    placeWidgetFuture = null;
-                                    setState(() {
-                                      filteredList = List<PlaceWidget>();
-                                      status = 2;
-                                      sport = "Футбол";
-                                      findSport();
-                                    });
-                                  }),
-                            ),
-                            Container(
-                              decoration: BoxDecoration(
-                                  color: status == 3 ? Color.fromARGB(255, 47, 128, 237) : Colors.white,
-                                  borderRadius: BorderRadius.circular(30),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.grey,
-                                      blurRadius: 2.0, // has the effect of softening the shadow
-                                      spreadRadius: 0.0, // has the effect of extending the shadow
-                                      offset: Offset(
-                                        0.0, // horizontal, move right 10
-                                        0.0, // vertical, move down 10
-                                      ),
-                                    )
-                                  ]),
-                              width: 120,
-                              height: 32,
-                              margin: EdgeInsets.only(left: 8, right: 8, top: 1, bottom: 1),
-                              child: FlatButton(
-                                  child: Text(
-                                    "Баскетбол",
-                                    style: TextStyle(color: status == 3 ? Colors.white : Colors.black54),
-                                  ),
-                                  onPressed: () {
-                                    placeWidgetFuture = null;
-                                    setState(() {
-                                      filteredList = List<PlaceWidget>();
-                                      status = 3;
-                                      sport = "Баскетбол";
-                                      findSport();
-                                    });
-                                  }),
-                            )
+                                )),
                           ],
-                        ))
-                  ],
+                        ),
+                        Container(
+                            height: 40,
+                            margin: EdgeInsets.only(top: 16),
+                            padding: EdgeInsets.only(left: 0, right: 0, top: 0),
+                            child: ListView(
+                              scrollDirection: Axis.horizontal,
+                              children: <Widget>[
+                                Container(
+                                  decoration: BoxDecoration(
+                                      color: status == 0 ? Color.fromARGB(255, 47, 128, 237) : Colors.white,
+                                      borderRadius: BorderRadius.circular(30),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.grey,
+                                          blurRadius: 2.0, // has the effect of softening the shadow
+                                          spreadRadius: 0.0, // has the effect of extending the shadow
+                                          offset: Offset(
+                                            0.0, // horizontal, move right 10
+                                            0.0, // vertical, move down 10
+                                          ),
+                                        )
+                                      ]),
+                                  width: 120,
+                                  height: 32,
+                                  margin: EdgeInsets.only(left: 8, right: 8, top: 1, bottom: 1),
+                                  child: FlatButton(
+                                      child: Text(
+                                        "Все виды",
+                                        style: TextStyle(color: status == 0 ? Colors.white : Colors.black54),
+                                      ),
+                                      onPressed: () {
+                                        placeWidgetFuture = null;
+                                        setState(() {
+                                          filteredList = List<PlaceWidget>();
+                                          status = 0;
+                                          sport = "";
+                                          initState();
+                                        });
+                                      }),
+                                ),
+                                Container(
+                                  decoration: BoxDecoration(
+                                      color: status == 1 ? Color.fromARGB(255, 47, 128, 237) : Colors.white,
+                                      borderRadius: BorderRadius.circular(30),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.grey,
+                                          blurRadius: 2.0, // has the effect of softening the shadow
+                                          spreadRadius: 0.0, // has the effect of extending the shadow
+                                          offset: Offset(
+                                            0.0, // horizontal, move right 10
+                                            0.0, // vertical, move down 10
+                                          ),
+                                        )
+                                      ]),
+                                  width: 120,
+                                  height: 32,
+                                  margin: EdgeInsets.only(left: 8, right: 8, top: 1, bottom: 1),
+                                  child: FlatButton(
+                                      child: Text(
+                                        "Теннис",
+                                        style: TextStyle(color: status == 1 ? Colors.white : Colors.black54),
+                                      ),
+                                      onPressed: () {
+                                        placeWidgetFuture = null;
+                                        setState(() {
+                                          filteredList = List<PlaceWidget>();
+                                          status = 1;
+                                          sport = "Теннис";
+                                          findSport();
+                                        });
+                                      }),
+                                ),
+                                Container(
+                                  decoration: BoxDecoration(
+                                      color: status == 2 ? Color.fromARGB(255, 47, 128, 237) : Colors.white,
+                                      borderRadius: BorderRadius.circular(30),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.grey,
+                                          blurRadius: 2.0, // has the effect of softening the shadow
+                                          spreadRadius: 0.0, // has the effect of extending the shadow
+                                          offset: Offset(
+                                            0.0, // horizontal, move right 10
+                                            0.0, // vertical, move down 10
+                                          ),
+                                        )
+                                      ]),
+                                  width: 120,
+                                  height: 32,
+                                  margin: EdgeInsets.only(left: 8, right: 8, top: 1, bottom: 1),
+                                  child: FlatButton(
+                                      child: Text(
+                                        "Футбол",
+                                        style: TextStyle(color: status == 2 ? Colors.white : Colors.black54),
+                                      ),
+                                      onPressed: () {
+                                        placeWidgetFuture = null;
+                                        setState(() {
+                                          filteredList = List<PlaceWidget>();
+                                          status = 2;
+                                          sport = "Футбол";
+                                          findSport();
+                                        });
+                                      }),
+                                ),
+                                Container(
+                                  decoration: BoxDecoration(
+                                      color: status == 3 ? Color.fromARGB(255, 47, 128, 237) : Colors.white,
+                                      borderRadius: BorderRadius.circular(30),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.grey,
+                                          blurRadius: 2.0, // has the effect of softening the shadow
+                                          spreadRadius: 0.0, // has the effect of extending the shadow
+                                          offset: Offset(
+                                            0.0, // horizontal, move right 10
+                                            0.0, // vertical, move down 10
+                                          ),
+                                        )
+                                      ]),
+                                  width: 120,
+                                  height: 32,
+                                  margin: EdgeInsets.only(left: 8, right: 8, top: 1, bottom: 1),
+                                  child: FlatButton(
+                                      child: Text(
+                                        "Баскетбол",
+                                        style: TextStyle(color: status == 3 ? Colors.white : Colors.black54),
+                                      ),
+                                      onPressed: () {
+                                        placeWidgetFuture = null;
+                                        setState(() {
+                                          filteredList = List<PlaceWidget>();
+                                          status = 3;
+                                          sport = "Баскетбол";
+                                          findSport();
+                                        });
+                                      }),
+                                )
+                              ],
+                            ))
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-            ),
-            body: FutureBuilder<List<PlaceWidget>>(
-              future: placeWidgetFuture,
-              builder: (context, snapshot){
-                  switch(snapshot.connectionState){
-                    case ConnectionState.none:
-                      return Container(
-                        width: double.infinity,
-                        margin: EdgeInsets.only(top: 16),
-                        child: Text("Отсутсвует соединение с интернетом"),
-                      );
-                    case ConnectionState.waiting:
-                      return Center(
-                          child: CircularProgressIndicator()
-                      );
-                    default:
+                body: FutureBuilder<List<PlaceWidget>>(
+                  future: placeWidgetFuture,
+                  builder: (context, snapshot){
+                    switch(snapshot.connectionState){
+                      case ConnectionState.none:
+                        return Container(
+                          width: double.infinity,
+                          margin: EdgeInsets.only(top: 16),
+                          child: Text("Отсутсвует соединение с интернетом"),
+                        );
+                      case ConnectionState.waiting:
+                        return Center(
+                            child: CircularProgressIndicator()
+                        );
+                      default:
                         return Container(
                             margin: EdgeInsets.only(bottom: 0.0),
                             color: Colors.white,
@@ -472,9 +473,9 @@ class _PlacesState extends State<Places> {
                                   crossAxisAlignment: CrossAxisAlignment.stretch,
                                   children: filteredList),
                             ));
-                  }
-              },
-            ))));
+                    }
+                  },
+                ))));
   }
 
 
@@ -493,7 +494,7 @@ class _PlacesState extends State<Places> {
     placeWidgetFuture = fetchPlace().then((placesFromServer) {
       setState(() {
         placeWidgets = placesFromServer;
-        filteredList = placeWidgets;
+        filteredList = placesFromServer;
       });
       return placesFromServer;
     });
@@ -668,44 +669,44 @@ class InfoPlace extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
         child: new Row(children: <Widget>[
-      Container(
-          margin: EdgeInsets.only(left: 22.0, top: 0),
-          child: SmoothStarRating(
-              allowHalfRating: false,
-              starCount: 5,
-              rating: rating,
-              size: 14.0,
-              filledIconData: CustomIcons.fill_star,
-              defaultIconData: CustomIcons.star,
-              halfFilledIconData: CustomIcons.fill_star,
-              color: Colors.orangeAccent,
-              borderColor: Colors.orangeAccent,
-              spacing: 0.0),
-      ),
-      Container(
-        child: Text(
-          rating.toString(),
-          style: TextStyle(
-            fontFamily: "Montserrat-Bold",
-            fontSize: 16,
+          Container(
+            margin: EdgeInsets.only(left: 22.0, top: 0),
+            child: SmoothStarRating(
+                allowHalfRating: false,
+                starCount: 5,
+                rating: rating,
+                size: 14.0,
+                filledIconData: CustomIcons.fill_star,
+                defaultIconData: CustomIcons.star,
+                halfFilledIconData: CustomIcons.fill_star,
+                color: Colors.orangeAccent,
+                borderColor: Colors.orangeAccent,
+                spacing: 0.0),
           ),
-          textAlign: TextAlign.start,
-        ),
-        margin: EdgeInsets.only(left: 12, top: 0),
-      ),
-      Expanded(child:   Container(
-        child: Text(
-          "${countOfRate.toString()} оценки",
-          overflow: TextOverflow.clip,
-          style: TextStyle(
-            fontFamily: "Montserrat-Regular",
-            fontSize: 13,
+          Container(
+            child: Text(
+              rating.toString(),
+              style: TextStyle(
+                fontFamily: "Montserrat-Bold",
+                fontSize: 16,
+              ),
+              textAlign: TextAlign.start,
+            ),
+            margin: EdgeInsets.only(left: 12, top: 0),
           ),
-          textAlign: TextAlign.start,
-        ),
-        margin: EdgeInsets.only(left: 13, top: 0),
-      ),)
-    ]));
+          Expanded(child:   Container(
+            child: Text(
+              "${countOfRate.toString()} оценки",
+              overflow: TextOverflow.clip,
+              style: TextStyle(
+                fontFamily: "Montserrat-Regular",
+                fontSize: 13,
+              ),
+              textAlign: TextAlign.start,
+            ),
+            margin: EdgeInsets.only(left: 13, top: 0),
+          ),)
+        ]));
   }
 }
 
@@ -729,15 +730,15 @@ class WorkTimeWidget extends StatelessWidget {
           ),
           Expanded(
               child: Container(
-            margin: EdgeInsets.only(left: 8.0),
-            child: Text(
-              param,
-              style: TextStyle(
-                  fontFamily: "Montserrat-Bold",
-                  color: Colors.black54,
-                  fontSize: 14),
-            ),
-          ))
+                margin: EdgeInsets.only(left: 8.0),
+                child: Text(
+                  param,
+                  style: TextStyle(
+                      fontFamily: "Montserrat-Bold",
+                      color: Colors.black54,
+                      fontSize: 14),
+                ),
+              ))
         ]));
   }
 }
@@ -768,9 +769,9 @@ class _FavouritesButtonState extends State<FavouritesButton> {
 
   Future<int> setFavourite(bool obscure) async{
     if(obscure) {
-      await postWithToken("http://217.12.209.180:8080/api/v1/favorite/mark/${id}");
+      await postWithToken("${server}favorite/mark/${id}");
     } else {
-      await postWithToken("http://217.12.209.180:8080/api/v1/favorite/unmark/${id}");
+      await postWithToken("${server}favorite/unmark/${id}");
     }
   }
 
@@ -985,6 +986,7 @@ class _PhotoPageState extends State<PhotoPage> {
   void initState() {
     super.initState();
     controller = PageController();
+    result = List();
     for(int i = 0; i < customImages.length; i++) {
       result.add(Container(child: FadeInImage.memoryNetwork(placeholder: kTransparentImage, image: customImages[i].thumbImage, fit: BoxFit.fill,),));
     }
@@ -1021,3 +1023,4 @@ class _PhotoPageState extends State<PhotoPage> {
     );
   }
 }
+

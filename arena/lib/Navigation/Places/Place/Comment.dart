@@ -58,9 +58,9 @@ Future<Content> fetchContent(int id) async {
 
   var token = await getStringValuesSF("accessToken");
   if (token != null) {
-    response = await getWithToken("http://217.12.209.180:8080/api/v1/feedback/${id}/?page=0");
+    response = await getWithToken("${server}feedback/${id}/?page=0");
   } else {
-    response = await http.get('http://217.12.209.180:8080/api/v1/feedback/${id}/?page=0',
+    response = await http.get('${server}feedback/${id}/?page=0',
         headers: {"Content-type": "application/json"});
   }
 

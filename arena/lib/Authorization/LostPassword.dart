@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:arena/Other/Request.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -89,11 +90,11 @@ class _LostPasswordState extends State<LostPassword> {
                             if (regExp2.hasMatch(_name)) isEmail = false;
                             else if (regExp.hasMatch(_name)) isEmail = true;
                             if(isEmail) {
-                              response = await http.post("http://217.12.209.180:8080/api/v1/account/reset-password/init",
+                              response = await http.post("${server}account/reset-password/init",
                                   body: json.encode({"email": _name,}),
                                   headers: {"Content-type": "application/json",});
                             } else {
-                              response = await http.post("http://217.12.209.180:8080/api/v1/account/reset-password/init",
+                              response = await http.post("${server}account/reset-password/init",
                                   body: json.encode({"phone":_name}),
                                   headers: {"Content-type": "application/json",});
                             }

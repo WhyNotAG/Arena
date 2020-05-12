@@ -1,11 +1,14 @@
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:arena/Icons/custom_icons_icons.dart';
 import 'package:arena/Other/CustomSharedPreferences.dart';
+import 'package:arena/Other/Notification.dart';
 import 'package:arena/Other/Request.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -17,6 +20,8 @@ import 'package:location/location.dart';
 import 'dart:ui' as ui; // imported as ui to prevent conflict between ui.Image and the Image widget
 import 'package:flutter/services.dart';
 import 'Places/Filter.dart';
+
+geo.Position position;
 
 Future<BitmapDescriptor> _bitmapDescriptorFromSvgAsset(
     BuildContext context, String assetName) async {
@@ -80,11 +85,13 @@ Future<List<Place>> fetchPlace(BuildContext context) async {
   Set<Marker> placeWidgets = new Set<Marker>();
   var response;
 
+  position = await geo.Geolocator().getCurrentPosition(desiredAccuracy: geo.LocationAccuracy.medium);
+
   var token = await getStringValuesSF("accessToken");
   if (token != null) {
-    response = await getWithToken("http://217.12.209.180:8080/api/v1/place/");
+    response = await getWithToken("${server}place/");
   } else {
-    response = await http.get('http://217.12.209.180:8080/api/v1/place/',
+    response = await http.get('${server}place/',
         headers: {"Content-type": "application/json"});
   }
 
@@ -181,160 +188,13 @@ class Place {
   }
 }
 
-Future <Set<Marker>> filter(BuildContext context, List<Place> places) async {
-  Set<Marker> placeWidgets = Set();
-  geo.Position position = await geo.Geolocator().getCurrentPosition(desiredAccuracy: geo.LocationAccuracy.medium);
-  for (int i = 0; i < places.length; i++) {
-    if (places[i].isFavourite == null) {
-      places[i].isFavourite = false;
-    }
-    var count = places[i].countOfRate;
-    if (count == null) {
-      count = 0;
-    }
-
-    var img;
-
-    if (places[i].playgrounds[0].sports["name"] == "Футбол") {
-      img = "assets/images/Point_Soccer.svg";
-    }
-    if (places[i].playgrounds[0].sports["name"] == "Теннис") {
-      img = "assets/images/Point_Tennis.svg";
-    }
-    if (places[i].playgrounds[0].sports["name"] == "Баскетбол") {
-      img = "assets/images/Point_Basket.svg";
-    }
-    if (places[i].playgrounds[0].sports["name"] == "Волейбол") {
-      img = "assets/images/Point_Volley.svg";
-    }
-    if (places[i].playgrounds.length > 1) {
-      img = "assets/images/LOGO.svg";
-    }
-
-    double distanceInMeters = await geo.Geolocator().distanceBetween(
-        position.latitude, position.longitude, places[i].latitude,
-        places[i].longitude);
-    placeWidgets.add(Marker(
-        consumeTapEvents: true,
-        markerId: MarkerId(places[i].id.toString()),
-        infoWindow: InfoWindow(title: places[i].name),
-        position: LatLng(places[i].latitude, places[i].longitude),
-        icon: await _bitmapDescriptorFromSvgAsset(context, img),
-        onTap: () {
-          showModalBottomSheet(
-              context: context,
-              builder: (context) =>
-                  Container(
-                    child: Container(
-                        decoration: new BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: new BorderRadius.only(
-                                topLeft: const Radius.circular(10.0),
-                                topRight: const Radius.circular(10.0))),
-                        child: Column(
-                          children: <Widget>[
-                            Row(
-                              mainAxisAlignment:
-                              MainAxisAlignment.spaceBetween,
-                              children: <Widget>[
-                                Container(
-                                  padding: EdgeInsets.only(top: 39, left: 24),
-                                  width: 250,
-                                  child: Text(
-                                    places[i].name,
-                                    style: TextStyle(
-                                      color: Colors.black87,
-                                      fontFamily: "Montserrat-Bold",
-                                      fontSize: 24,
-                                    ),
-                                  ),
-                                ),
-                                Container(
-                                    alignment: Alignment.topRight,
-                                    height: 20,
-
-                                    margin:
-                                    EdgeInsets.only(top: 51, right: 32),
-                                    child: Text(
-                                      "${(distanceInMeters / 1000)
-                                          .toStringAsFixed(1)} км",
-                                      style: TextStyle(
-                                        color: Colors.black54,
-                                        fontFamily: "Montserrat-Bold",
-                                        fontSize: 14,
-                                      ),
-                                    ))
-                              ],
-                            ),
-                            //${places[i].workDayStartAt.toString().replaceRange(5, 8, "-")+places[i].workDayEndAt.toString().replaceRange(5, 8, "")}
-                            Container(
-                                alignment: Alignment.topLeft,
-                                margin: EdgeInsets.only(top: 11, left: 24),
-                                child: Row(
-                                  children: <Widget>[
-                                    Text(
-                                      "Время работы: ",
-                                      style: TextStyle(
-                                        color: Colors.black54,
-                                        fontFamily: "Montserrat-Regular",
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                    Text(
-                                      places[i].workDayStartAt.toString()
-                                          .replaceRange(5, 8, "-") +
-                                          places[i].workDayEndAt.toString()
-                                              .replaceRange(5, 8, ""),
-                                      style: TextStyle(
-                                        color: Colors.black87,
-                                        fontFamily: "Montserrat-Regular",
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                  ],
-                                )),
-                            Container(
-                                alignment: Alignment.topLeft,
-                                margin: EdgeInsets.only(top: 11, left: 24),
-                                child: Row(
-                                  children: <Widget>[
-                                    Text(
-                                      "Адрес: ",
-                                      style: TextStyle(
-                                        color: Colors.black54,
-                                        fontFamily: "Montserrat-Regular",
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                    Text(
-                                      places[i].address,
-                                      style: TextStyle(
-                                        color: Colors.black87,
-                                        fontFamily: "Montserrat-Regular",
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                  ],
-                                ))
-                          ],
-                        )),
-                    height: 250,
-                  ));
-        }));
-  }
-  return placeWidgets;
-}
-
 class MapSample extends StatefulWidget {
   @override
   State<MapSample> createState() => MapSampleState();
 }
 
 class MapSampleState extends State<MapSample> {
+  FocusNode _focusScope;
   String search;
   BitmapDescriptor pinLocationIcon;
   Set<Marker> _markers = {};
@@ -413,7 +273,7 @@ class MapSampleState extends State<MapSample> {
               img = "assets/images/Point_Volley.svg";
             }
             if (cluster.items.first.playgrounds.length > 1) {
-              img = "assets/images/LOGO.svg";
+              img = "assets/images/arena.svg";
             }
 
             return Marker(
@@ -537,6 +397,7 @@ class MapSampleState extends State<MapSample> {
 
   @override
   void initState() {
+    _focusScope = FocusNode();
     fetchPlace(context).then((placesFromServer) {
       setState(() {
         beforePlaces = placesFromServer;
@@ -551,6 +412,13 @@ class MapSampleState extends State<MapSample> {
     super.initState();
   }
 
+  @override
+  void dispose() {
+    // Clean up the focus node when the Form is disposed.
+    _focusScope.dispose();
+
+    super.dispose();
+  }
   void setCustomMapPin() async {
     pinLocationIcon = await BitmapDescriptor.fromAssetImage(
         ImageConfiguration(devicePixelRatio: 2.5),
@@ -641,6 +509,7 @@ class MapSampleState extends State<MapSample> {
                                   height: 47,
                                   width: 268,
                                   child: TextField(
+                                    focusNode: _focusScope,
                                     controller: textController,
                                     onChanged: (String value) {
                                       setState(() {
@@ -704,6 +573,9 @@ class MapSampleState extends State<MapSample> {
                                 onPressed: () {
                                   setState(() {
                                     onPressed = !onPressed;
+                                    if(onPressed == true) {
+                                      _focusScope.requestFocus();
+                                    }
                                   });
                                 },
                                 materialTapTargetSize:

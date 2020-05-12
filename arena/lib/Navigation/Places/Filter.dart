@@ -51,9 +51,9 @@ Future<List<Place>> fetchPlace(Map map) async {
   print(res);
 
   if (token != null) {
-    response = await getWithToken("http://217.12.209.180:8080/api/v1/place/?${res}");
+    response = await getWithToken("${server}place/?${res}");
   } else{
-    response = await http.get("http://217.12.209.180:8080/api/v1/place/?${res}",
+    response = await http.get("${server}place/?${res}",
         headers: {"Content-type": "application/json"});
   }
 
@@ -77,9 +77,9 @@ Future<List<Subway>> fetchSubway() async {
 
   var token = await getStringValuesSF("accessToken");
   if (token != null) {
-    response = await getWithToken("http://217.12.209.180:8080/api/v1/subway/");
+    response = await getWithToken("${server}subway/");
   } else{
-    response = await http.get("http://217.12.209.180:8080/api/v1/subway/",
+    response = await http.get("${server}subway/",
         headers: {"Content-type": "application/json"});
   }
 
@@ -461,6 +461,7 @@ class _FilterState extends State<Filter> {
                                 firstController.text = minValue.toString();
                                 maxValue = newUpperValue.toInt();
                                 secondController.text = maxValue.toString();
+                                places = fetchPlace(req);
                               });
                             },
                             onChangeEnd: (double newLowerValue, double newUpperValue) {
@@ -540,7 +541,32 @@ class _FilterState extends State<Filter> {
                           borderRadius: BorderRadius.circular(30)),
                       child: FlatButton(child: Text("СБРОСИТЬ",
                         style: TextStyle(fontFamily: "Montserrat-Bold", fontSize: 12,
-                            color: Color.fromARGB(255, 47, 128, 237), fontWeight: FontWeight.bold),),),)
+                            color: Color.fromARGB(255, 47, 128, 237), fontWeight: FontWeight.bold),),
+                        onPressed: (){
+                          setState(() {
+                            sport = null;
+                            input = null;
+                            req["sports"] = null;
+                            subways = null;
+                            hasParking = false;
+                            hasBaths = false;
+                            hasInventory = false;
+                            hasLockers = false;
+                            openField = true;
+                            closedField = true;
+                            req["hasBaths"] =  null;
+                            req["hasInventory"] = null;
+                            req["hasLockers"] =  null;
+                            req["hasParking"] =  null;
+                            req["openField"] = null;
+                            req["priceFrom"] =  0;
+                            req["priceTo"]= 50000;
+                            req["subways"] = null;
+                            places = fetchPlace(req);
+                          });
+                        },
+                      ),
+                    )
                   ],),)
                   ],),
                   )

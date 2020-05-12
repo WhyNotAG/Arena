@@ -37,10 +37,10 @@ Future<Place> fetchPlace(int id) async {
   var token = await getStringValuesSF("accessToken");
   if (token != null) {
     response = await getWithToken(
-        "http://217.12.209.180:8080/api/v1/place/full/info/${id}");
+        "${server}place/full/info/${id}");
   } else {
     response = await http.get(
-        'http://217.12.209.180:8080/api/v1/place/full/info/${id}',
+        '${server}place/full/info/${id}',
         headers: {"Content-type": "application/json"});
   }
 

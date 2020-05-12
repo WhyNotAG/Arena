@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 
 import 'CustomSharedPreferences.dart';
 
+const server = "http://217.12.209.180:8080/api/v1/";
 Future refresh() async {
   var token = await getStringValuesSF("accessToken");
   var refToken = await getStringValuesSF("refreshToken");
@@ -13,7 +14,7 @@ Future refresh() async {
     "refreshToken": refToken.toString()
   };
 
-  var response = await http.post('http://217.12.209.180:8080/api/v1/auth/refreshToken',
+  var response = await http.post('${server}auth/refreshToken',
       body: json.encode(jsonFile),
       headers: {"Content-type": "application/json", "Authorization": "Bearer_${token}"});
 
@@ -26,9 +27,9 @@ Future refresh() async {
 
 Future postWithToken(String url, [Map map]) async {
   var token = await getStringValuesSF("accessToken");
-  var expIn = await getIntValuesSF("expiredIn");
+  int expIn = await getIntValuesSF("expiredIn");
 
-  if( DateTime.fromMillisecondsSinceEpoch(expIn * 1000).isBefore(DateTime.now()))  {
+  if( DateTime.fromMillisecondsSinceEpoch(expIn*1000).isBefore(DateTime.now()))  {
     token = await refresh();
   }
   var response = await http.post(url,

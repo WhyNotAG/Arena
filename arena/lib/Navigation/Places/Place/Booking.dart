@@ -52,11 +52,11 @@ Future<List<Book>> fetchTime(int id, DateTime time, bool isHalf) async {
   var token = await getStringValuesSF("accessToken");
   if (token != null) {
     response = await getWithToken(
-      "http://217.12.209.180:8080/api/v1/booking/${id}?date=${updateTime}",
+      "${server}booking/${id}?date=${updateTime}",
     );
   } else {
     response = await http.get(
-        'http://217.12.209.180:8080/api/v1/booking/${id}?date=${updateTime}',
+        '${server}booking/${id}?date=${updateTime}',
         headers: {"Content-type": "application/json"});
   }
 

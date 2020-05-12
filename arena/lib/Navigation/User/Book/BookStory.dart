@@ -22,8 +22,7 @@ Future<List<BookFresh>> fetchFresh() async {
   List<BookFresh> fresh = new List<BookFresh>();
   var response;
 
-  var token = await getStringValuesSF("accessToken");
-  response = await getWithToken("http://217.12.209.180:8080/api/v1/booking/booked");
+  response = await getWithToken("${server}booking/booked");
 
 
   List<dynamic> responseJson = json.decode(utf8.decode(response.bodyBytes));
@@ -31,12 +30,9 @@ Future<List<BookFresh>> fetchFresh() async {
   if (response.statusCode == 200) {
     List list = json.decode(response.body) as List;
     int length = list.length;
-    log("test ${responseJson[0]}");
     for (int i = 0; i < length; i++) {
-      log("arr ${BookFresh.fromJson(responseJson[0]).date}");
       fresh.add(BookFresh.fromJson(responseJson[i]));
     }
-    log("test ${fresh.length}");
     return fresh;
   } else {
     throw Exception('Failed to load album');
@@ -47,8 +43,7 @@ Future<List<BookFresh>> fetchOld() async {
   List<BookFresh> fresh = new List<BookFresh>();
   var response;
 
-  var token = await getStringValuesSF("accessToken");
-  response = await getWithToken("http://217.12.209.180:8080/api/v1/booking/history");
+  response = await getWithToken("${server}booking/history");
 
 
   List<dynamic> responseJson = json.decode(utf8.decode(response.bodyBytes));
@@ -56,12 +51,9 @@ Future<List<BookFresh>> fetchOld() async {
   if (response.statusCode == 200) {
     List list = json.decode(response.body) as List;
     int length = list.length;
-    log("test ${responseJson[0]}");
     for (int i = 0; i < length; i++) {
-      log("arr ${BookFresh.fromJson(responseJson[0]).date}");
       fresh.add(BookFresh.fromJson(responseJson[i]));
     }
-    log("test ${fresh.length}");
     return fresh;
   } else {
     throw Exception('Failed to load album');
@@ -79,8 +71,25 @@ class _BookStoryState extends State<BookStory> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    booksFresh = fetchFresh();
-    booksOld = fetchOld();
+    refresh();
+    booksFresh = fetchFresh().then((value) {
+      for(BookFresh bk in value) {
+        booksWidget.add(BookWidget(name: bk.place.name,
+          workTime:bk.place.workDayStartAt.toString().replaceRange(5, 8, "-")+bk.place.workDayEndAt.toString().replaceRange(5, 8, ""),
+          address: bk.place.address, bookings: bk.bookings,
+          date: DateFormat("dd MMMM yyyy").format(DateFormat("yyyy-MM-dd").parse(bk.date)), playground: bk.playground,));
+      }
+      return value;
+    });
+    booksOld = fetchOld().then((value) {
+      for(BookFresh bk in value) {
+        booksWidgetOld.add(BookWidget(name: bk.place.name,
+          workTime:bk.place.workDayStartAt.toString().replaceRange(5, 8, "-")+bk.place.workDayEndAt.toString().replaceRange(5, 8, ""),
+          address: bk.place.address, bookings: bk.bookings,
+          date: DateFormat("dd MMMM yyyy").format(DateFormat("yyyy-MM-dd").parse(bk.date)), playground: bk.playground,));
+      }
+      return value;
+    });
     initializeDateFormatting("ru", null);
   }
   @override
@@ -118,12 +127,6 @@ class _BookStoryState extends State<BookStory> {
                           child: CircularProgressIndicator()
                       );
                     default:
-                      for(BookFresh bk in snapshot.data) {
-                        booksWidget.add(BookWidget(name: bk.place.name,
-                          workTime:bk.place.workDayStartAt.toString().replaceRange(5, 8, "-")+bk.place.workDayEndAt.toString().replaceRange(5, 8, ""),
-                          address: bk.place.address, bookings: bk.bookings,
-                          date: DateFormat("dd MMMM yyyy").format(DateFormat("yyyy-MM-dd").parse(bk.date)), playground: bk.playground,));
-                      }
                       return Container(
                           margin: EdgeInsets.only(bottom: 0.0),
                           color: Colors.white,
@@ -152,12 +155,6 @@ class _BookStoryState extends State<BookStory> {
                           child: CircularProgressIndicator()
                       );
                     default:
-                      for(BookFresh bk in snapshot.data) {
-                        booksWidgetOld.add(BookWidget(name: bk.place.name,
-                          workTime:bk.place.workDayStartAt.toString().replaceRange(5, 8, "-")+bk.place.workDayEndAt.toString().replaceRange(5, 8, ""),
-                          address: bk.place.address, bookings: bk.bookings,
-                          date: DateFormat("dd MMMM yyyy").format(DateFormat("yyyy-MM-dd").parse(bk.date)), playground: bk.playground,));
-                      }
                       return Container(
                           margin: EdgeInsets.only(bottom: 0.0),
                           color: Colors.white,

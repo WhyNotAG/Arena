@@ -2,9 +2,11 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:async';
 import 'package:arena/Menu.dart';
+import 'package:arena/Navigation/Places/Place/PayScreen.dart';
 import 'package:arena/Other/CustomSharedPreferences.dart';
 import 'package:arena/Other/Request.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
@@ -286,117 +288,170 @@ class _State extends State<RegistrationScreen> {
                   margin: EdgeInsets.only(top: 8),
                 ),
                 Container(
+                  alignment: Alignment.center,
+                  margin: EdgeInsets.only(left: 16, right: 16),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: <Widget>[
+                      Text("Нажимая на кнопку 'Войти' вы принимаете нашу", style: TextStyle(
+                        fontSize: 13.0,
+                        fontFamily: "Montserrat-Regular",)),
+                      Container(
+                        alignment: Alignment.centerLeft,
+                        height: 14,
+                        child: Row(
+                          children: <Widget>[
+                            InkWell(
+                              onTap: (){
+                                Navigator.push(
+                                  context, MaterialPageRoute(builder: (context) => WebPage(url: "http://arenasport.me/polsogl.pdf",)),);
+                              },
+                              child:  Container(
+                                margin: EdgeInsets.only(left: 4),
+                                height: 14,
+                                alignment: Alignment.topLeft,
+                                child: new Text(
+                                    "политику конфиденциальности",
+                                    textAlign: TextAlign.left,
+                                    style: TextStyle(
+                                        decoration: TextDecoration.underline, fontSize: 12.0,
+                                        fontFamily: "Montserrat-Regular",
+                                        color: Color.fromARGB(255, 47, 128, 237))
+                                ),
+                              ),
+                            ),
+                            Text(" и", style: TextStyle(
+                              fontSize: 12.0,
+                              fontFamily: "Montserrat-Regular",))
+                          ],),
+                      ),
+                      InkWell(
+                        onTap: (){
+                          Navigator.push(
+                            context, MaterialPageRoute(builder: (context) => WebPage(url: "http://arenasport.me/polsogl.pdf",)),);
+                        },
+                        child:  Container(
+                          margin: EdgeInsets.only(left: 4),
+                          height: 14,
+                          alignment: Alignment.topLeft,
+                          width: double.infinity,
+                          child: new Text(
+                              "политику соглашения",
+                              textAlign: TextAlign.left,
+                              style: TextStyle(
+                                  decoration: TextDecoration.underline, fontSize: 12.0,
+                                  fontFamily: "Montserrat-Regular",
+                                  color: Color.fromARGB(255, 47, 128, 237))
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
                   margin: EdgeInsets.only(top: 36),
-                  child: RegistrationButton(enterController.text, passController.text, nameController.text, _image),
+                  child: Container(
+                    width: double.infinity,
+                    height: 56,
+                    child: FlatButton(
+                      child: new Text("Зарегистрироваться",
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 14.0,
+                              fontFamily: "Montserrat-Bold")),
+                      onPressed: () async {
+                        String enter;
+                        String password;
+                        String email;
+                        String name;
+                        String phone;
+                        String p = "[a-zA-Z0-9+.\_\%-+]{1,256}@[a-zA-Z0-9][a-zA-Z0-9-]{0,64}(.[a-zA-Z0-9][a-zA-Z0-9-]{0,25})+";
+                        RegExp regExp = new RegExp(p);
+
+                        String p2 = "^((8|\\+7)[\\- ]?)?(\\(?\\d{3}\\)?[\\- ]?)?[\\d\\- ]{7,10}\$";
+                        RegExp regExp2 = new RegExp(p2);
+
+                        if (regExp.hasMatch(enterController.text)) {
+                          email = enterController.text;
+                          phone = null;
+                        }
+
+                        if(regExp2.hasMatch(enterController.text)) {
+                          email = null;
+                          phone = enterController.text;
+                        }
+                        Map jsonFile = {
+                          "number": phone,
+                          "email": email,
+                          "password": passController.text
+                        };
+
+                        Map jsonFileS = {
+                          "number": phone,
+                          "email": email,
+                          "password": passController.text,
+                          "firstName": nameController.text
+                        };
+
+                        Map image = {
+                          "imageUrl": _image.toString()
+                        };
+
+                        var response =
+                        await http.post("${server}auth/sign-up",
+                            body:json.encode(jsonFileS),
+                            headers: {"content-Type":"application/json"});
+                        if(response.statusCode == 200) {
+                          response = await http.post("${server}auth/sign-in",
+                              body:json.encode(jsonFile),
+                              headers: {"content-Type":"application/json"});
+                          if(response.statusCode == 200) {
+                            var decode = jsonDecode(response.body);
+                            addStringToSF("accessToken", decode["accessToken"]);
+                            addStringToSF("refreshToken", decode["refreshToken"]);
+                            addIntToSF("expiredIn", decode["expiredIn"]);
+                            addIntToSF("id", decode["id"]);
+                            print(decode["accessToken"]);
+                            if(response.statusCode == 200) {
+                              var token = await getStringValuesSF("accessToken");
+                              print(token);
+                              addStringToSF("accessToken", token);
+                              if(_image != null) {
+                                var stream = new http.ByteStream(DelegatingStream.typed(_image.openRead()));
+                                var length = await _image.length();
+                                var uri = Uri.parse('${server}account/upload/avatar/');
+                                var request = new http.MultipartRequest("POST", uri);
+                                request.files.add(http.MultipartFile('file', stream, length, filename: basename(_image.path), contentType: new MediaType('image', 'jpg')));
+                                request.headers["Authorization"] = "Bearer ${token}";
+                                request.headers["Content-type"]= "application/json";
+                                var response2 = await request.send();
+                              }
+
+                              var responseRes = await getWithToken("${server}account/");
+                              print(responseRes.statusCode);
+                              print(response.body);
+                              var decode = jsonDecode(responseRes.body);
+                              addStringToSF("name", decode["firstName"]);
+                              addIntToSF("id", decode["id"]);
+                              addStringToSF("imageUrl", decode["imageUrl"]);
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => MenuScreen(0)),
+                                );
+                            }
+                          }
+                        }
+                      },
+                    ),
+                    decoration: new BoxDecoration(
+                        borderRadius: new BorderRadius.circular(30.0),
+                        color: Color.fromARGB(255, 47, 128, 237)),
+                    margin: EdgeInsets.only(left: 16.0, right: 16.0, top: 21.0),
+                  )
                 ),
               ],
             ),
           )))),
-    );
-  }
-}
-
-class RegistrationButton extends StatelessWidget {
-  String enter;
-  String password;
-  String email;
-  String name;
-  String phone;
-  File img;
-
-
-  RegistrationButton(this.enter, this.password, this.name, this.img);
-
-  @override
-  Widget build(BuildContext context) {
-    String p = "[a-zA-Z0-9+.\_\%-+]{1,256}@[a-zA-Z0-9][a-zA-Z0-9-]{0,64}(.[a-zA-Z0-9][a-zA-Z0-9-]{0,25})+";
-    RegExp regExp = new RegExp(p);
-
-    String p2 = "^((8|\\+7)[\\- ]?)?(\\(?\\d{3}\\)?[\\- ]?)?[\\d\\- ]{7,10}\$";
-    RegExp regExp2 = new RegExp(p2);
-
-    if (regExp.hasMatch(enter)) {
-      email = enter;
-      phone = null;
-    }
-
-    if(regExp2.hasMatch(enter)) {
-      email = null;
-      phone = enter;
-    }
-    Map jsonFile = {
-      "number": phone,
-      "email": email,
-      "password": password
-    };
-
-    Map image = {
-      "imageUrl": img.toString()
-    };
-
-    print(jsonFile);
-    print(img.toString());
-
-    return new Container(
-      width: double.infinity,
-      height: 56,
-      child: FlatButton(
-        child: new Text("Зарегистрироваться",
-            style: TextStyle(
-                color: Colors.white,
-                fontSize: 14.0,
-                fontFamily: "Montserrat-Bold")),
-        onPressed: () async {
-          var response =
-          await http.post("http://217.12.209.180:8080/api/v1/auth/sign-up",
-              body:json.encode(jsonFile),
-              headers: {"content-Type":"application/json"});
-          if(response.statusCode == 200) {
-            response = await http.post("http://217.12.209.180:8080/api/v1/auth/sign-in",
-                body:json.encode(jsonFile),
-                headers: {"content-Type":"application/json"});
-            if(response.statusCode == 200) {
-              var decode = jsonDecode(response.body);
-              addStringToSF("accessToken", decode["accessToken"]);
-              addStringToSF("refreshToken", decode["refreshToken"]);
-              addIntToSF("expiredIn", decode["expiredIn"]);
-              addIntToSF("id", decode["id"]);
-              if(response.statusCode == 200 && img != null) {
-                var token = await getStringValuesSF("accessToken");
-                var stream = new http.ByteStream(DelegatingStream.typed(img.openRead()));
-                var length = await img.length();
-                var uri = Uri.parse('http://217.12.209.180:8080/api/v1/account/upload/avatar/');
-                var request = new http.MultipartRequest("POST", uri);
-                request.files.add(http.MultipartFile('file', stream, length, filename: basename(img.path), contentType: new MediaType('image', 'jpg')));
-                request.headers["Authorization"] = "Bearer ${token}";
-                request.headers["Content-type"]= "application/json";
-                var response2 = await request.send();
-
-                var responseRes = await getWithToken("http://217.12.209.180:8080/api/v1/account/");
-                var decode = jsonDecode(responseRes.body);
-                addStringToSF("name", decode["name"]);
-                addIntToSF("id", decode["id"]);
-                addStringToSF("imageUrl", decode["imageUrl"]);
-                if(response2.statusCode == 200) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => MenuScreen(0)),
-                  );
-                } else if(response.statusCode == 200){
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => MenuScreen(0)),
-                  );
-                }
-              }
-            }
-          }
-        },
-      ),
-      decoration: new BoxDecoration(
-          borderRadius: new BorderRadius.circular(30.0),
-          color: Color.fromARGB(255, 47, 128, 237)),
-      margin: EdgeInsets.only(left: 16.0, right: 16.0, top: 21.0),
     );
   }
 }
