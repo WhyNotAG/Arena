@@ -10,6 +10,7 @@ import 'package:arena/Other/CustomSharedPreferences.dart';
 import 'package:arena/Other/Request.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:transparent_image/transparent_image.dart';
@@ -238,20 +239,24 @@ class _PlaceInfoWidgetState extends State<PlaceInfoWidget> {
                                   )
                                 ],
                                 leading:
-                                 IconButton(
-                                    color: Colors.grey,
-                                     icon: Icon(
-                                       CustomIcons.arrowBack,
-                                       size: 14,
-                                       color: Colors.white,
-                                     ),
-                                     onPressed: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(builder: (context) => MenuScreen(1)),
-                                      );
-                                     },
-                                 ),
+                                InkWell(
+                                  child: Container(
+                                    margin: EdgeInsets.only(left: 8),
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(40)
+                                    ),
+                                    width: 10,
+                                    child:  Tab(
+                                        icon: new Image.asset("assets/images/arrowWithBack.png")
+                                    ),
+                                  ),
+                                  onTap: (){
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(builder: (context) => MenuScreen(1)),
+                                    );
+                                  },
+                                ),
                                 expandedHeight: 264.0,
                                 floating: false,
                                 pinned: true,

@@ -75,7 +75,7 @@ class _FeedBackPlaceState extends State<FeedBackPlace> {
                           allowHalfRating: false,
                           starCount: 5,
                           rating: rating,
-                          onRatingChanged: (value) {
+                          onRated: (value){
                             setState(() {
                               rating = value;
                             });

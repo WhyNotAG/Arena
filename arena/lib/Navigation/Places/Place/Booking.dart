@@ -137,7 +137,7 @@ class _BookingState extends State<Booking> {
                                 IconButton(
                                   onPressed: (){
                                     DatePicker.showDatePicker(context,
-                                      minTime: DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().month),
+                                      minTime: DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day,),
                                       onConfirm: (tecDate) {
                                        setState(() {
                                          date = tecDate;
@@ -155,16 +155,20 @@ class _BookingState extends State<Booking> {
                                   padding: EdgeInsets.only(right: 21.0),
                                 )
                               ],
-                              leading: IconButton(
-                                icon: Icon(
-                                  CustomIcons.arrowBack,
-                                  size: 16,
-                                  color: Colors.white,
-                                ),
-                                onPressed: () {
-                                  Navigator.pop(context);
-                                },
-                              ),
+                              leading: InkWell(
+                                  child: Container(
+                                    margin: EdgeInsets.only(left: 8),
+                                    decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(40)
+                                    ),
+                                    width: 10,
+                                    child:  Tab(
+                                        icon: new Image.asset("assets/images/arrowWithBack.png")
+                                    ),
+                                  ),
+                                  onTap: (){
+                                    Navigator.pop(context);
+                                  }),
                               expandedHeight: 285.0,
                               floating: false,
                               pinned: true,

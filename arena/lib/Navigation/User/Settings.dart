@@ -56,6 +56,25 @@ class _SettingsState extends State<SettingsWidget> {
                   margin: EdgeInsets.only(left: 16, right: 16, top: 16),
                   child: Column(
                     children: <Widget>[
+                      InkWell(
+                        child: Container(
+                          width: double.infinity,
+                          height: 50,
+                          margin: EdgeInsets.only(top: 30),
+                          color: Color.fromARGB(255, 47, 128, 237),
+                          padding: EdgeInsets.all(10),
+                          child: Text(
+                              " Передача геоданных", textAlign: TextAlign
+                              .center, style: TextStyle(
+                              fontFamily: "Montserrat-Regular",
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white)),
+                        ),
+                        onTap: () {
+                          AppSettings.openAppSettings();
+                        },
+                      ),
                       Container(
                         width: double.infinity,
                         margin: EdgeInsets.only(top: 30),
@@ -79,71 +98,52 @@ class _SettingsState extends State<SettingsWidget> {
                           child:
                           DropdownButtonHideUnderline(
                             child: DropdownButton(
-                                isExpanded: true,
-                                focusColor:
-                                Colors.white,
-                                iconSize: 24,
-                                style: TextStyle(
-                                    fontFamily:
-                                    "Montserrat-Regular",
-                                    fontWeight:
-                                    FontWeight
-                                        .bold,
-                                    color: Color
-                                        .fromARGB(255, 130, 130, 130)),
-                                value: test,
-                                onChanged: (String newValue) {
-                                  setState(() {
-                                    test =
-                                        newValue;
-                                    addStringToSF("timeSTR", test);
-                                    print(test);
-                                    switch (test) {
-                                      case "Включить за 1ч.":
-                                        addIntToSF("time", 1);
-                                        break;
-                                      case "Включить за 6ч.":
-                                        addIntToSF("time", 6);
-                                        break;
-                                      case "Включить за 12ч.":
-                                        addIntToSF("time", 12);
-                                        break;
-                                      case "Включить за 24ч.":
-                                        addIntToSF("time", 24);
-                                    }
-                                  });
-                                  return null;
-                                },
-                                items: tester.map<DropdownMenuItem<String>>(
-                                        (String valuer) {
-                                      return DropdownMenuItem<
-                                          String>(
-                                          value: valuer,
-                                          child: Text(valuer));
-                                    }).toList(),
+                              isExpanded: true,
+                              focusColor:
+                              Colors.white,
+                              iconSize: 24,
+                              style: TextStyle(
+                                  fontFamily:
+                                  "Montserrat-Regular",
+                                  fontWeight:
+                                  FontWeight
+                                      .bold,
+                                  color: Color
+                                      .fromARGB(255, 130, 130, 130)),
+                              value: test,
+                              onChanged: (String newValue) {
+                                setState(() {
+                                  test =
+                                      newValue;
+                                  addStringToSF("timeSTR", test);
+                                  print(test);
+                                  switch (test) {
+                                    case "Включить за 1ч.":
+                                      addIntToSF("time", 1);
+                                      break;
+                                    case "Включить за 6ч.":
+                                      addIntToSF("time", 6);
+                                      break;
+                                    case "Включить за 12ч.":
+                                      addIntToSF("time", 12);
+                                      break;
+                                    case "Включить за 24ч.":
+                                      addIntToSF("time", 24);
+                                  }
+                                });
+                                return null;
+                              },
+                              items: tester.map<DropdownMenuItem<String>>(
+                                      (String valuer) {
+                                    return DropdownMenuItem<
+                                        String>(
+                                        value: valuer,
+                                        child: Text(valuer));
+                                  }).toList(),
                             ),
                           ),
                         ),
-                      ),
-                      InkWell(
-                        child: Container(
-                          width: double.infinity,
-                          height: 50,
-                          margin: EdgeInsets.only(top: 32),
-                          color: Color.fromARGB(255, 47, 128, 237),
-                          padding: EdgeInsets.all(10),
-                          child: Text(
-                              " Передача геоданных", textAlign: TextAlign
-                              .center, style: TextStyle(
-                              fontFamily: "Montserrat-Regular",
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white)),
-                        ),
-                        onTap: () {
-                          AppSettings.openAppSettings();
-                        },
-                      ),
+                      )
                     ],
                   ),
                 ),

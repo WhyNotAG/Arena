@@ -84,6 +84,8 @@ flutter:
     - assets/images/status/Lock.png
     - assets/images/status/OpenField.png
     - assets/images/status/Parking.png
+    - assets/images/arrowWithBack.svg
+    - assets/images/arrowWithBack.png
 
   fonts:
     - family: Montserrat-Bold

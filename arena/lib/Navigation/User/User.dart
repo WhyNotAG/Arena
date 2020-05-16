@@ -208,7 +208,7 @@ class _ButtonState extends State<Button> {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+    return GestureDetector(
       child: Container(
         color: isTap ? Color.fromARGB(255, 47, 128, 237) : Colors.white,
           width: double.infinity,
@@ -226,19 +226,53 @@ class _ButtonState extends State<Button> {
             ],
           )),
       onTap: () async{
+          setState(() {
+            isTap = false;
+          });
+      },
+      onTapCancel: () async{
+        print("test");
+        setState(() {
+          isTap = false;
+        });
+      },
+      onLongPress: () async{
         setState(() {
           isTap = true;
         });
       },
-      onTapCancel: () async{
+
+      onTapDown: (top) async {
+        setState(() {
+          isTap = true;
+        });
+      },
+
+      onHorizontalDragStart:(drag) async{
         setState(() {
           isTap = false;
         });
-        if(text == " Напишите нам")
-          Navigator.push(
+      },
+
+      onVerticalDragStart: (drag) async{
+        setState(() {
+          isTap = false;
+        });
+      },
+
+      onTapUp: (top) async {
+        setState(() {
+          isTap = false;
+        });
+        if(text == " Напишите нам") {
+          await Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => FeedBack()),
           );
+          setState(() {
+            isTap = false;
+          });
+        }
         if(text == " Настройки")
           Navigator.push(
             context,

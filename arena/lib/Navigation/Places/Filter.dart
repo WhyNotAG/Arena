@@ -187,6 +187,7 @@ class _FilterState extends State<Filter> {
                           width: double.infinity,
 
                           child: Stack(children: <Widget>[
+                            Align(child: Container(child: IconButton(icon: Icon(Icons.arrow_drop_down),),margin: EdgeInsets.only(right: 8.0),),alignment: Alignment.centerRight,),
                             Container(width: double.infinity,
                                 margin: EdgeInsets.only(left: 16, right: 20),
                                 child: Theme(
@@ -195,6 +196,7 @@ class _FilterState extends State<Filter> {
                                       Colors.white),
                                   child: DropdownButtonHideUnderline(
                                     child: DropdownButton(
+                                        isExpanded: true,
                                         hint: Text("Все Виды"),
                                         iconSize: 24,
                                         style: TextStyle(fontFamily: "Montserrat-Regular", fontWeight: FontWeight.bold, color: Color.fromARGB(255, 130, 130, 130)),
@@ -214,7 +216,6 @@ class _FilterState extends State<Filter> {
                                             child: Text(valuer),
                                           );
                                         }).toList()),),)),
-                            Align(child: Container(child: IconButton(icon: Icon(Icons.arrow_drop_down),),margin: EdgeInsets.only(right: 8.0),),alignment: Alignment.centerRight,)
                           ],),
                         )
                       ],)
@@ -238,6 +239,7 @@ class _FilterState extends State<Filter> {
                           width: double.infinity,
 
                           child: Stack(children: <Widget>[
+                            Align(child: Container(child: IconButton(icon: Icon(Icons.arrow_drop_down),),margin: EdgeInsets.only(right: 8.0),),alignment: Alignment.centerRight,),
                             Container(width: double.infinity,
                                 margin: EdgeInsets.only(left: 16, right: 20),
                                 child: Theme(
@@ -265,7 +267,6 @@ class _FilterState extends State<Filter> {
                                             child: Text(valuer.name),
                                           );
                                         }).toList()),),)),
-                            Align(child: Container(child: IconButton(icon: Icon(Icons.arrow_drop_down),),margin: EdgeInsets.only(right: 8.0),),alignment: Alignment.centerRight,)
                           ],),
                         )
                       ],)

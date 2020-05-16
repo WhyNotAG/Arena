@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:arena/Menu.dart';
 import 'package:arena/Navigation/Places/Filter.dart';
 import 'package:arena/Icons/custom_icons_icons.dart';
 import 'package:arena/Navigation/Places/Place/Booking.dart';
@@ -10,6 +11,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:page_indicator/page_indicator.dart';
 import 'package:smooth_star_rating/smooth_star_rating.dart';
@@ -70,7 +72,9 @@ Future<List<PlaceWidget>> fetchPlace() async {
           (places[i].workDayStartAt.toString().replaceRange(5, 8, "-")+places[i].workDayEndAt.toString().replaceRange(5, 8, "")),
           places[i].address,
           places[i].info,
-          places[i].customImages),);
+          places[i].customImages,
+          places[i].latitude,
+          places[i].longitude),);
     }
 
     return placeWidgets;
@@ -116,7 +120,9 @@ Future<List<PlaceWidget>> fetchPlaceBySport(String sport) async {
           (places[i].workDayStartAt.toString().replaceRange(5, 8, "-")+places[i].workDayEndAt.toString().replaceRange(5, 8, "")),
           places[i].address,
           places[i].info,
-          places[i].customImages));
+          places[i].customImages,
+          places[i].latitude,
+          places[i].longitude));
     }
 
     return placeWidgets;
@@ -147,7 +153,9 @@ Future<List<PlaceWidget>> filter(List<Place> places) async {
         (places[i].workDayStartAt.toString().replaceRange(5, 8, "-")+places[i].workDayEndAt.toString().replaceRange(5, 8, "")),
         places[i].address,
         places[i].info,
-        places[i].customImages));
+        places[i].customImages,
+        places[i].latitude,
+        places[i].longitude));
   }
   return placeWidgets;
 }
@@ -321,6 +329,8 @@ class _PlacesState extends State<Places> {
                                   height: 32,
                                   margin: EdgeInsets.only(left: 8, right: 8, top: 1, bottom: 1),
                                   child: FlatButton(
+                                      splashColor: Colors.transparent.withAlpha(0),
+                                      highlightColor: Colors.transparent.withAlpha(0),
                                       child: Text(
                                         "Все виды",
                                         style: TextStyle(color: status == 0 ? Colors.white : Colors.black54),
@@ -344,6 +354,8 @@ class _PlacesState extends State<Places> {
                                   height: 32,
                                   margin: EdgeInsets.only(left: 8, right: 8, top: 1, bottom: 1),
                                   child: FlatButton(
+                                      splashColor: Colors.transparent.withAlpha(0),
+                                      highlightColor: Colors.transparent.withAlpha(0),
                                       child: Text(
                                         "Теннис",
                                         style: TextStyle(color: status == 1 ? Colors.white : Colors.black54),
@@ -367,6 +379,8 @@ class _PlacesState extends State<Places> {
                                   height: 32,
                                   margin: EdgeInsets.only(left: 8, right: 8, top: 1, bottom: 1),
                                   child: FlatButton(
+                                      splashColor: Colors.transparent.withAlpha(0),
+                                      highlightColor: Colors.transparent.withAlpha(0),
                                       child: Text(
                                         "Футбол",
                                         style: TextStyle(color: status == 2 ? Colors.white : Colors.black54),
@@ -390,6 +404,8 @@ class _PlacesState extends State<Places> {
                                   height: 32,
                                   margin: EdgeInsets.only(left: 8, right: 8, top: 1, bottom: 1),
                                   child: FlatButton(
+                                      splashColor: Colors.transparent.withAlpha(0),
+                                      highlightColor: Colors.transparent.withAlpha(0),
                                       child: Text(
                                         "Баскетбол",
                                         style: TextStyle(color: status == 3 ? Colors.white : Colors.black54),
@@ -542,14 +558,16 @@ class PlaceWidget extends StatefulWidget {
   String address;
   double distance;
   String info;
+  double latitude;
+  double longitude;
   List<CustomImage> customImages;
 
 
   PlaceWidget(this.id, this.isFavourite, this.name, this.rating, this.distance,
-      this.countOfRate, this.photo, this.timeOfWork, this.address, this.info, this.customImages);
+      this.countOfRate, this.photo, this.timeOfWork, this.address, this.info, this.customImages, this.latitude, this.longitude);
   @override
   _PlaceWidgetState createState() => _PlaceWidgetState(this.id, this.isFavourite, this.name, this.rating, this.distance,
-      this.countOfRate, this.photo, this.timeOfWork, this.address, this.info, this.customImages);
+      this.countOfRate, this.photo, this.timeOfWork, this.address, this.info, this.customImages, this.latitude, this.longitude);
 }
 
 class _PlaceWidgetState extends State<PlaceWidget> {
@@ -563,10 +581,12 @@ class _PlaceWidgetState extends State<PlaceWidget> {
   String address;
   double distance;
   String info;
+  double latitude;
+  double longitude;
   List<CustomImage> customImages;
 
   _PlaceWidgetState(this.id, this.isFavourite, this.name, this.rating, this.distance,
-      this.countOfRate, this.photo, this.timeOfWork, this.address, this.info, this.customImages);
+      this.countOfRate, this.photo, this.timeOfWork, this.address, this.info, this.customImages, this.latitude, this.longitude);
 
   @override
   Widget build(BuildContext context) {
@@ -619,7 +639,7 @@ class _PlaceWidgetState extends State<PlaceWidget> {
                 ),
                 WorkTimeWidget("Время работы: ", timeOfWork),
                 WorkTimeWidget("Адрес:", address),
-                PlaceButtons(id, distance),
+                PlaceButtons(id, distance, latitude, longitude),
                 Container(
                   margin: EdgeInsets.only(left: 25, right: 24, top: 26),
                   child: Text(
@@ -797,7 +817,9 @@ class _FavouritesButtonState extends State<FavouritesButton> {
 class PlaceButtons extends StatelessWidget {
   int id;
   double distance;
-  PlaceButtons(this.id, this.distance);
+  double latitude;
+  double longitude;
+  PlaceButtons(this.id, this.distance, this.latitude, this.longitude);
 
   @override
   Widget build(BuildContext context) {
@@ -819,7 +841,10 @@ class PlaceButtons extends StatelessWidget {
               ),
               child: FlatButton(
                 onPressed: (){
-                  Navigator.pushNamed(context, "/second");
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => MenuScreen(0, LatLng(latitude, longitude))),
+                  );
                 },
                 child: Row(
                   children: <Widget>[

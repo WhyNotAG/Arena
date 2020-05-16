@@ -1,10 +1,12 @@
 import 'dart:convert';
 
 import 'package:arena/Icons/custom_icons_icons.dart';
+import 'package:arena/Menu.dart';
 import 'package:arena/Other/CustomSharedPreferences.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:page_indicator/page_indicator.dart';
 import 'package:smooth_star_rating/smooth_star_rating.dart';
@@ -69,7 +71,9 @@ Future<List<PlaceWidget>> fetchPlace() async {
           (places[i].workDayStartAt.toString().replaceRange(5, 8, "-")+places[i].workDayEndAt.toString().replaceRange(5, 8, "")),
           places[i].address,
           places[i].info,
-          places[i].customImages));
+          places[i].customImages,
+          places[i].latitude,
+          places[i].longitude));
     }
 
     return placeWidgets;
@@ -260,10 +264,12 @@ class PlaceWidget extends StatelessWidget {
   double distance;
   String address;
   String info;
+  double latitude;
+  double longitude;
   List<CustomImage> customImages;
 
   PlaceWidget(this.id, this.isFavourite, this.name, this.rating, this.distance,
-      this.countOfRate, this.photo, this.timeOfWork, this.address, this.info, this.customImages);
+      this.countOfRate, this.photo, this.timeOfWork, this.address, this.info, this.customImages, this.latitude, this.longitude);
 
   @override
   Widget build(BuildContext context) {
@@ -313,7 +319,7 @@ class PlaceWidget extends StatelessWidget {
               ),
               WorkTimeWidget("Время работы: ", timeOfWork),
               WorkTimeWidget("Адрес:", address),
-              PlaceButtons(id, distance),
+              PlaceButtons(id, distance, latitude, longitude),
               Container(
                 margin: EdgeInsets.only(left: 25, right: 24, top: 26),
                 child: Text(
@@ -489,8 +495,10 @@ class _FavouritesButtonState extends State<FavouritesButton> {
 class PlaceButtons extends StatelessWidget {
   int id;
   double distance;
+  double latitude;
+  double longitude;
 
-  PlaceButtons(this.id, this.distance);
+  PlaceButtons(this.id, this.distance, this.latitude, this.longitude);
 
   @override
   Widget build(BuildContext context) {
@@ -512,7 +520,10 @@ class PlaceButtons extends StatelessWidget {
               ),
               child: FlatButton(
                 onPressed: (){
-                  Navigator.pushNamed(context, "/second");
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => MenuScreen(0, LatLng(latitude, longitude))),
+                  );
                 },
                 child: Row(
                   children: <Widget>[

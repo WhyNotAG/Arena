@@ -9,6 +9,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:arena/Icons/custom_icons_icons.dart';
 import 'package:arena/Navigation/Map.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import 'Other/CustomSharedPreferences.dart';
 import 'Other/Request.dart';
@@ -145,17 +146,17 @@ Item _itemForMessage(Map<String, dynamic> message) {
 }
 class MenuScreen extends StatefulWidget {
   int _currentIndex;
-
-  MenuScreen([this._currentIndex]);
+  LatLng pinPosition;
+  MenuScreen([this._currentIndex, this.pinPosition]);
 
   @override
-  _MenuScreenState createState() => _MenuScreenState(_currentIndex);
+  _MenuScreenState createState() => _MenuScreenState(_currentIndex, pinPosition);
 }
 
 class _MenuScreenState extends State<MenuScreen> {
   int _currentIndex = 0;
-
-  _MenuScreenState([this._currentIndex]);
+  LatLng pinPosition;
+  _MenuScreenState(this._currentIndex, [this.pinPosition]);
 
   final FirebaseMessaging _fcm = FirebaseMessaging();
   StreamSubscription iosSubscription;
@@ -258,8 +259,8 @@ class _MenuScreenState extends State<MenuScreen> {
     });
   }
 
-  final List<Widget> _children = [
-    MapSample(),
+  List<Widget> _children() =>  [
+    MapSample(pinPosition: pinPosition,),
     Places(),
     Favourites(),
     User(),
@@ -273,8 +274,9 @@ class _MenuScreenState extends State<MenuScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final List<Widget> children = _children( );
     return Scaffold(
-      body: _children[_currentIndex],
+      body: children[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: Colors.white,
         onTap: onTabTapped, // new

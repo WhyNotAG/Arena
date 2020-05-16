@@ -84,9 +84,9 @@ class _ProfileWidgetState extends State<ProfileWidget> {
         }
       },
       child: Scaffold(
-          appBar: AppBar(title:Text("Профиль", textAlign: TextAlign.center,
+          appBar: AppBar(title:Text("Редактирование\nпрофиля", textAlign: TextAlign.center, softWrap: true,
             style: TextStyle(fontFamily: "Montserrat-Bold",
-                fontSize: 24, color: Color.fromARGB(
+                fontSize: 20, color: Color.fromARGB(
                     255, 47, 128, 237)),),
               iconTheme: IconThemeData(
                 color: Color.fromARGB(255, 130, 130, 130), //change your color here
@@ -98,11 +98,6 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                 child: Column(
                   children: <Widget>[
                     Container(
-                      width: double.infinity,
-                      child: Text("Редактирование профиля", textAlign: TextAlign.center,  style: TextStyle(fontFamily: "Montserrat-Bold",
-                          fontSize: 24, color: Color.fromARGB(255,47, 128, 237)),),),
-                    Container(
-                      margin: const EdgeInsets.only(top: 32),
                       child: FlatButton(
                         child: Container(
                           height: 167,

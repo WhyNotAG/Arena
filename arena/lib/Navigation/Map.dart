@@ -90,11 +90,12 @@ Future<List<Place>> fetchPlace(BuildContext context) async {
   position = await geo.Geolocator().getCurrentPosition(desiredAccuracy: geo.LocationAccuracy.medium);
   var token = await getStringValuesSF("accessToken");
   int expIn = await getIntValuesSF("expiredIn");
-  if( DateTime.fromMillisecondsSinceEpoch(expIn.toInt() * 1000).isBefore(DateTime.now()))  {
-    token = await refresh();
-  }
+
 
   if (token != null) {
+    if( DateTime.fromMillisecondsSinceEpoch(expIn.toInt() * 1000).isBefore(DateTime.now()))  {
+      token = await refresh();
+    }
     response = await getWithToken("${server}place/");
   } else {
     response = await http.get('${server}place/',
@@ -195,11 +196,17 @@ class Place {
 }
 
 class MapSample extends StatefulWidget {
+  LatLng pinPosition;
+
+  MapSample({this.pinPosition});
+
   @override
-  State<MapSample> createState() => MapSampleState();
+  State<MapSample> createState() => MapSampleState(pinPosition);
 }
 
 class MapSampleState extends State<MapSample> {
+
+
   FocusNode _focusScope;
   String search;
   BitmapDescriptor pinLocationIcon;
@@ -210,16 +217,13 @@ class MapSampleState extends State<MapSample> {
   ClusterManager _manager;
   bool onPressed = false;
   Completer<GoogleMapController> _controller = Completer();
-  LatLng pinPosition = LatLng(55.753878, 37.620851);
+  LatLng pinPosition;
   LocationData currentLocation;
   var location = new Location();
   List<ClusterItem<Place>> items = List();
   TextEditingController textController = TextEditingController();
 
-  static final CameraPosition _kGooglePlex = CameraPosition(
-    target: LatLng(55.753878, 37.620851),
-    zoom: 14.4746,
-  );
+  CameraPosition _kGooglePlex;
 
   void _getLocation() async {
     geo.Position position = await geo.Geolocator().getCurrentPosition(desiredAccuracy: geo.LocationAccuracy.medium);
@@ -420,6 +424,17 @@ class MapSampleState extends State<MapSample> {
 
   @override
   void initState() {
+    if(pinPosition != null) {
+      _kGooglePlex =  CameraPosition(
+        target: pinPosition,
+        zoom: 16,
+      );
+    } else{
+      _kGooglePlex = CameraPosition(
+        target: LatLng(55.753878, 37.620851),
+        zoom: 14.4746,
+      );
+    }
     _focusScope = FocusNode();
     fetchPlace(context).then((placesFromServer) {
       setState(() {
@@ -673,4 +688,6 @@ class MapSampleState extends State<MapSample> {
               ),
             )));
   }
+
+  MapSampleState([this.pinPosition]);
 }

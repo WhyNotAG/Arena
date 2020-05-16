@@ -103,7 +103,10 @@ class _BookStoryState extends State<BookStory> {
               Tab(child: Text("История бронирования",  style: TextStyle(fontFamily: "Montserrat-Regular", fontWeight: FontWeight.bold, color: Color.fromARGB(255, 130, 130, 130))),),
             ],
           ),
-          title: Text('Забронированно', style: TextStyle(fontFamily: "Montserrat-Regular", fontWeight: FontWeight.bold, color: Color.fromARGB(255, 130, 130, 130))),
+          title:Text("Забронированно", textAlign: TextAlign.center,
+            style: TextStyle(fontFamily: "Montserrat-Bold",
+                fontSize: 24, color: Color.fromARGB(
+                    255, 47, 128, 237)),),
           iconTheme: IconThemeData(
             color: Color.fromARGB(255, 130, 130, 130), //change your color here
           ),
