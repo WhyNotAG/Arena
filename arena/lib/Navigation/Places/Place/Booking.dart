@@ -468,7 +468,7 @@ class _BookingState extends State<Booking> {
                                                               130),
                                                           fontSize: 12,
                                                         )),
-                                                    Text("Стоимость\nRUB",
+                                                    Text("Стоимость,\nRUB",
                                                         style: TextStyle(
                                                           fontFamily:
                                                               "Montserrat-Regular",

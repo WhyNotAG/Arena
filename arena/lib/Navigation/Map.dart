@@ -11,6 +11,7 @@ import 'package:arena/Other/Request.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:geolocator/geolocator.dart' as geo;
 import 'package:google_maps_cluster_manager/google_maps_cluster_manager.dart';
@@ -20,6 +21,7 @@ import 'package:location/location.dart';
 import 'dart:ui' as ui; // imported as ui to prevent conflict between ui.Image and the Image widget
 import 'package:flutter/services.dart';
 import 'Places/Filter.dart';
+import 'Places/Place/Place.dart';
 
 geo.Position position;
 
@@ -86,8 +88,12 @@ Future<List<Place>> fetchPlace(BuildContext context) async {
   var response;
 
   position = await geo.Geolocator().getCurrentPosition(desiredAccuracy: geo.LocationAccuracy.medium);
-
   var token = await getStringValuesSF("accessToken");
+  int expIn = await getIntValuesSF("expiredIn");
+  if( DateTime.fromMillisecondsSinceEpoch(expIn.toInt() * 1000).isBefore(DateTime.now()))  {
+    token = await refresh();
+  }
+
   if (token != null) {
     response = await getWithToken("${server}place/");
   } else {
@@ -283,101 +289,118 @@ class MapSampleState extends State<MapSample> {
             double distanceInMeters = await geo.Geolocator().distanceBetween(position.latitude, position.longitude, cluster.items.first.latitude, cluster.items.first.longitude);
             showModalBottomSheet(
                 context: context,
-                builder: (context) => Container(
+                builder: (context) => InkWell(
+                  onTap: (){
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => PlaceInfoWidget(cluster.items.first.id)),
+                    );
+                  },
                   child: Container(
-                      decoration: new BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: new BorderRadius.only(
-                              topLeft: const Radius.circular(10.0),
-                              topRight: const Radius.circular(10.0))),
-                      child: Column(
-                        children: <Widget>[
-                          Row(
-                            mainAxisAlignment:
-                            MainAxisAlignment.spaceBetween,
-                            children: <Widget>[
-                              Container(
-                                padding: EdgeInsets.only(top: 39, left: 24),
-                                width: 250,
-                                child: Text(
-                                  cluster.items.first.name,
-                                  style: TextStyle(
-                                    color: Colors.black87,
-                                    fontFamily: "Montserrat-Bold",
-                                    fontSize: 24,
+                    child: Container(
+                        decoration: new BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: new BorderRadius.only(
+                                topLeft: const Radius.circular(10.0),
+                                topRight: const Radius.circular(10.0))),
+                        child: Column(
+                          children: <Widget>[
+                            Container(
+                              margin: EdgeInsets.only(top: 12),
+                              width: 50,
+                              height: 3,
+                              decoration: BoxDecoration(
+                                color: Colors.grey,
+                                borderRadius: BorderRadius.circular(20)
+                              ),
+                            ),
+                            Row(
+                              mainAxisAlignment:
+                              MainAxisAlignment.spaceBetween,
+                              children: <Widget>[
+                                Container(
+                                  padding: EdgeInsets.only(top: 39, left: 24),
+                                  width: 250,
+                                  child: Text(
+                                    cluster.items.first.name,
+                                    style: TextStyle(
+                                      color: Colors.black87,
+                                      fontFamily: "Montserrat-Bold",
+                                      fontSize: 24,
+                                    ),
                                   ),
                                 ),
-                              ),
-                              Container(
-                                  alignment: Alignment.topRight,
-                                  height: 20,
+                                Container(
+                                    alignment: Alignment.topRight,
+                                    height: 20,
 
-                                  margin:
-                                  EdgeInsets.only(top: 51, right: 32),
-                                  child: Text(
-                                    "${(distanceInMeters/1000).toStringAsFixed(1)} км",
-                                    style: TextStyle(
-                                      color: Colors.black54,
-                                      fontFamily: "Montserrat-Bold",
-                                      fontSize: 14,
+                                    margin:
+                                    EdgeInsets.only(top: 51, right: 32),
+                                    child: Text(
+                                      "${(distanceInMeters/1000).toStringAsFixed(1)} км",
+                                      style: TextStyle(
+                                        color: Colors.black54,
+                                        fontFamily: "Montserrat-Bold",
+                                        fontSize: 14,
+                                      ),
+                                    ))
+                              ],
+                            ),
+                            //${places[i].workDayStartAt.toString().replaceRange(5, 8, "-")+places[i].workDayEndAt.toString().replaceRange(5, 8, "")}
+                            Container(
+                                alignment: Alignment.topLeft,
+                                margin: EdgeInsets.only(top: 11, left: 24),
+                                child: Row(
+                                  children: <Widget>[
+                                    Text(
+                                      "Время работы: ",
+                                      style: TextStyle(
+                                        color: Colors.black54,
+                                        fontFamily: "Montserrat-Regular",
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                      ),
                                     ),
-                                  ))
-                            ],
-                          ),
-                          //${places[i].workDayStartAt.toString().replaceRange(5, 8, "-")+places[i].workDayEndAt.toString().replaceRange(5, 8, "")}
-                          Container(
-                              alignment: Alignment.topLeft,
-                              margin: EdgeInsets.only(top: 11, left: 24),
-                              child: Row(
-                                children: <Widget>[
-                                  Text(
-                                    "Время работы: ",
-                                    style: TextStyle(
-                                      color: Colors.black54,
-                                      fontFamily: "Montserrat-Regular",
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 14,
+                                    Text(
+                                      cluster.items.first.workDayStartAt.toString().replaceRange(5, 8, "-")+cluster.items.first.workDayEndAt.toString().replaceRange(5, 8, ""),
+                                      style: TextStyle(
+                                        color: Colors.black87,
+                                        fontFamily: "Montserrat-Regular",
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                      ),
                                     ),
-                                  ),
-                                  Text(
-                                    cluster.items.first.workDayStartAt.toString().replaceRange(5, 8, "-")+cluster.items.first.workDayEndAt.toString().replaceRange(5, 8, ""),
-                                    style: TextStyle(
-                                      color: Colors.black87,
-                                      fontFamily: "Montserrat-Regular",
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 14,
+                                  ],
+                                )),
+                            Container(
+                                alignment: Alignment.topLeft,
+                                margin: EdgeInsets.only(top: 11, left: 24),
+                                child: Row(
+                                  children: <Widget>[
+                                    Text(
+                                      "Адрес: ",
+                                      style: TextStyle(
+                                        color: Colors.black54,
+                                        fontFamily: "Montserrat-Regular",
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                      ),
                                     ),
-                                  ),
-                                ],
-                              )),
-                          Container(
-                              alignment: Alignment.topLeft,
-                              margin: EdgeInsets.only(top: 11, left: 24),
-                              child: Row(
-                                children: <Widget>[
-                                  Text(
-                                    "Адрес: ",
-                                    style: TextStyle(
-                                      color: Colors.black54,
-                                      fontFamily: "Montserrat-Regular",
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 14,
+                                    Text(
+                                      cluster.items.first.address,
+                                      style: TextStyle(
+                                        color: Colors.black87,
+                                        fontFamily: "Montserrat-Regular",
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                      ),
                                     ),
-                                  ),
-                                  Text(
-                                    cluster.items.first.address,
-                                    style: TextStyle(
-                                      color: Colors.black87,
-                                      fontFamily: "Montserrat-Regular",
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                ],
-                              ))
-                        ],
-                      )),
-                  height: 250,
+                                  ],
+                                ))
+                          ],
+                        )),
+                    height: 250,
+                  ),
                 ));
           } : () {},
           icon: cluster.isMultiple ? await _getMarkerBitmap(125,text: cluster.count.toString()) : await _bitmapDescriptorFromSvgAsset(context, img),
@@ -409,6 +432,7 @@ class MapSampleState extends State<MapSample> {
       });
     });
     _manager = _initClusterManager();
+
     super.initState();
   }
 
@@ -441,6 +465,7 @@ class MapSampleState extends State<MapSample> {
                     myLocationEnabled: true,
                     markers: _markers,
                     myLocationButtonEnabled: false,
+                    compassEnabled: false,
                     mapType: MapType.terrain,
                     initialCameraPosition: _kGooglePlex,
                     onMapCreated: (GoogleMapController controller) {

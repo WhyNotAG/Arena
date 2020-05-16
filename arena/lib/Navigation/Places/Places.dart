@@ -253,7 +253,7 @@ class _PlacesState extends State<Places> {
                                       borderRadius: BorderRadius.circular(30),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: Colors.grey,
+                                          color:  Colors.grey,
                                           blurRadius: 2.0,
                                           // has the effect of softening the shadow
                                           spreadRadius: 0.0,
@@ -316,17 +316,7 @@ class _PlacesState extends State<Places> {
                                   decoration: BoxDecoration(
                                       color: status == 0 ? Color.fromARGB(255, 47, 128, 237) : Colors.white,
                                       borderRadius: BorderRadius.circular(30),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.grey,
-                                          blurRadius: 2.0, // has the effect of softening the shadow
-                                          spreadRadius: 0.0, // has the effect of extending the shadow
-                                          offset: Offset(
-                                            0.0, // horizontal, move right 10
-                                            0.0, // vertical, move down 10
-                                          ),
-                                        )
-                                      ]),
+                                      border: Border.all(color: Color.fromARGB(255, 47, 128, 237))),
                                   width: 120,
                                   height: 32,
                                   margin: EdgeInsets.only(left: 8, right: 8, top: 1, bottom: 1),
@@ -349,17 +339,7 @@ class _PlacesState extends State<Places> {
                                   decoration: BoxDecoration(
                                       color: status == 1 ? Color.fromARGB(255, 47, 128, 237) : Colors.white,
                                       borderRadius: BorderRadius.circular(30),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.grey,
-                                          blurRadius: 2.0, // has the effect of softening the shadow
-                                          spreadRadius: 0.0, // has the effect of extending the shadow
-                                          offset: Offset(
-                                            0.0, // horizontal, move right 10
-                                            0.0, // vertical, move down 10
-                                          ),
-                                        )
-                                      ]),
+                                      border: Border.all(color: Color.fromARGB(255, 47, 128, 237))),
                                   width: 120,
                                   height: 32,
                                   margin: EdgeInsets.only(left: 8, right: 8, top: 1, bottom: 1),
@@ -382,17 +362,7 @@ class _PlacesState extends State<Places> {
                                   decoration: BoxDecoration(
                                       color: status == 2 ? Color.fromARGB(255, 47, 128, 237) : Colors.white,
                                       borderRadius: BorderRadius.circular(30),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.grey,
-                                          blurRadius: 2.0, // has the effect of softening the shadow
-                                          spreadRadius: 0.0, // has the effect of extending the shadow
-                                          offset: Offset(
-                                            0.0, // horizontal, move right 10
-                                            0.0, // vertical, move down 10
-                                          ),
-                                        )
-                                      ]),
+                                      border: Border.all(color: Color.fromARGB(255, 47, 128, 237))),
                                   width: 120,
                                   height: 32,
                                   margin: EdgeInsets.only(left: 8, right: 8, top: 1, bottom: 1),
@@ -415,17 +385,7 @@ class _PlacesState extends State<Places> {
                                   decoration: BoxDecoration(
                                       color: status == 3 ? Color.fromARGB(255, 47, 128, 237) : Colors.white,
                                       borderRadius: BorderRadius.circular(30),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.grey,
-                                          blurRadius: 2.0, // has the effect of softening the shadow
-                                          spreadRadius: 0.0, // has the effect of extending the shadow
-                                          offset: Offset(
-                                            0.0, // horizontal, move right 10
-                                            0.0, // vertical, move down 10
-                                          ),
-                                        )
-                                      ]),
+                                      border: Border.all(color: Color.fromARGB(255, 47, 128, 237))),
                                   width: 120,
                                   height: 32,
                                   margin: EdgeInsets.only(left: 8, right: 8, top: 1, bottom: 1),
@@ -570,7 +530,8 @@ class TabBarFilter extends StatelessWidget {
   }
 }
 
-class PlaceWidget extends StatelessWidget {
+
+class PlaceWidget extends StatefulWidget {
   int id;
   bool isFavourite;
   String name;
@@ -586,78 +547,104 @@ class PlaceWidget extends StatelessWidget {
 
   PlaceWidget(this.id, this.isFavourite, this.name, this.rating, this.distance,
       this.countOfRate, this.photo, this.timeOfWork, this.address, this.info, this.customImages);
+  @override
+  _PlaceWidgetState createState() => _PlaceWidgetState(this.id, this.isFavourite, this.name, this.rating, this.distance,
+      this.countOfRate, this.photo, this.timeOfWork, this.address, this.info, this.customImages);
+}
+
+class _PlaceWidgetState extends State<PlaceWidget> {
+  int id;
+  bool isFavourite;
+  String name;
+  double rating;
+  int countOfRate;
+  String photo;
+  String timeOfWork;
+  String address;
+  double distance;
+  String info;
+  List<CustomImage> customImages;
+
+  _PlaceWidgetState(this.id, this.isFavourite, this.name, this.rating, this.distance,
+      this.countOfRate, this.photo, this.timeOfWork, this.address, this.info, this.customImages);
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      child: Container(
-        margin: EdgeInsets.only(top: 16, left: 16, right: 16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey,
-              blurRadius: 3.0, // has the effect of softening the shadow
-              spreadRadius: 1.0, // has the effect of extending the shadow
-              offset: Offset(
-                0.0, // horizontal, move right 10
-                0.0, // vertical, move down 10
-              ),
-            )
-          ],
-          borderRadius: BorderRadius.circular(3),
-          border:
-          Border.all(color: Color.fromARGB(255, 47, 128, 237), width: 1.5),
-        ),
         child: Container(
-          margin: EdgeInsets.only(top: 24),
-          child: Column(
-            children: <Widget>[
-              new Container(
-                child: Text(
-                  name,
-                  style: TextStyle(
-                      fontFamily: "Montserrat-Regular",
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold),
-                  textAlign: TextAlign.start,
+          margin: EdgeInsets.only(top: 16, left: 16, right: 16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey,
+                blurRadius: 3.0, // has the effect of softening the shadow
+                spreadRadius: 1.0, // has the effect of extending the shadow
+                offset: Offset(
+                  0.0, // horizontal, move right 10
+                  0.0, // vertical, move down 10
                 ),
-                width: double.infinity,
-                margin: EdgeInsets.only(left: 24.0, right: 16.0),
-              ),
-              Container(
-                child: new Row(
-                  children: <Widget>[
-                    Flexible(child: InfoPlace(rating, countOfRate)),
-                    FavouritesButton(isFavourite: isFavourite, id: id,),
-                  ],
-                ),
-              ),
-              WorkTimeWidget("Время работы: ", timeOfWork),
-              WorkTimeWidget("Адрес:", address),
-              PlaceButtons(id, distance),
-              Container(
-                margin: EdgeInsets.only(left: 25, right: 24, top: 26),
-                child: Text(
-                  info,
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 5,
-                  style:
-                  TextStyle(fontSize: 14, fontFamily: "Montserrat-Regular",),
-                ),
-              ),
-              PhotoPage(customImages),
+              )
             ],
+            borderRadius: BorderRadius.circular(3),
+            border:
+            Border.all(color: Color.fromARGB(255, 47, 128, 237), width: 1.5),
+          ),
+          child: Container(
+            margin: EdgeInsets.only(top: 24),
+            child: Column(
+              children: <Widget>[
+                new Container(
+                  child: Text(
+                    name,
+                    style: TextStyle(
+                        fontFamily: "Montserrat-Regular",
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.start,
+                  ),
+                  width: double.infinity,
+                  margin: EdgeInsets.only(left: 24.0, right: 16.0),
+                ),
+                Container(
+                  child: new Row(
+                    children: <Widget>[
+                      Flexible(child: InfoPlace(rating, countOfRate)),
+                      Container(margin: EdgeInsets.only(
+                          left: 0, bottom: 0.0, right: 24),
+                        child: FavouritesButton(
+                          isFavourite: isFavourite, id: id,),)
+                    ],
+                  ),
+                ),
+                WorkTimeWidget("Время работы: ", timeOfWork),
+                WorkTimeWidget("Адрес:", address),
+                PlaceButtons(id, distance),
+                Container(
+                  margin: EdgeInsets.only(left: 25, right: 24, top: 26),
+                  child: Text(
+                    info,
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 5,
+                    style:
+                    TextStyle(fontSize: 14, fontFamily: "Montserrat-Regular",),
+                  ),
+                ),
+                PhotoPage(customImages),
+              ],
+            ),
           ),
         ),
-      ),
-      onTap: () { Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => Pl.PlaceInfoWidget(id)),
-      );},
+        onTap: () async {
+          await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => Pl.PlaceInfoWidget(id)),
+          );
+        }
     );
   }
 }
+
 
 class InfoPlace extends StatelessWidget {
   double rating;
@@ -679,8 +666,8 @@ class InfoPlace extends StatelessWidget {
                 filledIconData: CustomIcons.fill_star,
                 defaultIconData: CustomIcons.star,
                 halfFilledIconData: CustomIcons.fill_star,
-                color: Colors.orangeAccent,
-                borderColor: Colors.orangeAccent,
+                color: Colors.amber,
+                borderColor: Colors.amber,
                 spacing: 0.0),
           ),
           Container(
@@ -790,11 +777,10 @@ class _FavouritesButtonState extends State<FavouritesButton> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.only(left: 0, bottom: 0.0, right: 24),
       child: IconButton(
         icon: Icon(
           _icon,
-          color: Colors.orangeAccent,
+          color: Colors.amber,
           size: 30,
         ),
         onPressed: () {

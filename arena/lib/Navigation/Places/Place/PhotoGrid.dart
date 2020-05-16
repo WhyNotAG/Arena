@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:photo_view/photo_view.dart';
 import 'package:transparent_image/transparent_image.dart';
 
 import 'Place.dart';
@@ -20,10 +21,39 @@ class PhotoGrid extends StatelessWidget {
           crossAxisSpacing: 2.0,
           mainAxisSpacing: 2.0,
           children: List.generate(place.customImages.length, (index){
-            return Container(
-              child: FadeInImage.memoryNetwork(placeholder: kTransparentImage, image: place.customImages[index].thumbImage,
-            fit: BoxFit.fill,),);
+            return InkWell(
+              child: Container(
+                child: FadeInImage.memoryNetwork(placeholder: kTransparentImage, image: place.customImages[index].fullImage,
+                  fit: BoxFit.fill,),),
+              onTap: (){
+                Navigator.push(context, MaterialPageRoute(builder: (_) {
+                  return  DetailScreen(place.customImages[index].fullImage);
+                }));
+              },
+            );
           })
+      ),
+    );
+  }
+}
+
+class DetailScreen extends StatelessWidget {
+  String img;
+
+  DetailScreen(this.img);
+
+  @override
+  Widget build(BuildContext context) {
+
+    return Scaffold(
+      body: GestureDetector(
+        onTap: () {
+          Navigator.pop(context);
+        },
+        child: Container(
+          child: PhotoView(imageProvider: FadeInImage.memoryNetwork(placeholder: kTransparentImage, image: img,).image,
+          backgroundDecoration: BoxDecoration(color: Colors.white.withAlpha(120)),)
+        )
       ),
     );
   }

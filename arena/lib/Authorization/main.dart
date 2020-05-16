@@ -35,7 +35,14 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   var token = await getStringValuesSF("accessToken");
 
-  if(token != null) { _defaultHome = MenuScreen(0); }
+  if(token != null) {
+    _defaultHome = MenuScreen(0);
+    var token = await getStringValuesSF("accessToken");
+    int expIn = await getIntValuesSF("expiredIn");
+    if( DateTime.fromMillisecondsSinceEpoch(expIn.toInt() * 1000).isBefore(DateTime.now()))  {
+      token = await refresh();
+    }
+  }
   runApp(new MaterialApp(
       theme: ThemeData(
           scaffoldBackgroundColor: Colors.white,
@@ -509,14 +516,11 @@ class EnterButton extends StatelessWidget {
 
           a = await httpGet(data._passController.text, data._myController.text);
           var response = await getWithToken("${server}account/");
-          var decode = jsonDecode(response.body);
-          print(response.body);
-          print(response.statusCode);
-          addStringToSF("name", decode["firstName"]);
-          addIntToSF("id", decode["id"]);
+          Map<String,dynamic> responseJson = json.decode(utf8.decode(response.bodyBytes));
+          addStringToSF("name", responseJson["firstName"]);
+          addIntToSF("id", responseJson["id"]);
+          addStringToSF("imageUrl", responseJson["imageUrl"]);
           var fbToken = await getStringValuesSF("fbToken");
-          print(decode["imageUrl"]);
-          addStringToSF("imageUrl", decode["imageUrl"]);
           if(a == 200) {
             response = await postWithToken("${server}account/device/token", {"token": fbToken});
             Navigator.push(
@@ -542,7 +546,7 @@ class WithoutRegButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return new Container(
         width: double.infinity,
-        margin: EdgeInsets.only(top: 100.0, left: 59, right: 13.0),
+        margin: EdgeInsets.only(left: 59, right: 13.0),
         child: Row(
           children: <Widget>[
             new FlatButton(onPressed: (){Navigator.push(

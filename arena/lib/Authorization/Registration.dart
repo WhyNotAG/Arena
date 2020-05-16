@@ -428,12 +428,10 @@ class _State extends State<RegistrationScreen> {
                               }
 
                               var responseRes = await getWithToken("${server}account/");
-                              print(responseRes.statusCode);
-                              print(response.body);
-                              var decode = jsonDecode(responseRes.body);
-                              addStringToSF("name", decode["firstName"]);
-                              addIntToSF("id", decode["id"]);
-                              addStringToSF("imageUrl", decode["imageUrl"]);
+                              Map<String,dynamic> responseJson = json.decode(utf8.decode(responseRes.bodyBytes));
+                              addStringToSF("name", responseJson["firstName"]);
+                              addIntToSF("id", responseJson["id"]);
+                              addStringToSF("imageUrl", responseJson["imageUrl"]);
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(builder: (context) => MenuScreen(0)),

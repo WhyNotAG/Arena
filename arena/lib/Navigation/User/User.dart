@@ -6,6 +6,7 @@ import 'package:arena/Navigation/User/Settings.dart';
 import 'package:arena/Other/CustomSharedPreferences.dart';
 import 'package:arena/Other/Request.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:transparent_image/transparent_image.dart';
 
@@ -182,54 +183,57 @@ class _UserState extends State<User> {
   }
 }
 
-class Button extends StatelessWidget {
+
+class Button extends StatefulWidget {
   Icon icon;
   String text;
 
   Button(this.icon, this.text);
+  @override
+  _ButtonState createState() => _ButtonState(icon, text);
+}
+
+class _ButtonState extends State<Button> {
+  Icon icon;
+  String text;
+  bool isTap;
+
+  _ButtonState(this.icon, this.text);
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    isTap = false;
+  }
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       child: Container(
+        color: isTap ? Color.fromARGB(255, 47, 128, 237) : Colors.white,
           width: double.infinity,
+          height: 52,
           alignment: Alignment.centerLeft,
           margin: EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0),
-          child: FlatButton.icon(
-            padding: EdgeInsets.all(0.0),
-              onPressed: () {
-                if (text == " Выход")
-                  Navigator.of(context).popUntil((route) => route.isFirst);
-                if(text == " Напишите нам")
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => FeedBack()),
-                  );
-                if(text == " Настройки")
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => SettingsWidget()),
-                  );
-                if(text == " Редактировать профиль")
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => ProfileWidget()),
-                  );
-                if(text == " Забронировано")
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => BookStory()),
-                  );
-              },
-              icon: icon,
-              label: Text(text,
+          child: Row(
+            children: [
+              Icon(icon.icon, color: isTap ? Colors.white : Color.fromARGB(255, 47, 128, 237),),
+          Text(text,
                   style: TextStyle(
-                      color: Color.fromARGB(255, 79, 79, 79),
+                      color: isTap ? Colors.white : Color.fromARGB(255, 79, 79, 79),
                       fontSize: 14.0,
-                      fontFamily: 'Montserrat-Bold')))),
-      onTap: () {
-        if (text == " Выход")
-          Navigator.of(context).popUntil((route) => route.isFirst);
+                      fontFamily: 'Montserrat-Bold'))
+            ],
+          )),
+      onTap: () async{
+        setState(() {
+          isTap = true;
+        });
+      },
+      onTapCancel: () async{
+        setState(() {
+          isTap = false;
+        });
         if(text == " Напишите нам")
           Navigator.push(
             context,
@@ -245,12 +249,29 @@ class Button extends StatelessWidget {
             context,
             MaterialPageRoute(builder: (context) => ProfileWidget()),
           );
-        if(text == " Забронировано")
-          Navigator.push(
+        if(text == " Забронировано") {
+          await Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => BookStory()),
           );
+        }
+        if(text == " Выход") {
+          SharedPreferences preferences = await SharedPreferences.getInstance();
+          preferences.clear();
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => ArenaApp()),
+          );
+        }
       },
     );
   }
 }
+
+
+//icon: Icon(icon.icon, color: isTap ? Colors.white : Color.fromARGB(255, 47, 128, 237),),
+//              label: Text(text,
+//                  style: TextStyle(
+//                      color: isTap ? Colors.white : Color.fromARGB(255, 79, 79, 79),
+//                      fontSize: 14.0,
+//                      fontFamily: 'Montserrat-Bold')))

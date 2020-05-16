@@ -221,7 +221,18 @@ class _BookWidgetState extends State<BookWidget> {
     }
     return Container(
       decoration: BoxDecoration(
-          border: Border.all(color: Color.fromARGB(255,47, 128, 237))
+        color: Colors.white,
+          border: Border.all(color: Color.fromARGB(255,47, 128, 237)),
+        boxShadow: [
+        BoxShadow(
+        color: Colors.grey,
+        blurRadius: 2.0, // has the effect of softening the shadow
+        spreadRadius: 0.0, // has the effect of extending the shadow
+        offset: Offset(
+          0.0, // horizontal, move right 10
+          0.0, // vertical, move down 10
+        ),
+      )]
       ),
       margin: EdgeInsets.only(left: 16, right: 16, top: 16,),
       padding: EdgeInsets.only(left: 16, bottom: 16),

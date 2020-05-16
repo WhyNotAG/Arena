@@ -1,6 +1,8 @@
 import 'dart:convert';
 
 import 'package:arena/Icons/custom_icons_icons.dart';
+import 'package:arena/Menu.dart';
+import 'package:arena/Navigation/Favourite.dart';
 import 'package:arena/Navigation/Places/Place/Booking.dart';
 import 'package:arena/Navigation/Places/Place/Comment.dart';
 import 'package:arena/Navigation/Places/Place/PhotoGrid.dart';
@@ -230,25 +232,26 @@ class _PlaceInfoWidgetState extends State<PlaceInfoWidget> {
                             bottom: false,
                             sliver: SliverAppBar(
                                 actions: <Widget>[
-                                  IconButton(
-                                    icon: Icon(
-                                      snapshot.data.isFavourite ? CustomIcons.fill_star : CustomIcons.star,
-                                      size: 28,
-                                      color: Colors.amber,
-                                    ),
-                                    padding: EdgeInsets.only(right: 21.0),
+                                  Container(
+                                    margin: EdgeInsets.only(left: 120,),
+                                   child: FavouritesButton(isFavourite: snapshot.data.isFavourite, id: snapshot.data.id),
                                   )
                                 ],
-                                leading: IconButton(
-                                  icon: Icon(
-                                    CustomIcons.arrowBack,
-                                    size: 16,
-                                    color: Colors.white,
-                                  ),
-                                  onPressed: () {
-                                    Navigator.pop(context);
-                                  },
-                                ),
+                                leading:
+                                 IconButton(
+                                    color: Colors.grey,
+                                     icon: Icon(
+                                       CustomIcons.arrowBack,
+                                       size: 14,
+                                       color: Colors.white,
+                                     ),
+                                     onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(builder: (context) => MenuScreen(1)),
+                                      );
+                                     },
+                                 ),
                                 expandedHeight: 264.0,
                                 floating: false,
                                 pinned: true,

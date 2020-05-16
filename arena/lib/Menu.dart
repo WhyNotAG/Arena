@@ -146,16 +146,16 @@ Item _itemForMessage(Map<String, dynamic> message) {
 class MenuScreen extends StatefulWidget {
   int _currentIndex;
 
-  MenuScreen(this._currentIndex);
+  MenuScreen([this._currentIndex]);
 
   @override
   _MenuScreenState createState() => _MenuScreenState(_currentIndex);
 }
 
 class _MenuScreenState extends State<MenuScreen> {
-  int _currentIndex;
+  int _currentIndex = 0;
 
-  _MenuScreenState(this._currentIndex);
+  _MenuScreenState([this._currentIndex]);
 
   final FirebaseMessaging _fcm = FirebaseMessaging();
   StreamSubscription iosSubscription;
@@ -204,14 +204,6 @@ class _MenuScreenState extends State<MenuScreen> {
   void initState() {
     super.initState();
     update(String fbToken) async {
-      var token = await getStringValuesSF("accessToken");
-      var id = await getIntValuesSF("id");
-      int expIn = await getIntValuesSF("expiredIn");
-
-      if( DateTime.fromMillisecondsSinceEpoch(expIn * 1000).isBefore(DateTime.now()))  {
-        token = await refresh();
-      }
-
       var fbToken = await getStringValuesSF("fbToken");
      if(fbToken == null) {
        fbToken = _fcm.getToken();

@@ -84,6 +84,13 @@ class _ProfileWidgetState extends State<ProfileWidget> {
         }
       },
       child: Scaffold(
+          appBar: AppBar(title:Text("Профиль", textAlign: TextAlign.center,
+            style: TextStyle(fontFamily: "Montserrat-Bold",
+                fontSize: 24, color: Color.fromARGB(
+                    255, 47, 128, 237)),),
+              iconTheme: IconThemeData(
+                color: Color.fromARGB(255, 130, 130, 130), //change your color here
+              )),
           body: SingleChildScrollView(
             child: SafeArea(
               child: Container(
@@ -191,9 +198,9 @@ class _ProfileWidgetState extends State<ProfileWidget> {
 
                           if(_name != null) {
                             var response = await postWithToken('${server}account/', {"id": id, "firstName": _name});
-                            var decode = jsonDecode(response.body);
-                            addStringToSF("name", decode["firstName"]);
-                            addStringToSF("imageUrl", decode["imageUrl"]);
+                            Map<String,dynamic> responseJson = json.decode(utf8.decode(response.bodyBytes));
+                            addStringToSF("name", responseJson["firstName"]);
+                            addStringToSF("imageUrl", responseJson["imageUrl"]);
                           }
                           if(_image != null) {
                             var stream = new http.ByteStream(DelegatingStream.typed(_image.openRead()));
@@ -205,9 +212,9 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                             request.headers["Content-type"]= "application/json";
                             var response = await request.send();
                             var response2 = await getWithToken("${server}account/");
-                            var decode = jsonDecode(response2.body);
-                            addStringToSF("name", decode["firstName"]);
-                            addStringToSF("imageUrl", decode["imageUrl"]);
+                            Map<String,dynamic> responseJson = json.decode(utf8.decode(response2.bodyBytes));
+                            addStringToSF("name", responseJson["firstName"]);
+                            addStringToSF("imageUrl", responseJson["imageUrl"]);
                           }
 
                           Navigator.pushNamed(context, "/user");

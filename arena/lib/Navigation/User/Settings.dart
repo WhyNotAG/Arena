@@ -34,6 +34,14 @@ class _SettingsState extends State<SettingsWidget> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(title:Text("Настройки", textAlign: TextAlign.center,
+        style: TextStyle(fontFamily: "Montserrat-Bold",
+            fontSize: 24, color: Color.fromARGB(
+                255, 47, 128, 237)),),
+        iconTheme: IconThemeData(
+          color: Color.fromARGB(255, 130, 130, 130), //change your color here
+        ),
+      ),
       body: FutureBuilder(
         future: future,
         builder: (context, snapshot) {
@@ -50,14 +58,8 @@ class _SettingsState extends State<SettingsWidget> {
                     children: <Widget>[
                       Container(
                         width: double.infinity,
-                        child: Text("Настройки", textAlign: TextAlign.center,
-                          style: TextStyle(fontFamily: "Montserrat-Bold",
-                              fontSize: 24, color: Color.fromARGB(
-                                  255, 47, 128, 237)),),),
-                      Container(
-                        width: double.infinity,
                         margin: EdgeInsets.only(top: 30),
-                        child: Text("Уведомления", textAlign: TextAlign.left,
+                        child: Text("Напомнить о брони", textAlign: TextAlign.left,
                             style: TextStyle(fontFamily: "Montserrat-Regular",
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
@@ -77,6 +79,7 @@ class _SettingsState extends State<SettingsWidget> {
                           child:
                           DropdownButtonHideUnderline(
                             child: DropdownButton(
+                                isExpanded: true,
                                 focusColor:
                                 Colors.white,
                                 iconSize: 24,
@@ -109,6 +112,7 @@ class _SettingsState extends State<SettingsWidget> {
                                         addIntToSF("time", 24);
                                     }
                                   });
+                                  return null;
                                 },
                                 items: tester.map<DropdownMenuItem<String>>(
                                         (String valuer) {
@@ -116,7 +120,8 @@ class _SettingsState extends State<SettingsWidget> {
                                           String>(
                                           value: valuer,
                                           child: Text(valuer));
-                                    }).toList()),
+                                    }).toList(),
+                            ),
                           ),
                         ),
                       ),
