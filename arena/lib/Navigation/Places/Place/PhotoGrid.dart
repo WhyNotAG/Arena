@@ -46,14 +46,29 @@ class DetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      body: GestureDetector(
-        onTap: () {
-          Navigator.pop(context);
-        },
-        child: Container(
-          child: PhotoView(imageProvider: FadeInImage.memoryNetwork(placeholder: kTransparentImage, image: img,).image,
-          backgroundDecoration: BoxDecoration(color: Colors.white.withAlpha(120)),)
-        )
+      body: Stack(
+          children: [
+        Container(
+        child: PhotoView(imageProvider: FadeInImage.memoryNetwork(placeholder: kTransparentImage, image: img,).image,
+          backgroundDecoration: BoxDecoration(color: Colors.white.withAlpha(120)), minScale: PhotoViewComputedScale.contained,
+          maxScale: PhotoViewComputedScale.covered * 1.1,)),
+            InkWell(
+              child: Container(
+                margin: EdgeInsets.only(left: 16, top: 60),
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(40)
+                ),
+                width: 40,
+                height: 40,
+                child:  Tab(
+                    icon: new Image.asset("assets/images/arrowWithBack.png")
+                ),
+              ),
+              onTap: (){
+                Navigator.pop(context);
+              },
+            ),
+          ],
       ),
     );
   }

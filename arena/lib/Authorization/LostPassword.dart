@@ -16,6 +16,9 @@ class _LostPasswordState extends State<LostPassword> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar( iconTheme: IconThemeData(
+        color: Color.fromARGB(255, 130, 130, 130), //change your color here
+      ),),
         body: SingleChildScrollView(
             child: SafeArea(
                 child: Container(
@@ -25,7 +28,7 @@ class _LostPasswordState extends State<LostPassword> {
                         margin: EdgeInsets.only(top: 30),
                         width: double.infinity,
                         child: Text(
-                          "Мы вышлем вам новый пароль на указанный при регистрайии Email/Телефон",
+                          "Мы вышлем Вам новый пароль на указанный при регистрации Email/Телефон",
                           textAlign: TextAlign.left,
                           style: TextStyle(
                               fontFamily: "Montserrat-Bold",

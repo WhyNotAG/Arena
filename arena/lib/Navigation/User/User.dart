@@ -242,6 +242,12 @@ class _ButtonState extends State<Button> {
         });
       },
 
+      onLongPressEnd:(t) async {
+        setState(() {
+          isTap = false;
+        });
+      },
+
       onTapDown: (top) async {
         setState(() {
           isTap = true;

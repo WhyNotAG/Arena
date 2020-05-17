@@ -233,14 +233,15 @@ class _CommentListState extends State<CommentList> {
                 child: FlatButton(child: Text("Написать отзыв",
                   style: TextStyle(fontFamily: "Montserrat-Bold", fontSize: 12,
                       color: Colors.white, fontWeight: FontWeight.bold),),
-                  onPressed: () {
-                    setState(() {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => FeedBackPlace(id)),
-                      );
-                      content = fetchContent(id);
+                  onPressed: () async{
+                   Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => FeedBackPlace(id)),
+                    ).then((_) {
+                       setState(() {
+                         content = fetchContent(id);
+                       });
                     });
                   },),) : Container(),
               SizedBox(height: 30,)

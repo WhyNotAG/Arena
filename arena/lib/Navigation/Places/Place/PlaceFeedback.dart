@@ -53,19 +53,21 @@ class _FeedBackPlaceState extends State<FeedBackPlace> {
         }
       },
       child: Scaffold(
+        appBar: AppBar(title:Text("Написать отзыв", textAlign: TextAlign.center,
+          style: TextStyle(fontFamily: "Montserrat-Bold",
+              fontSize: 24, color: Color.fromARGB(
+                  255, 47, 128, 237)),),
+          iconTheme: IconThemeData(
+            color: Color.fromARGB(255, 130, 130, 130), //change your color here
+          ),
+        ),
         body: SafeArea(
           child: Container(
             alignment: Alignment.topLeft,
-            margin: EdgeInsets.only(left: 16, top: 35, right: 16),
+            margin: EdgeInsets.only(left: 16, top: 16, right: 16),
             child: Column(
               children: <Widget>[
                 Container(
-                  width: double.infinity,
-                  child: Text("Написать отзыв", textAlign: TextAlign.left, style: TextStyle(fontFamily: "Montserrat-Regular",
-                      fontWeight: FontWeight.bold, fontSize: 16, color: Color.fromARGB(255, 79, 79, 79)),),
-                ),
-                Container(
-                  margin: EdgeInsets.only(top: 16),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[

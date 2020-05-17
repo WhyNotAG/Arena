@@ -18,6 +18,9 @@ import 'Places/Place/Booking.dart';
 import 'Places/Place/Place.dart' as Pl;
 
 
+Future<List<PlaceWidget>> placeWidgetFuture;
+List<PlaceWidget> placeWidgets = List();
+List<PlaceWidget> filteredList = List();
 
 List<PlaceWidget> parsePlace(String responseBody) {
   final parsed = json.decode(responseBody).cast<Map<String, dynamic>>();
@@ -90,10 +93,6 @@ class Favourites extends StatefulWidget {
 
 
 class _FavouritesState extends State<Favourites> {
-  Future<List<PlaceWidget>> placeWidgetFuture;
-  List<PlaceWidget> placeWidgets = List();
-  List<PlaceWidget> filteredList = List();
-
   @override
   Widget build(BuildContext context) {
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
@@ -117,7 +116,7 @@ class _FavouritesState extends State<Favourites> {
               }
             },
             child: Scaffold(
-                resizeToAvoidBottomInset: false,
+
                 backgroundColor: Colors.white,
                 appBar: PreferredSize(
                   preferredSize: Size.fromHeight(168.0),
@@ -335,10 +334,18 @@ class PlaceWidget extends StatelessWidget {
           ),
         ),
       ),
-      onTap: () { Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => Pl.PlaceInfoWidget(id)),
-      );},
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => Pl.PlaceInfoWidget(id)),
+        ).then((_) {
+          placeWidgetFuture = fetchPlace();
+          placeWidgetFuture.then((value) {
+            placeWidgets = value;
+            filteredList = value;
+          });
+        });
+      },
     );
   }
 }

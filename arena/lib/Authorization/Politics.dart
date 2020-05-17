@@ -21,7 +21,7 @@ class _PoliticsState extends State<Politics> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: <Widget>[
-                    Text("Нажимая на кнопку 'Войти' вы принимаете нашу", style: TextStyle(
+                    Text("Нажимая на кнопку 'Войти' Вы принимаете нашу", style: TextStyle(
                       fontSize: 13.0,
                       fontFamily: "Montserrat-Regular",)),
                     Container(
@@ -32,7 +32,7 @@ class _PoliticsState extends State<Politics> {
                           InkWell(
                             onTap: (){
                               Navigator.push(
-                                context, MaterialPageRoute(builder: (context) => WebPage(url: "http://arenasport.me/polsogl.pdf",)),);
+                                context, MaterialPageRoute(builder: (context) => WebPage(url: "https://arenasport.me/polconf.pdf",)),);
                             },
                             child:  Container(
                               margin: EdgeInsets.only(left: 4),
@@ -56,7 +56,7 @@ class _PoliticsState extends State<Politics> {
                     InkWell(
                       onTap: (){
                         Navigator.push(
-                          context, MaterialPageRoute(builder: (context) => WebPage(url: "http://arenasport.me/polsogl.pdf",)),);
+                          context, MaterialPageRoute(builder: (context) => WebPage(url: "https://arenasport.me/polsogl.pdf",)),);
                       },
                       child:  Container(
                         margin: EdgeInsets.only(left: 4),
@@ -64,7 +64,7 @@ class _PoliticsState extends State<Politics> {
                         alignment: Alignment.topLeft,
                         width: double.infinity,
                         child: new Text(
-                            "политику соглашения",
+                            "пользовательское соглашение",
                             textAlign: TextAlign.left,
                             style: TextStyle(
                                 decoration: TextDecoration.underline, fontSize: 12.0,

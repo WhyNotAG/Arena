@@ -20,6 +20,11 @@ import 'package:geolocator/geolocator.dart' as geo;
 import '../Map.dart';
 import 'Place/Place.dart' as Pl;
 
+Future<List<PlaceWidget>> placeWidgetFuture;
+List<PlaceWidget> placeWidgets = List();
+List<PlaceWidget> filteredList = List();
+String sport;
+int status;
 
 List<PlaceWidget> parsePlace(String responseBody) {
   final parsed = json.decode(responseBody).cast<Map<String, dynamic>>();
@@ -30,24 +35,15 @@ List<PlaceWidget> parsePlace(String responseBody) {
 Future<List<PlaceWidget>> fetchPlace() async {
   List<Place> places = new List<Place>();
   List<PlaceWidget> placeWidgets = new List<PlaceWidget>();
-  var response;
-
-  geo.Position position = null;
-  geo.GeolocationStatus geolocationStatus = await geo.Geolocator().checkGeolocationPermissionStatus();
-  if(geolocationStatus != geo.GeolocationStatus.denied && geolocationStatus != geo.GeolocationStatus.disabled){
-    position = await geo.Geolocator().getCurrentPosition(desiredAccuracy: geo.LocationAccuracy.medium);
-  }
-
+  var response = await http.get('${server}place/',
+      headers: {"Content-type": "application/json"});
+  geo.Position position = await geo.Geolocator().getCurrentPosition(desiredAccuracy: geo.LocationAccuracy.medium);
   var token = await getStringValuesSF("accessToken");
   if (token != null) {
     response = await getWithToken("${server}place/");
-  } else{
-    response = await http.get('${server}place/',
-        headers: {"Content-type": "application/json"});
   }
 
   List<dynamic> responseJson = json.decode(utf8.decode(response.bodyBytes));
-
 
   if (response.statusCode == 200) {
     List list = json.decode(response.body) as List;
@@ -60,7 +56,7 @@ Future<List<PlaceWidget>> fetchPlace() async {
       if(count == null) {
         count = 0;
       }
-      double distanceInMeters = position == null ? 0.0 : await geo.Geolocator().distanceBetween(position.latitude, position.longitude, places[i].latitude, places[i].longitude);
+      double distanceInMeters = await geo.Geolocator().distanceBetween(position.latitude, position.longitude, places[i].latitude, places[i].longitude);
       placeWidgets.add(PlaceWidget(
           places[i].id,
           places[i].isFavourite,
@@ -74,7 +70,7 @@ Future<List<PlaceWidget>> fetchPlace() async {
           places[i].info,
           places[i].customImages,
           places[i].latitude,
-          places[i].longitude),);
+          places[i].longitude));
     }
 
     return placeWidgets;
@@ -166,12 +162,6 @@ class Places extends StatefulWidget {
 }
 
 class _PlacesState extends State<Places> {
-  Future<List<PlaceWidget>> placeWidgetFuture;
-  List<PlaceWidget> placeWidgets = List();
-  List<PlaceWidget> filteredList = List();
-  int status;
-  String sport;
-
   @override
   Widget build(BuildContext context) {
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
@@ -195,7 +185,6 @@ class _PlacesState extends State<Places> {
               }
             },
             child: Scaffold(
-                resizeToAvoidBottomInset: false,
                 backgroundColor: Colors.white,
                 appBar: PreferredSize(
                   preferredSize: Size.fromHeight(168.0),
@@ -341,7 +330,7 @@ class _PlacesState extends State<Places> {
                                           filteredList = List<PlaceWidget>();
                                           status = 0;
                                           sport = "";
-                                          initState();
+                                          findAll();
                                         });
                                       }),
                                 ),
@@ -467,6 +456,8 @@ class _PlacesState extends State<Places> {
 
   @override
   void initState() {
+    sport = null;
+    status = null;
     placeWidgetFuture = fetchPlace().then((placesFromServer) {
       setState(() {
         placeWidgets = placesFromServer;
@@ -475,6 +466,19 @@ class _PlacesState extends State<Places> {
       return placesFromServer;
     });
   }
+
+  findAll(){
+    sport = "";
+    status = 0;
+    placeWidgetFuture = fetchPlace().then((placesFromServer) {
+      setState(() {
+        placeWidgets = placesFromServer;
+        filteredList = placesFromServer;
+      });
+      return placesFromServer;
+    });
+  }
+
 }
 
 class TabBarButton extends StatelessWidget {
@@ -656,10 +660,18 @@ class _PlaceWidgetState extends State<PlaceWidget> {
           ),
         ),
         onTap: () async {
-          await Navigator.push(
+          Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => Pl.PlaceInfoWidget(id)),
-          );
+          ).then((_) {
+               if(sport == null || sport == "") {
+                 placeWidgetFuture = fetchPlace();
+               } else { placeWidgetFuture = fetchPlaceBySport(sport); }
+               placeWidgetFuture.then((value) {
+                 placeWidgets = value;
+                 filteredList = value;
+             });
+          });
         }
     );
   }

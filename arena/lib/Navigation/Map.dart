@@ -469,7 +469,6 @@ class MapSampleState extends State<MapSample> {
     return new WillPopScope(
         onWillPop: () async => false,
         child: Scaffold(
-            resizeToAvoidBottomInset: false,
             backgroundColor: Colors.white,
             body: Container(
               color: Colors.white,

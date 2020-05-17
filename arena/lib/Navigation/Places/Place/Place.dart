@@ -201,7 +201,6 @@ class PlaceInfoWidget extends StatefulWidget {
 class _PlaceInfoWidgetState extends State<PlaceInfoWidget> {
   Future place;
   int id;
-
   _PlaceInfoWidgetState(this.id);
 
   @override
@@ -212,196 +211,199 @@ class _PlaceInfoWidgetState extends State<PlaceInfoWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        backgroundColor: Colors.white,
-        body: FutureBuilder<Place>(
-          future: place,
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              return DefaultTabController(
-                length: 3,
-                child: NestedScrollView(
-                    headerSliverBuilder:
-                        (BuildContext context, bool innerBoxIsScrolled) {
-                      return <Widget>[
-                        SliverOverlapAbsorber(
-                          handle:
-                          NestedScrollView.sliverOverlapAbsorberHandleFor(
-                              context),
-                          child: SliverSafeArea(
-                            top: false,
-                            bottom: false,
-                            sliver: SliverAppBar(
-                                actions: <Widget>[
-                                  Container(
-                                    margin: EdgeInsets.only(left: 120,),
-                                   child: FavouritesButton(isFavourite: snapshot.data.isFavourite, id: snapshot.data.id),
-                                  )
-                                ],
-                                leading:
-                                InkWell(
-                                  child: Container(
-                                    margin: EdgeInsets.only(left: 8),
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(40)
-                                    ),
-                                    width: 10,
-                                    child:  Tab(
-                                        icon: new Image.asset("assets/images/arrowWithBack.png")
-                                    ),
-                                  ),
-                                  onTap: (){
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(builder: (context) => MenuScreen(1)),
-                                    );
-                                  },
-                                ),
-                                expandedHeight: 264.0,
-                                floating: false,
-                                pinned: true,
-                                flexibleSpace: FlexibleSpaceBar(
-                                  centerTitle: true,
-                                  background: Container(
-                                      width: double.infinity,
-                                      height: double.infinity,
-                                      child: Center(
-                                          child: Stack(
-                                            children: <Widget>[
-                                              Stack(
-                                                children: <Widget>[
-                                                  Center(
-                                                      child: Container(
-                                                        child: SizedBox(
-                                                            child:
-                                                            CircularProgressIndicator(),
-                                                            width: 30,
-                                                            height: 30),
-                                                      )),
-                                                  new Container(
-                                                      width: double.infinity,
-                                                      height: double.infinity,
-                                                      child:
-                                                      FadeInImage.memoryNetwork(
-                                                          placeholder:
-                                                          kTransparentImage,
-                                                          image: snapshot
-                                                              .data
-                                                              .customImages[0]
-                                                              .fullImage,
-                                                          fit: BoxFit.fill)),
-                                                ],
-                                              ),
-                                              Container(
-                                                  width: double.infinity,
-                                                  margin: EdgeInsets.only(
-                                                      top: 160),
-                                                  height: 100,
-                                                  color: Colors.black.withAlpha(
-                                                      50),
-                                                  padding: EdgeInsets.only(
-                                                      top: 15),
-                                                  child: Text(
-                                                    snapshot.data.name,
-                                                    textAlign: TextAlign.center,
-                                                    maxLines: 2,
-                                                    style: TextStyle(
-                                                        fontSize: 16,
-                                                        color: Colors.white),
-                                                  )),
-                                              Container(
-                                                width: double.infinity,
-                                                alignment: Alignment.center,
-                                                margin: EdgeInsets.only(
-                                                    top: 130),
-                                                height: 48,
-                                                decoration: BoxDecoration(
-                                                  image: DecorationImage(
-                                                    image: AssetImage(
-                                                        setPlaceIcon(
-                                                            snapshot.data)),
-                                                    fit: BoxFit.fitHeight,
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ))),
-                                ),
-                                bottom: PreferredSize(
-                                  child: Container(
-                                    height: 56,
-                                    width: double.infinity,
+    return WillPopScope(
+      onWillPop: () async {
+        Navigator.pop(context);
+        return true;
+      },
+      child: Scaffold(
+          backgroundColor: Colors.white,
+          body: FutureBuilder<Place>(
+            future: place,
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                return DefaultTabController(
+                  length: 3,
+                  child: NestedScrollView(
+                      headerSliverBuilder:
+                          (BuildContext context, bool innerBoxIsScrolled) {
+                        return <Widget>[
+                          SliverOverlapAbsorber(
+                            handle:
+                            NestedScrollView.sliverOverlapAbsorberHandleFor(
+                                context),
+                            child: SliverSafeArea(
+                              top: false,
+                              bottom: false,
+                              sliver: SliverAppBar(
+                                  actions: <Widget>[
+                                    Container(
+                                      margin: EdgeInsets.only(left: 120,),
+                                      child: FavouritesButton(isFavourite: snapshot.data.isFavourite, id: snapshot.data.id),
+                                    )
+                                  ],
+                                  leading:
+                                  InkWell(
                                     child: Container(
+                                      margin: EdgeInsets.only(left: 8),
                                       decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: Color.fromARGB(
-                                                  70, 130, 130, 130),
-                                              blurRadius: 10.0,
-                                              // has the effect of softening the shadow
-                                              spreadRadius: 0.0,
-                                              // has the effect of extending the shadow
-                                              offset: Offset(
-                                                0.0,
-                                                // horizontal, move right 10
-                                                10.0, // vertical, move down 10
-                                              ),
-                                            )
-                                          ]),
-                                      child: TabBar(
-                                        labelColor:
-                                        Color.fromARGB(255, 47, 128, 237),
-                                        isScrollable: false,
-                                        indicatorPadding:
-                                        EdgeInsets.only(bottom: 12),
-                                        unselectedLabelColor:
-                                        Color.fromARGB(255, 130, 130, 130),
-                                        indicatorWeight: 1,
-                                        labelStyle: TextStyle(
-                                          fontFamily: "Montserrat-Regular",
-                                          fontSize: 14,
-                                        ),
-                                        tabs: [
-                                          Tab(
-                                            text: "Информация",
-                                          ),
-                                          Tab(
-                                            text: "Фотографии",
-                                          ),
-                                          Tab(
-                                            text: "Отзывы",
-                                          )
-                                        ],
+                                          borderRadius: BorderRadius.circular(40)
+                                      ),
+                                      width: 10,
+                                      child:  Tab(
+                                          icon: new Image.asset("assets/images/arrowWithBack.png")
                                       ),
                                     ),
+                                    onTap: (){
+                                      Navigator.pop(context);
+                                    },
                                   ),
-                                )),
+                                  expandedHeight: 264.0,
+                                  floating: false,
+                                  pinned: true,
+                                  flexibleSpace: FlexibleSpaceBar(
+                                    centerTitle: true,
+                                    background: Container(
+                                        width: double.infinity,
+                                        height: double.infinity,
+                                        child: Center(
+                                            child: Stack(
+                                              children: <Widget>[
+                                                Stack(
+                                                  children: <Widget>[
+                                                    Center(
+                                                        child: Container(
+                                                          child: SizedBox(
+                                                              child:
+                                                              CircularProgressIndicator(),
+                                                              width: 30,
+                                                              height: 30),
+                                                        )),
+                                                    new Container(
+                                                        width: double.infinity,
+                                                        height: double.infinity,
+                                                        child:
+                                                        FadeInImage.memoryNetwork(
+                                                            placeholder:
+                                                            kTransparentImage,
+                                                            image: snapshot
+                                                                .data
+                                                                .customImages[0]
+                                                                .fullImage,
+                                                            fit: BoxFit.fill)),
+                                                  ],
+                                                ),
+                                                Container(
+                                                    width: double.infinity,
+                                                    margin: EdgeInsets.only(
+                                                        top: 160),
+                                                    height: 100,
+                                                    color: Colors.black.withAlpha(
+                                                        50),
+                                                    padding: EdgeInsets.only(
+                                                        top: 15),
+                                                    child: Text(
+                                                      snapshot.data.name,
+                                                      textAlign: TextAlign.center,
+                                                      maxLines: 2,
+                                                      style: TextStyle(
+                                                          fontSize: 16,
+                                                          color: Colors.white),
+                                                    )),
+                                                Container(
+                                                  width: double.infinity,
+                                                  alignment: Alignment.center,
+                                                  margin: EdgeInsets.only(
+                                                      top: 130),
+                                                  height: 48,
+                                                  decoration: BoxDecoration(
+                                                    image: DecorationImage(
+                                                      image: AssetImage(
+                                                          setPlaceIcon(
+                                                              snapshot.data)),
+                                                      fit: BoxFit.fitHeight,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ))),
+                                  ),
+                                  bottom: PreferredSize(
+                                    child: Container(
+                                      height: 56,
+                                      width: double.infinity,
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Color.fromARGB(
+                                                    70, 130, 130, 130),
+                                                blurRadius: 10.0,
+                                                // has the effect of softening the shadow
+                                                spreadRadius: 0.0,
+                                                // has the effect of extending the shadow
+                                                offset: Offset(
+                                                  0.0,
+                                                  // horizontal, move right 10
+                                                  10.0, // vertical, move down 10
+                                                ),
+                                              )
+                                            ]),
+                                        child: TabBar(
+                                          labelColor:
+                                          Color.fromARGB(255, 47, 128, 237),
+                                          isScrollable: false,
+                                          indicatorPadding:
+                                          EdgeInsets.only(bottom: 12),
+                                          unselectedLabelColor:
+                                          Color.fromARGB(255, 130, 130, 130),
+                                          indicatorWeight: 1,
+                                          labelStyle: TextStyle(
+                                            fontFamily: "Montserrat-Regular",
+                                            fontSize: 14,
+                                          ),
+                                          tabs: [
+                                            Tab(
+                                              text: "Информация",
+                                            ),
+                                            Tab(
+                                              text: "Фотографии",
+                                            ),
+                                            Tab(
+                                              text: "Отзывы",
+                                            )
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  )),
+                            ),
                           ),
-                        ),
-                      ];
-                    },
-                    body: TabBarView(
-                      children: <Widget>[
-                        SingleChildScrollView(
-                          child: InfoWidget(snapshot.data),
-                        ),
-                        PhotoGrid(snapshot.data),
-                        CommentList(snapshot.data.id, snapshot.data.inBookedHistory)
-                      ],
-                    )),
-              );
-            } else {
-              return Center(
-                  child: Container(
-                    child: SizedBox(
-                        child: CircularProgressIndicator(),
-                        width: 30,
-                        height: 30),
-                  ));
-            }
-          },
-        ));
+                        ];
+                      },
+                      body: TabBarView(
+                        children: <Widget>[
+                          SingleChildScrollView(
+                            child: InfoWidget(snapshot.data),
+                          ),
+                          PhotoGrid(snapshot.data),
+                          CommentList(snapshot.data.id, snapshot.data.inBookedHistory)
+                        ],
+                      )),
+                );
+              } else {
+                return Center(
+                    child: Container(
+                      child: SizedBox(
+                          child: CircularProgressIndicator(),
+                          width: 30,
+                          height: 30),
+                    ));
+              }
+            },
+          )),
+    );
   }
 }
 
