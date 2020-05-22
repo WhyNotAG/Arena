@@ -14,17 +14,20 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'Other/CustomSharedPreferences.dart';
 import 'Other/Request.dart';
 
-Future<dynamic> myBackgroundMessageHandler(Map<String, dynamic> message) {
-  if (message.containsKey('data')) {
-    // Handle data message
-    final dynamic data = message['data'];
-  }
+Future<dynamic> myBackgroundMessageHandler(Map<String, dynamic> message) async{
+  int hour =  await getIntValuesSF("time");
+  if(message["hour"] == hour.toString()) {
+    if (message.containsKey('text')) {
+      // Handle data message
+      final dynamic data = message['text'];
+    }
 
-  if (message.containsKey('notification')) {
-    // Handle notification message
-    final dynamic notification = message['notification'];
-  }
+    if (message.containsKey('title')) {
+      // Handle notification message
+      final dynamic notification = message['title'];
+    }
 
+  } else {return;}
   // Or do other work.
 }
 
@@ -54,7 +57,7 @@ class Item {
     final String routeName = '/detail/$itemId';
     return routes.putIfAbsent(
       routeName,
-          () => MaterialPageRoute<void>(
+          () => CupertinoPageRoute<void>(
         settings: RouteSettings(name: routeName),
         builder: (BuildContext context) => DetailPage(itemId),
       ),
@@ -197,7 +200,7 @@ class _MenuScreenState extends State<MenuScreen> {
     // Clear away dialogs
     Navigator.popUntil(context, (Route<dynamic> route) => route is PageRoute);
     if (!item.route.isCurrent) {
-      Navigator.push(context, item.route);
+      Navigator.push(context,  CupertinoPageRoute(builder: (context) => MenuScreen(0)),);
     }
   }
 
@@ -213,31 +216,47 @@ class _MenuScreenState extends State<MenuScreen> {
        var response = await postWithToken(
            "${server}account/device/token",
            {"token": fbToken});
-       print(response.statusCode);
-       print(response.body);
+
      }
+      var token = await getStringValuesSF("accessToken");
+      if (token != null) {
+        int expIn = await getIntValuesSF("expiredIn");
+        if( DateTime.fromMillisecondsSinceEpoch(expIn.toInt() * 1000).isBefore(DateTime.now())) {
+          token = await refresh();
+        }
+      }
       print("Instance ID: " + fbToken);
     }
     if (Platform.isIOS) {
+      _fcm.requestNotificationPermissions(
+          const IosNotificationSettings(sound: true, badge: true, alert: true));
+
+      _fcm.onIosSettingsRegistered
+          .listen((IosNotificationSettings settings) {
+        print("Settings registered: $settings");
+      });
+
       _fcm.configure(
         onMessage: (Map<String, dynamic> message) async {
           print("onMessage: $message");
           String test = message["text"];
           int hour = await getIntValuesSF("time");
           print(hour);
-            showDialog(context: context,
-                builder: (context) => AlertDialog(
-                  content:   Text("${test.substring(0, 40)}\nЧерез ${message["hours"]}"),
-                  title: Text("${message["title"]}"),
-                  actions: <Widget>[
-                    FlatButton(
-                      child: const Text('Закрыть'),
-                      onPressed: () {
-                        Navigator.pop(context, false);
-                      },
-                    ),
-                  ],
-                ));
+            if(message["hours"] == hour.toString()) {
+              showDialog(context: context,
+                  builder: (context) => AlertDialog(
+                    content:   Text("${test}\nЧерез ${message["hours"]}"),
+                    title: Text("${message["title"]}"),
+                    actions: <Widget>[
+                      FlatButton(
+                        child: const Text('Закрыть'),
+                        onPressed: () {
+                          Navigator.pop(context, false);
+                        },
+                      ),
+                    ],
+                  ));
+            } else {return;}
         },
         onBackgroundMessage: Platform.isIOS ? null : myBackgroundMessageHandler,
         onLaunch: (Map<String, dynamic> message) async {
@@ -245,6 +264,10 @@ class _MenuScreenState extends State<MenuScreen> {
           _navigateToItemDetail(message);
         },
         onResume: (Map<String, dynamic> message) async {
+          int hour = await getIntValuesSF("time");
+          if(message["hours"] != hour.toString()) {
+            return;
+          }
           print("onResume: $message");
           _navigateToItemDetail(message);
         },

@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:arena/Navigation/Places/Place/Booking.dart';
 import 'package:arena/Other/CustomSharedPreferences.dart';
 import 'package:arena/Other/Request.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -170,7 +171,7 @@ class _PayScreenState extends State<PayScreen> {
                             ids = new Set();
                             if(response.statusCode == 200) {
                               bool test = await Navigator.push(context,
-                                  MaterialPageRoute(builder: (context) =>
+                                  CupertinoPageRoute(builder: (context) =>
                                       WebPage(url: responseJson["paymentUrl"])));
                               setState(() {
                                 if (test) {

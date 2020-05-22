@@ -5,6 +5,7 @@ import 'package:arena/Menu.dart';
 import 'package:arena/Navigation/Places/Place/PayScreen.dart';
 import 'package:arena/Other/CustomSharedPreferences.dart';
 import 'package:arena/Other/Request.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
@@ -306,7 +307,7 @@ class _State extends State<RegistrationScreen> {
                             InkWell(
                               onTap: (){
                                 Navigator.push(
-                                  context, MaterialPageRoute(builder: (context) => WebPage(url: "https://arenasport.me/polconf.pdf",)),);
+                                  context, CupertinoPageRoute(builder: (context) => WebPage(url: "https://arenasport.me/polconf.pdf",)),);
                               },
                               child:  Container(
                                 margin: EdgeInsets.only(left: 0),
@@ -330,7 +331,7 @@ class _State extends State<RegistrationScreen> {
                       InkWell(
                         onTap: (){
                           Navigator.push(
-                            context, MaterialPageRoute(builder: (context) => WebPage(url: "https://arenasport.me/polsogl.pdf",)),);
+                            context, CupertinoPageRoute(builder: (context) => WebPage(url: "https://arenasport.me/polsogl.pdf",)),);
                         },
                         child:  Container(
                           margin: EdgeInsets.only(left: 0),
@@ -436,7 +437,7 @@ class _State extends State<RegistrationScreen> {
                               addStringToSF("imageUrl", responseJson["imageUrl"]);
                                 Navigator.push(
                                   context,
-                                  MaterialPageRoute(builder: (context) => MenuScreen(0)),
+                                  CupertinoPageRoute(builder: (context) => MenuScreen(0)),
                                 );
                             }
                           }

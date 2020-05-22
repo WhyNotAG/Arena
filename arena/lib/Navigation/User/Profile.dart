@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:app_settings/app_settings.dart';
+import 'package:arena/Navigation/Places/Place/PayScreen.dart';
 import 'package:arena/Navigation/User/User.dart';
 import 'package:arena/Other/CustomSharedPreferences.dart';
 import 'package:arena/Other/Request.dart';

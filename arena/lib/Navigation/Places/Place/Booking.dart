@@ -543,7 +543,7 @@ class _BookingState extends State<Booking> {
                                             fontFamily: "Montserrat-Bold")),
                                     onPressed: () async{
                                       if(ids.length >= 1){
-                                        bool test = await Navigator.push(context,  MaterialPageRoute(builder: (context) => PayScreen(date: date)));
+                                        bool test = await Navigator.push(context,  CupertinoPageRoute(builder: (context) => PayScreen(date: date)));
                                         setState(() {
                                           if(test) {
                                             timeWidgets = fetchTime(selectedPlayground.id, date, isHalf);

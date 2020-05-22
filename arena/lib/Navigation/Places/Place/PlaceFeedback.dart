@@ -168,16 +168,19 @@ class _FeedBackPlaceState extends State<FeedBackPlace> {
                     style: TextStyle(fontFamily: "Montserrat-Bold", fontSize: 12,
                         color: Color.fromARGB(255, 47, 128, 237), fontWeight: FontWeight.bold),),
                     onPressed: () async{
-                      var token = await getStringValuesSF("accessToken");
-                      if (token != null) {
-                        response = await postWithToken("${server}feedback/${id}", {"feedback" : result, "authorName": name,
-                          "date": DateTime.now().millisecondsSinceEpoch, "isRecommended": isRecommend, "rating": rating});
-                      } else{
-                        Navigator.pop(context);
-                      }
+                      if(name.length >= 2) {
+                        print(name);
+                        var token = await getStringValuesSF("accessToken");
+                        if (token != null) {
+                          response = await postWithToken("${server}feedback/${id}", {"feedback" : result, "authorName": name,
+                            "date": DateTime.now().millisecondsSinceEpoch, "isRecommended": isRecommend, "rating": rating});
+                        } else{
+                          Navigator.pop(context);
+                        }
 
-                      if(response.statusCode == 200) {
-                        Navigator.pop(context);
+                        if(response.statusCode == 200) {
+                          Navigator.pop(context);
+                        }
                       }
                     },),)
               ],

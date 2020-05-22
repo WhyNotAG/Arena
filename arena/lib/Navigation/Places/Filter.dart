@@ -51,6 +51,7 @@ Future<List<Place>> fetchPlace(Map map) async {
   print(res);
 
   if (token != null) {
+    print("test");
     response = await getWithToken("${server}place/?${res}");
   } else{
     response = await http.get("${server}place/?${res}",

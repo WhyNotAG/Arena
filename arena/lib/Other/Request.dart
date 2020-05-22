@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 
 import 'CustomSharedPreferences.dart';
 
-const server = "http://217.12.209.180:8080/api/v1/";
+const server = "http://81.91.178.100:8080/api/v1/";
 Future refresh() async {
   var token = await getStringValuesSF("accessToken");
   var refToken = await getStringValuesSF("refreshToken");

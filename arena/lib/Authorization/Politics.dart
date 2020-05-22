@@ -1,4 +1,5 @@
 import 'package:arena/Navigation/Places/Place/PayScreen.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../Menu.dart';
@@ -32,7 +33,7 @@ class _PoliticsState extends State<Politics> {
                           InkWell(
                             onTap: (){
                               Navigator.push(
-                                context, MaterialPageRoute(builder: (context) => WebPage(url: "https://arenasport.me/polconf.pdf",)),);
+                                context, CupertinoPageRoute(builder: (context) => WebPage(url: "https://arenasport.me/polconf.pdf",)),);
                             },
                             child:  Container(
                               margin: EdgeInsets.only(left: 4),
@@ -56,7 +57,7 @@ class _PoliticsState extends State<Politics> {
                     InkWell(
                       onTap: (){
                         Navigator.push(
-                          context, MaterialPageRoute(builder: (context) => WebPage(url: "https://arenasport.me/polsogl.pdf",)),);
+                          context, CupertinoPageRoute(builder: (context) => WebPage(url: "https://arenasport.me/polsogl.pdf",)),);
                       },
                       child:  Container(
                         margin: EdgeInsets.only(left: 4),
@@ -85,7 +86,7 @@ class _PoliticsState extends State<Politics> {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => MenuScreen(0)),);
+                        CupertinoPageRoute(builder: (context) => MenuScreen(0)),);
                     },
                   ),
                   decoration: new BoxDecoration(

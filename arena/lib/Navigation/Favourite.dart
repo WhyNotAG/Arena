@@ -41,9 +41,9 @@ Future<List<PlaceWidget>> fetchPlace() async {
   var response;
   var token = await getStringValuesSF("accessToken");
   if (token != null) {
-    response = await getWithToken("http://217.12.209.180:8080/api/v1/place/favorite/");
+    response = await getWithToken("${server}place/favorite/");
   } else{
-    response = await http.get('http://217.12.209.180:8080/api/v1/place/favorite/',
+    response = await http.get('${server}place/favorite/',
         headers: {"Content-type": "application/json"});
   }
 
@@ -337,7 +337,7 @@ class PlaceWidget extends StatelessWidget {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => Pl.PlaceInfoWidget(id)),
+          CupertinoPageRoute(builder: (context) => Pl.PlaceInfoWidget(id)),
         ).then((_) {
           placeWidgetFuture = fetchPlace();
           placeWidgetFuture.then((value) {
@@ -362,17 +362,20 @@ class InfoPlace extends StatelessWidget {
         child: new Row(children: <Widget>[
           Container(
             margin: EdgeInsets.only(left: 22.0, top: 0),
-            child: SmoothStarRating(
-                allowHalfRating: false,
-                starCount: 5,
-                rating: rating,
-                size: 14.0,
-                filledIconData: CustomIcons.fill_star,
-                defaultIconData: CustomIcons.star,
-                halfFilledIconData: CustomIcons.fill_star,
-                color: Colors.orangeAccent,
-                borderColor: Colors.orangeAccent,
-                spacing: 0.0),
+            child: AbsorbPointer(
+              absorbing: true,
+              child: SmoothStarRating(
+                  allowHalfRating: false,
+                  starCount: 5,
+                  rating: rating,
+                  size: 14.0,
+                  filledIconData: CustomIcons.fill_star,
+                  defaultIconData: CustomIcons.star,
+                  halfFilledIconData: CustomIcons.fill_star,
+                  color: Colors.amber,
+                  borderColor: Colors.amber,
+                  spacing: 0.0),
+            )
           ),
           Container(
             child: Text(
@@ -485,7 +488,7 @@ class _FavouritesButtonState extends State<FavouritesButton> {
       child: IconButton(
         icon: Icon(
           _icon,
-          color: Colors.orangeAccent,
+          color: Colors.amber,
           size: 30,
         ),
         onPressed: () {
@@ -529,7 +532,7 @@ class PlaceButtons extends StatelessWidget {
                 onPressed: (){
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => MenuScreen(0, LatLng(latitude, longitude))),
+                    CupertinoPageRoute(builder: (context) => MenuScreen(0, LatLng(latitude, longitude))),
                   );
                 },
                 child: Row(
@@ -605,7 +608,7 @@ class PlaceDateButton extends StatelessWidget {
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => Booking(id)),
+            CupertinoPageRoute(builder: (context) => Booking(id)),
           );
         },
       ),

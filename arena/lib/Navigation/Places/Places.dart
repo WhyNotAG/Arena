@@ -232,7 +232,7 @@ class _PlacesState extends State<Places> {
                                   onPressed: () async {
                                     List<Place> times = await Navigator.push(
                                       context,
-                                      MaterialPageRoute(builder: (context) => Filter()),
+                                      CupertinoPageRoute(builder: (context) => Filter()),
                                     );
                                     setState(()  {
                                       placeWidgetFuture =  filter(times);
@@ -507,7 +507,7 @@ class TabBarButton extends StatelessWidget {
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => Filter()),
+              CupertinoPageRoute(builder: (context) => Filter()),
             );
           }),
       margin: EdgeInsets.only(left: 17, top: 53),
@@ -662,15 +662,17 @@ class _PlaceWidgetState extends State<PlaceWidget> {
         onTap: () async {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => Pl.PlaceInfoWidget(id)),
+            CupertinoPageRoute(builder: (context) => Pl.PlaceInfoWidget(id)),
           ).then((_) {
-               if(sport == null || sport == "") {
-                 placeWidgetFuture = fetchPlace();
-               } else { placeWidgetFuture = fetchPlaceBySport(sport); }
-               placeWidgetFuture.then((value) {
-                 placeWidgets = value;
-                 filteredList = value;
-             });
+              setState(() {
+                if(sport == null || sport == "") {
+                  placeWidgetFuture = fetchPlace();
+                } else { placeWidgetFuture = fetchPlaceBySport(sport); }
+                placeWidgetFuture.then((value) {
+                  placeWidgets = value;
+                  filteredList = value;
+                });
+              });
           });
         }
     );
@@ -690,17 +692,21 @@ class InfoPlace extends StatelessWidget {
         child: new Row(children: <Widget>[
           Container(
             margin: EdgeInsets.only(left: 22.0, top: 0),
-            child: SmoothStarRating(
-                allowHalfRating: false,
-                starCount: 5,
-                rating: rating,
-                size: 14.0,
-                filledIconData: CustomIcons.fill_star,
-                defaultIconData: CustomIcons.star,
-                halfFilledIconData: CustomIcons.fill_star,
-                color: Colors.amber,
-                borderColor: Colors.amber,
-                spacing: 0.0),
+            child: AbsorbPointer(
+              absorbing: true,
+              child: SmoothStarRating(
+                  allowHalfRating: false,
+                  onRated: null,
+                  starCount: 5,
+                  rating: rating,
+                  size: 14.0,
+                  filledIconData: CustomIcons.fill_star,
+                  defaultIconData: CustomIcons.star,
+                  halfFilledIconData: CustomIcons.fill_star,
+                  color: Colors.amber,
+                  borderColor: Colors.amber,
+                  spacing: 0.0),
+            )
           ),
           Container(
             child: Text(
@@ -855,7 +861,7 @@ class PlaceButtons extends StatelessWidget {
                 onPressed: (){
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => MenuScreen(0, LatLng(latitude, longitude))),
+                    CupertinoPageRoute(builder: (context) => MenuScreen(0, LatLng(latitude, longitude))),
                   );
                 },
                 child: Row(
@@ -931,7 +937,7 @@ class PlaceDateButton extends StatelessWidget {
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => Booking(id)),
+            CupertinoPageRoute(builder: (context) => Booking(id)),
           );
         },
       ),

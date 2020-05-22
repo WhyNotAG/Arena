@@ -134,6 +134,13 @@ class _ArenaAppState extends State<ArenaApp> {
             currentFocus.unfocus();
           }
         },
+        onHorizontalDragCancel: (){
+          FocusScopeNode currentFocus = FocusScope.of(context);
+
+          if (!currentFocus.hasPrimaryFocus) {
+            currentFocus.unfocus();
+          }
+        },
         child: BaseLayout(data)
     );
   }
@@ -205,7 +212,7 @@ class RegButton extends StatelessWidget {
     return new FlatButton(onPressed: (){
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => RegistrationScreen()),
+        CupertinoPageRoute(builder: (context) => RegistrationScreen()),
       );
     }, child: new Text(
         "Зарегистрируйтесь",
@@ -238,110 +245,21 @@ class Logo extends StatelessWidget {
   }
 }
 
-//
-//
-class InfoFields extends StatelessWidget {
-  final _formKey = GlobalKey<FormState>();
-  final _formKey2 = GlobalKey<FormState>();
-  FocusNode myFocusNode = new FocusNode();
+class InfoFields extends StatefulWidget {
   Data data;
 
   InfoFields(this.data);
-
   @override
-  Widget build(BuildContext context) {
-    return new Column(
-      children: <Widget>[
-        Container(
-            height: 56,
-            margin: EdgeInsets.only(left:16.0, right: 16.0),
-            child: Container(
-                height: 56,
-                child: Form(key: _formKey,
-                    child: new TextFormField(
-                      controller: data._myController,
-                      focusNode: myFocusNode,
-                      validator: (value){
-                        if (value.isEmpty) return 'Пожалуйста введите свой Email';
-                        String p = "[a-zA-Z0-9+.\_\%-+]{1,256}@[a-zA-Z0-9][a-zA-Z0-9-]{0,64}(.[a-zA-Z0-9][a-zA-Z0-9-]{0,25})+";
-                        RegExp regExp = new RegExp(p);
-
-                        String p2 = "^((8|\\+7)[\\- ]?)?(\\(?\\d{3}\\)?[\\- ]?)?[\\d\\- ]{7,10}\$";
-                        RegExp regExp2 = new RegExp(p2);
-                        if (regExp.hasMatch(value)) return null;
-                        if (regExp2.hasMatch(value)) { data.isPhone = true; return null;}
-                        return 'Это не E-mail';
-                      },
-
-                      cursorColor: Colors.black38,
-                      decoration: new InputDecoration(
-                        hintText: "Email/Phone",
-                        border: OutlineInputBorder(),
-                        hintStyle: TextStyle(
-                          color: myFocusNode.hasFocus ? Colors.green : Colors.black,
-                        ),
-
-                        errorStyle: TextStyle(fontSize: 0.0, ),
-                        errorBorder: (
-                            OutlineInputBorder(
-                              borderSide: new BorderSide(color: Colors.red, width: 2.0),
-                            )
-                        ),
-
-                        focusedErrorBorder: OutlineInputBorder(
-                          borderSide: new BorderSide(color: Colors.red, width: 2.0),
-                        ),
-
-                        enabledBorder: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            color: Colors.black38,
-                          ),
-                        ),
-
-                        focusedBorder: OutlineInputBorder(
-                          borderSide: new BorderSide(color: Color.fromARGB(255, 47, 128, 237), width: 2.0,),
-                        ),
-
-
-                        contentPadding: new EdgeInsets.fromLTRB(
-                            10.0, 10.0, 10.0, 10.0),
-                        filled: true,
-                        fillColor: Colors.white,
-                      ),
-                    )
-                )
-            )
-        ),
-        Password(data:data),
-        Container(child: LostPass(),alignment: Alignment.centerRight,),
-        EnterButton(_formKey,_formKey2, data, data.isPhone)
-      ],
-    );
-  }
+  _InfoFieldsState createState() => _InfoFieldsState(data);
 }
 
-
-//
-//
-//Password widget
-class Password extends StatefulWidget {
+class _InfoFieldsState extends State<InfoFields> {
   Data data;
-
-  Password({Key key, @required this.data}) : super(key: key);
-
-
-  @override
-  _PasswordState createState() => _PasswordState(data);
-}
-
-class _PasswordState extends State<Password> {
-  Data data;
-  var _controller = TextEditingController();
+  _InfoFieldsState(this.data);
   bool _obscureText = true;
   IconData _icon = Icons.visibility_off;
-
-
-  _PasswordState(this.data);
+  var nameController = TextEditingController();
+  var passController = TextEditingController();
 
   void setIcon(bool obscure) {
     setState(() {
@@ -352,84 +270,127 @@ class _PasswordState extends State<Password> {
 
 
   @override
-  void dispose() {
-    // Clean up the controller when the widget is disposed.
-    super.dispose();
-    data._passController = _controller;
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Container(
-        height: 56,
-        margin: EdgeInsets.only(left:16.0, right: 16.0),
-        child: Container(
-          child: Form(
-              child: new TextFormField(
-                obscureText: _obscureText,
-                controller: widget.data._passController,
-                cursorColor: Colors.black,
-                decoration: new InputDecoration(
-                  hintText: "Пароль",
-                  hintStyle: TextStyle(color: Colors.black),
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: Colors.black38,
+    return new Column(
+      children: <Widget>[
+        Container(
+            height: 56,
+            margin: EdgeInsets.only(left:16.0, right: 16.0),
+            child: Container(
+                height: 56,
+                child: TextFormField(
+                  controller: nameController,
+                  cursorColor: Colors.black38,
+                  decoration: new InputDecoration(
+                    hintText: "Email/Phone",
+                    border: OutlineInputBorder(),
+                    hintStyle: TextStyle(
+                      color: Colors.black,
                     ),
+
+                    errorStyle: TextStyle(fontSize: 0.0, ),
+                    errorBorder: (
+                        OutlineInputBorder(
+                          borderSide: new BorderSide(color: Colors.red, width: 2.0),
+                        )
+                    ),
+
+                    focusedErrorBorder: OutlineInputBorder(
+                      borderSide: new BorderSide(color: Colors.red, width: 2.0),
+                    ),
+
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Colors.black38,
+                      ),
+                    ),
+
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: new BorderSide(color: Color.fromARGB(255, 47, 128, 237), width: 2.0,),
+                    ),
+                    contentPadding: new EdgeInsets.fromLTRB(
+                        10.0, 10.0, 10.0, 10.0),
+                    filled: true,
+                    fillColor: Colors.white,
                   ),
-                  errorStyle: TextStyle(fontSize: 0.0, ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: new BorderSide(color: Color.fromARGB(255, 47, 128, 237), width: 2.0),
-                  ),
-                  errorBorder: OutlineInputBorder(
-                    borderSide: new BorderSide(color: Colors.red, width: 2.0),
-                  ) ,
-                  focusedErrorBorder: OutlineInputBorder(
-                    borderSide: new BorderSide(color: Colors.red, width: 2.0),
-                  ) ,
-                  contentPadding: new EdgeInsets.fromLTRB(
-                      10.0, 10.0, 10.0, 10.0),
-                  filled: true,
-                  fillColor: Colors.white,
-                  suffixIcon: IconButton(
-                    onPressed: () {
+                  onChanged: (value){
+                    setState(() {
+                      name = value;
+                    });
+                  },
+                )
+            )
+        ),
+        Container(
+            height: 56,
+            margin: EdgeInsets.only(left:16.0, right: 16.0),
+            child: Container(
+              child: Form(
+                  child: new TextFormField(
+                    obscureText: _obscureText,
+                    controller: passController,
+                    cursorColor: Colors.black,
+                    decoration: new InputDecoration(
+                      hintText: "Пароль",
+                      hintStyle: TextStyle(color: Colors.black),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: Colors.black38,
+                        ),
+                      ),
+                      errorStyle: TextStyle(fontSize: 0.0, ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: new BorderSide(color: Color.fromARGB(255, 47, 128, 237), width: 2.0),
+                      ),
+                      errorBorder: OutlineInputBorder(
+                        borderSide: new BorderSide(color: Colors.red, width: 2.0),
+                      ) ,
+                      focusedErrorBorder: OutlineInputBorder(
+                        borderSide: new BorderSide(color: Colors.red, width: 2.0),
+                      ) ,
+                      contentPadding: new EdgeInsets.fromLTRB(
+                          10.0, 10.0, 10.0, 10.0),
+                      filled: true,
+                      fillColor: Colors.white,
+                      suffixIcon: IconButton(
+                        onPressed: () {
+                          setState(() {
+                            _obscureText = !_obscureText;
+                            setIcon(_obscureText);
+                          });
+                        },
+                        icon: Icon(_icon),
+                        color: Colors.black,
+                      ),
+                    ),
+                    onChanged: (value){
                       setState(() {
-                        _obscureText = !_obscureText;
-                        setIcon(_obscureText);
+                        password = value;
                       });
                     },
-                    icon: Icon(_icon),
-                    color: Colors.black,
-                  ),
-                ),
-              )
-          ),
-        )
-    );
-  }
-}
-
-//
-//Button lost password
-class LostPass extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return new Container(
-      child: FlatButton(onPressed: (){
-        Navigator.push(context,
-            MaterialPageRoute(builder: (context) => LostPassword()));
-      },
-        child: new Text(
-            "Забыли пароль?",
-            style: TextStyle(
-                color: Colors.white,
-                decoration: TextDecoration.underline, fontSize: 12.0,
-                fontFamily: "Montserrat-Regular",
-                fontWeight: FontWeight.bold)
+                  )
+              ),
+            )
         ),
-        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-      ),
+        Container(child: Container(
+          child: FlatButton(onPressed: (){
+            Navigator.push(context,
+                CupertinoPageRoute(builder: (context) => LostPassword()));
+          },
+            child: new Text(
+                "Забыли пароль?",
+                style: TextStyle(
+                    color: Colors.white,
+                    decoration: TextDecoration.underline, fontSize: 12.0,
+                    fontFamily: "Montserrat-Regular",
+                    fontWeight: FontWeight.bold)
+            ),
+            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
 
+        ),alignment: Alignment.centerRight,),
+        EnterButton(data, data.isPhone)
+      ],
     );
   }
 }
@@ -437,11 +398,9 @@ class LostPass extends StatelessWidget {
 
 //Enter button
 class EnterButton extends StatelessWidget {
-  final _formKey;
-  final _formKey2;
   Data data;
   bool isPhone;
-  EnterButton(this._formKey, this._formKey2, this.data, this.isPhone);
+  EnterButton(this.data, this.isPhone);
   Future<int> httpGet(String password, String enter) async {
     var email;
     var phone;
@@ -509,12 +468,13 @@ class EnterButton extends StatelessWidget {
               fontFamily: "Montserrat-Bold")
       ),
         onPressed: () async{
-          addStringToSF("password", data._passController.text);
-
+          addStringToSF("password", password);
+          print(name);
+          print(password);
           int a = 0;
 
 
-          a = await httpGet(data._passController.text, data._myController.text);
+          a = await httpGet(password, name);
           var response = await getWithToken("${server}account/");
           Map<String,dynamic> responseJson = json.decode(utf8.decode(response.bodyBytes));
           addStringToSF("name", responseJson["firstName"]);
@@ -525,7 +485,7 @@ class EnterButton extends StatelessWidget {
             response = await postWithToken("${server}account/device/token", {"token": fbToken});
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => MenuScreen(0)),);
+              CupertinoPageRoute(builder: (context) => MenuScreen(0)),);
           } else {Scaffold.of(context).showSnackBar(SnackBar(content:Text("Ошибка логин/пароль"), backgroundColor: Colors.red,));}
         },
       ),
@@ -550,7 +510,7 @@ class WithoutRegButton extends StatelessWidget {
         child: Row(
           children: <Widget>[
             new FlatButton(onPressed: (){Navigator.push(
-              context, MaterialPageRoute(builder: (context) =>Politics()),);},child: new Text(
+              context, CupertinoPageRoute(builder: (context) =>Politics()),);},child: new Text(
                 "Продолжить без регистрации",
                 style: TextStyle(
                     decoration: TextDecoration.underline, fontSize: 14.0,
@@ -565,7 +525,7 @@ class WithoutRegButton extends StatelessWidget {
                 child: IconButton(icon: Icon(Icons.arrow_forward, color: Colors.white,),
                   onPressed: (){Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => Politics()),);}, color: Colors.white,)
+                    CupertinoPageRoute(builder: (context) => Politics()),);}, color: Colors.white,)
             )
           ],)
     );

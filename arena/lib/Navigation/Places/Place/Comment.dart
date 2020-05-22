@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:arena/Icons/custom_icons_icons.dart';
 import 'package:arena/Navigation/Places/Place/PlaceFeedback.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
 import 'package:arena/Other/CustomSharedPreferences.dart';
 import 'package:arena/Other/Request.dart';
@@ -135,17 +136,20 @@ class CommentWidget extends StatelessWidget {
                         ],
                       )
                     : Container(),
-                SmoothStarRating(
-                    allowHalfRating: false,
-                    starCount: 5,
-                    rating: comment.rating != null ? comment.rating : 0,
-                    size: 14.0,
-                    filledIconData: CustomIcons.fill_star,
-                    defaultIconData: CustomIcons.star,
-                    halfFilledIconData: CustomIcons.fill_star,
-                    color: Colors.amber,
-                    borderColor: Colors.amber,
-                    spacing: 0.0),
+                AbsorbPointer(
+                  absorbing: true,
+                  child: SmoothStarRating(
+                      allowHalfRating: false,
+                      starCount: 5,
+                      rating: comment.rating != null ? comment.rating : 0,
+                      size: 14.0,
+                      filledIconData: CustomIcons.fill_star,
+                      defaultIconData: CustomIcons.star,
+                      halfFilledIconData: CustomIcons.fill_star,
+                      color: Colors.amber,
+                      borderColor: Colors.amber,
+                      spacing: 0.0),
+                )
               ],
             ),
           ),
@@ -267,7 +271,7 @@ class _CommentListState extends State<CommentList> {
                     setState(() {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
+                        CupertinoPageRoute(
                             builder: (context) => FeedBackPlace(id)),
                       );
                       content = fetchContent(id);

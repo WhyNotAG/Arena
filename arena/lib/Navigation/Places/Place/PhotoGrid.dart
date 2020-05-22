@@ -26,7 +26,7 @@ class PhotoGrid extends StatelessWidget {
                 child: FadeInImage.memoryNetwork(placeholder: kTransparentImage, image: place.customImages[index].fullImage,
                   fit: BoxFit.fill,),),
               onTap: (){
-                Navigator.push(context, MaterialPageRoute(builder: (_) {
+                Navigator.push(context, CupertinoPageRoute(builder: (_) {
                   return  DetailScreen(place.customImages[index].fullImage);
                 }));
               },

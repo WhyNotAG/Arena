@@ -278,7 +278,7 @@ class _BookWidgetState extends State<BookWidget> {
             onPressed: () async{
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => WebPage(url: paymentURL,)),
+                CupertinoPageRoute(builder: (context) => WebPage(url: paymentURL,)),
               );
             },),) : Container()
       ],),

@@ -211,12 +211,7 @@ class _PlaceInfoWidgetState extends State<PlaceInfoWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        Navigator.pop(context);
-        return true;
-      },
-      child: Scaffold(
+    return Scaffold(
           backgroundColor: Colors.white,
           body: FutureBuilder<Place>(
             future: place,
@@ -402,7 +397,7 @@ class _PlaceInfoWidgetState extends State<PlaceInfoWidget> {
                     ));
               }
             },
-          )),
+          ),
     );
   }
 }
@@ -477,7 +472,7 @@ class InfoWidget extends StatelessWidget {
               onPressed: (){
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => Booking(place.id)),
+                  CupertinoPageRoute(builder: (context) => Booking(place.id)),
                 );
               },),)
         ],

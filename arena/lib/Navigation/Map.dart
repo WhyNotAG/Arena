@@ -89,10 +89,10 @@ Future<List<Place>> fetchPlace(BuildContext context) async {
 
   position = await geo.Geolocator().getCurrentPosition(desiredAccuracy: geo.LocationAccuracy.medium);
   var token = await getStringValuesSF("accessToken");
-  int expIn = await getIntValuesSF("expiredIn");
 
 
   if (token != null) {
+    int expIn = await getIntValuesSF("expiredIn");
     if( DateTime.fromMillisecondsSinceEpoch(expIn.toInt() * 1000).isBefore(DateTime.now()))  {
       token = await refresh();
     }
@@ -297,7 +297,7 @@ class MapSampleState extends State<MapSample> {
                   onTap: (){
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => PlaceInfoWidget(cluster.items.first.id)),
+                      CupertinoPageRoute(builder: (context) => PlaceInfoWidget(cluster.items.first.id)),
                     );
                   },
                   child: Container(
@@ -436,6 +436,9 @@ class MapSampleState extends State<MapSample> {
       );
     }
     _focusScope = FocusNode();
+    _manager = _initClusterManager();
+
+    super.initState();
     fetchPlace(context).then((placesFromServer) {
       setState(() {
         beforePlaces = placesFromServer;
@@ -446,9 +449,6 @@ class MapSampleState extends State<MapSample> {
         }
       });
     });
-    _manager = _initClusterManager();
-
-    super.initState();
   }
 
   @override
@@ -512,22 +512,31 @@ class MapSampleState extends State<MapSample> {
                               margin: EdgeInsets.only(right: 8),
                               child: FloatingActionButton(
                                 onPressed: () async {
+                                  var token = await getStringValuesSF("accessToken");
+                                  if (token != null) {
+                                    int expIn = await getIntValuesSF("expiredIn");
+                                    if( DateTime.fromMillisecondsSinceEpoch(expIn.toInt() * 1000).isBefore(DateTime.now())) {
+                                      token = await refresh();
+                                    }
+                                  }
                                  beforePlaces = await Navigator.push(
                                     context,
-                                    MaterialPageRoute(builder: (context) => Filter()),
+                                   CupertinoPageRoute(builder: (context) => Filter()),
                                   );
-                                    items = new List();
-                                   places = beforePlaces;
-                                   print(places.length);
-                                 if(places.length != 0) {
-                                   for(Place place in places) {
-                                     items.add(ClusterItem(LatLng(place.latitude, place.longitude), item: place));
-                                     _manager.setItems(items);
-                                   }
-                                 } else {
-                                   _markers = null;
-                                   _manager.setItems(null);
-                                 }
+                                   setState(() {
+                                     items = new List();
+                                     places = beforePlaces;
+                                     print(places.length);
+                                     if(places.length != 0) {
+                                       for(Place place in places) {
+                                         items.add(ClusterItem(LatLng(place.latitude, place.longitude), item: place));
+                                         _manager.setItems(items);
+                                       }
+                                     } else {
+                                       _markers = null;
+                                       _manager.setItems(null);
+                                     }
+                                   });
                                 },
                                 heroTag: "btn1",
                                 materialTapTargetSize: MaterialTapTargetSize.padded,
